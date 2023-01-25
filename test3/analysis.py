@@ -14,7 +14,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 chains = [0, 1, 2]
 
 # paths
-dir = "/home/simon/Documents/BCI/experiments/test2/"
+dir = "/home/simon/Documents/BCI/experiments/test3/"
 dir_data = dir + "data/"
 dir_chains = dir + "chains/"
 dir_figures = dir + "figures/"
@@ -36,6 +36,7 @@ with open(dir_data + "true_values.pkl", "rb") as f:
 
 # =============================================================================
 # LOAD CHAINS
+# TODO Update this
 results = {
 	seed: MCMCResults.load(
 		dir_chains + f"seed{seed}.chain"
@@ -44,40 +45,6 @@ results = {
 }
 
 self = MCMCMultipleResults(results)
-
-# # fix broken
-#
-# import types
-# import io
-#
-# # Could derive from Unpickler, but that may be a C class, so our tracebacks would be less helpful
-# class MagicUnpickler(pickle._Unpickler):
-#     def __init__(self, fp):
-#         super().__init__(fp)
-#         self._magic_classes = {}
-#
-#     def find_class(self, module, name):
-#         try:
-#             return super().find_class(module, name)
-#         except ModuleNotFoundError:
-#             return self._create_magic_class(module, name)
-#
-#     def _create_magic_class(self, module, name):
-#         cache_key = (module, name)
-#         if cache_key not in self._magic_classes:
-#             cls = type(f'<<Emulated Class {module}:{name}>>', (types.SimpleNamespace,), {})
-#             self._magic_classes[cache_key] = cls
-#         return self._magic_classes[cache_key]
-#
-#
-# for seed in chains:
-# 	filename = dir_chains + f"seed{seed}.chain"
-# 	with open(filename, "rb") as f:
-# 		results = MagicUnpickler(f).load()
-# 		results = MCMCResults(results.variables, warmup=results.warmup, thin=results.thin)
-# 		results.save(filename)
-
-
 # -----------------------------------------------------------------------------
 
 
