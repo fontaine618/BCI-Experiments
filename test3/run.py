@@ -1,3 +1,7 @@
+import sys
+sys.path.extend(['/home/simon/Documents/BCI', '/home/simon/Documents/BCI/src'])
+
+
 import torch
 import pickle
 from src.bffmbci.bffm import BFFModel
@@ -56,6 +60,10 @@ while not status:
 
 # =============================================================================
 # RUN CHAIN
+import cProfile
+torch.distributions.Distribution.set_default_validate_args(False)
+out = cProfile.run("[model.sample() for _ in range(100)]")
+
 for i in range(n_iter):
 	model.sample()
 	print(seed, i, model.variables["observations"].log_density_history[-1])

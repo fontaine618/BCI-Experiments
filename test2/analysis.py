@@ -2,8 +2,8 @@ import torch
 import numpy as np
 import arviz as az
 import pickle
-from src.results import MCMCResults
-from src.results import MCMCMultipleResults
+from src.results_old import MCMCResults
+from src.results_old import MCMCMultipleResults
 import matplotlib.pyplot as plt
 
 plt.style.use("seaborn-v0_8-whitegrid")
@@ -73,9 +73,9 @@ self = MCMCMultipleResults(results)
 # for seed in chains:
 # 	filename = dir_chains + f"seed{seed}.chain"
 # 	with open(filename, "rb") as f:
-# 		results = MagicUnpickler(f).load()
-# 		results = MCMCResults(results.variables, warmup=results.warmup, thin=results.thin)
-# 		results.save(filename)
+# 		results_old = MagicUnpickler(f).load()
+# 		results_old = MCMCResults(results_old.variables, warmup=results_old.warmup, thin=results_old.thin)
+# 		results_old.save(filename)
 
 
 # -----------------------------------------------------------------------------

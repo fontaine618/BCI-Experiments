@@ -2,8 +2,8 @@ import torch
 import numpy as np
 import arviz as az
 import pickle
-from src.results import MCMCResults
-from src.results import MCMCMultipleResults
+from src.results_old import MCMCResults
+from src.results_old import MCMCMultipleResults
 import matplotlib.pyplot as plt
 
 plt.style.use("seaborn-v0_8-whitegrid")
@@ -32,6 +32,54 @@ with open(dir_data + "prior_parameters.pkl", "rb") as f:
 with open(dir_data + "true_values.pkl", "rb") as f:
 	true_values = pickle.load(f)
 # -----------------------------------------------------------------------------
+
+
+
+
+
+# tmp
+llks = dict()
+for chain in chains:
+	with open(dir_chains + f"seed{chain}.chain", "rb") as f:
+		result = pickle.load(f)
+		llks[chain] = result["log_likelihood"]
+
+tllk = true_values["observation_log_likelihood"]
+
+fig, ax = plt.subplots()
+for chain, llk in llks.items():
+	ax.plot(llk["observations"], label=chain, c=f"C{chain}")
+ax.set_title("observation log-likelihood")
+ax.legend(title="chain")
+ax.axhline(tllk, c="k", ls="--")
+ax.set_ylim(-120000, -110000)
+fig.savefig(f"{dir_figures}/llk.pdf")
+plt.close(fig)
+
+
+fig, ax = plt.subplots()
+for chain, llk in llks.items():
+	ax.plot(np.abs(np.array(llk["observations"]) - tllk), label=chain, c=f"C{chain}")
+ax.set_title("observation log-likelihood absdiff")
+ax.legend(title="chain")
+ax.set_yscale("log")
+fig.savefig(f"{dir_figures}/llk_absdiff.pdf")
+plt.close(fig)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # =============================================================================
