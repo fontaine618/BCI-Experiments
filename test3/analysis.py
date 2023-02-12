@@ -2,8 +2,9 @@ import torch
 import numpy as np
 import arviz as az
 import pickle
-from src.results_old import MCMCResults
-from src.results_old import MCMCMultipleResults
+from src.results import MCMCResults, _add_transformed_variables, _flatten_dict
+# from src.results_old import MCMCResults
+# from src.results_old import MCMCMultipleResults
 import matplotlib.pyplot as plt
 
 plt.style.use("seaborn-v0_8-whitegrid")
@@ -32,6 +33,58 @@ with open(dir_data + "prior_parameters.pkl", "rb") as f:
 with open(dir_data + "true_values.pkl", "rb") as f:
 	true_values = pickle.load(f)
 # -----------------------------------------------------------------------------
+
+
+# =============================================================================
+self = MCMCResults.from_files(
+	[dir_chains + f"seed{chain}.chain" for chain in chains],
+	warmup=100_000
+)
+data = self.to_arviz()
+rhat = az.rhat(data)
+ess = az.ess(data)
+true_values = _flatten_dict(true_values)
+_add_transformed_variables(true_values)
+# -----------------------------------------------------------------------------
+
+
+
+# =============================================================================
+# Plot RHAT
+xmin = 0.95
+xmax = 2.3
+
+for k, v in rhat.data_vars.items():
+	fig, ax = plt.subplots()
+	ax.hist(v.values.flatten(), bins=np.linspace(0.95, 2.3, 28))
+	ax.set_xlim(xmin, xmax)
+	ax.set_title(k)
+	ax.set_ylabel("$\widehat{R}$")
+	fig.savefig(f"{dir_figures}/rhat/{k}.pdf")
+	plt.close(fig)
+# -----------------------------------------------------------------------------
+
+
+
+axs = az.plot_forest(data, var_names="loadings", coords={"loadings_dim_1": 1}, show=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -69,7 +122,7 @@ plt.close(fig)
 
 
 
-
+file = "/home/simon/Documents/BCI/experiments/test3/chains/seed0.chain"
 
 
 
