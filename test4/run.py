@@ -15,7 +15,7 @@ seed = sys.argv[1]
 n_iter = 1000
 
 # paths
-dir = "/home/simon/Documents/BCI/experiments/test4/"
+dir = "/home/simfont/Documents/BCI/experiments/test4/"
 dir_data = dir + "data/"
 dir_chains = dir + "chains/"
 
