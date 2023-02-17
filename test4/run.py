@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 
-
+import time
 import torch
 import pickle
 from src.bffmbci.bffm import BFFModel
@@ -12,7 +12,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # parameters
 seed = sys.argv[1]
-n_iter = 1000
+n_iter = 200_000
 
 # paths
 dir = "/home/simfont/Documents/BCI/experiments/test4/"
@@ -60,10 +60,15 @@ while not status:
 
 # =============================================================================
 # RUN CHAIN
+t0 = time.time()
+t00 = t0
 for i in range(n_iter):
 	model.sample()
-	if i % 5 == 0:
-		print(seed, i, model.variables["observations"].log_density_history[-1])
+	if i % 1000 == 0:
+		print(f"{i:>10} "
+			  f"{model.variables['observations'].log_density_history[-1]:>20.4f}"
+			  f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")
+		t00 = time.time()
 # -----------------------------------------------------------------------------
 
 
