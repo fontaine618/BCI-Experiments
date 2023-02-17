@@ -1,5 +1,5 @@
 import sys
-sys.path.extend(['/home/simfont/Documents/BCI', '/home/simfont/Documents/BCI/src'])
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 
 
 import torch
