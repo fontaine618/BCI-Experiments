@@ -5,6 +5,7 @@ import pickle
 from src.results import MCMCResults, _add_transformed_variables, _flatten_dict
 # from src.results_old import MCMCResults
 # from src.results_old import MCMCMultipleResults
+from src.bffmbci import BFFMPredict
 import matplotlib.pyplot as plt
 
 plt.style.use("seaborn-v0_8-whitegrid")
@@ -36,11 +37,16 @@ with open(dir_data + "true_values.pkl", "rb") as f:
 
 
 # =============================================================================
-self = MCMCResults.from_files(
+results = MCMCResults.from_files(
 	[dir_chains + f"seed{chain}.chain" for chain in chains],
 	warmup=100_000
 )
-data = self.to_arviz()
+# -----------------------------------------------------------------------------
+
+
+
+# =============================================================================
+data = results.to_arviz()
 rhat = az.rhat(data)
 ess = az.ess(data)
 true_values = _flatten_dict(true_values)
@@ -66,9 +72,31 @@ for k, v in rhat.data_vars.items():
 
 
 
-axs = az.plot_forest(data, var_names="loadings", coords={"loadings_dim_1": 1}, show=True)
+axs = az.plot_forest(data, var_names="loadings", coords={"loadings_dim_1": 0}, show=True)
 
 
+
+
+# =============================================================================
+# Prediction
+self = results.to_predict(n_samples=1000)
+factor_samples = 10
+log_probs, pred_one_hot = self.predict(order, sequence, factor_samples)
+
+# Hamming (2.43 -> about one swap)
+(pred_one_hot != target).double().sum(1).mean().item()
+
+# Accuracy (14.5%)
+(pred_one_hot == target).all(1).double().mean().item()
+
+# Recall (39.25%)
+(pred_one_hot == target)[target==1].double().mean().item()
+
+# At least one correct (64%)
+(pred_one_hot == target)[:, :3].all(1).double().mean().item() + \
+(pred_one_hot == target)[:, 3:].all(1).double().mean().item() - \
+(pred_one_hot == target).all(1).double().mean().item()
+# -----------------------------------------------------------------------------
 
 
 
