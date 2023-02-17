@@ -62,7 +62,7 @@ while not status:
 # RUN CHAIN
 for i in range(n_iter):
 	model.sample()
-	if i % 100 == 0:
+	if i % 5 == 0:
 		print(seed, i, model.variables["observations"].log_density_history[-1])
 # -----------------------------------------------------------------------------
 
