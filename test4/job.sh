@@ -14,4 +14,5 @@
 #SBATCH --output=/home/%u/%x-%j.log
 # The application(s) to execute along with its input arguments and options:
 module load python/3.10.4
-poetry run python run.py $SLURM_ARRAY_TASK_ID
+source /home/simfont/venvs/bci/bin/activate
+python run.py $SLURM_ARRAY_TASK_ID
