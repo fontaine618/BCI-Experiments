@@ -12,7 +12,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # parameters
 seed = sys.argv[1]
-n_iter = 100
+n_iter = 1000
 
 # paths
 dir = "/home/simon/Documents/BCI/experiments/test4/"
