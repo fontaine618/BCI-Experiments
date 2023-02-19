@@ -5,7 +5,7 @@ import pickle
 from src.results import MCMCResults, _add_transformed_variables, _flatten_dict
 # from src.results_old import MCMCResults
 # from src.results_old import MCMCMultipleResults
-from src.bffmbci import BFFMPredict
+from src.bffmbci import BFFModel
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -45,6 +45,30 @@ results = MCMCResults.from_files(
 	thin=10
 )
 # -----------------------------------------------------------------------------
+
+
+
+# =============================================================================
+# New prediction class
+
+# first we create a model with the correct observed data in
+self = BFFModel(
+	stimulus_order=order,
+	target_stimulus=target,
+	sequences=sequence,
+	**settings,
+	**prior_parameters,
+)
+# then we add the values
+variables = {
+	k: true_values[k] for k in
+	["observation_variance", "loadings", "smgp_scaling", "smgp_factors"]
+}
+self.set(**variables)
+self.generate_local_variables()
+# -----------------------------------------------------------------------------
+
+
 
 
 
@@ -105,6 +129,7 @@ for k in range(3):
 						 show=False, ax=ax)
 	fig.savefig(f"{dir_figures}/posterior/loadings_{k}.pdf")
 # -----------------------------------------------------------------------------
+
 
 
 
