@@ -10,6 +10,8 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 # =============================================================================
 # SETUP
 
+# 27h, 2GB
+
 # parameters
 seed = sys.argv[1]
 n_iter = 200_000
