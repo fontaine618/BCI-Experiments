@@ -15,7 +15,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-chains = [0, 1, 2]
+chains = [0, 1, 2, 3, 4]
 
 # paths
 dir = "/home/simon/Documents/BCI/experiments/test4/"
@@ -41,8 +41,8 @@ with open(dir_data + "true_values.pkl", "rb") as f:
 # =============================================================================
 results = MCMCResults.from_files(
 	[dir_chains + f"seed{chain}.chain" for chain in chains],
-	warmup=0,
-	thin=10
+	warmup=10_000,
+	thin=1
 )
 # -----------------------------------------------------------------------------
 
@@ -50,25 +50,61 @@ results = MCMCResults.from_files(
 
 # =============================================================================
 # New prediction class
-
-# first we create a model with the correct observed data in
-self = BFFModel(
-	stimulus_order=order,
-	target_stimulus=target,
-	sequences=sequence,
-	**settings,
-	**prior_parameters,
+self = results.to_predict(n_samples=10)
+factor_samples = 10
+factor_processes_method = "analytical"
+aggregation_method = "integral"
+character_idx = torch.arange(0, 19).repeat(15).int()
+log_prob, wide_pred_one_hot, chars = self.predict(
+	order=order,
+	sequence=sequence,
+	factor_samples=factor_samples,
+	character_idx=character_idx,
+	factor_processes_method=factor_processes_method,
+	aggregation_method=aggregation_method,
+	return_cumulative=True
 )
-# then we add the values
-variables = {
-	k: true_values[k] for k in
-	["observation_variance", "loadings", "smgp_scaling", "smgp_factors"]
-}
-self.set(**variables)
-self.generate_local_variables()
+
+nr = settings["n_repetitions"]
+nc = settings["n_characters"]
+target_ = target[:nc, :].unsqueeze(1).repeat(1, nr, 1)
+
+# number of col/row errors
+hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
+# total accuracy
+acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
+
+x = np.arange(1, 16)
+
+
+
+fig, axs = plt.subplots(2, 2, sharex="all", figsize=(8, 6))
+# hamming
+axs[0, 0].plot(x, 38 - hamming.cpu())
+axs[0, 0].set_ylabel("Nb. correct rows/cols")
+axs[0, 0].set_title(f"factor method={factor_processes_method}\nagg method={aggregation_method}\n"
+					f"factor_samples={factor_samples}\nn_posterior=10")
+axs[0, 0].set_xticks(np.arange(1, 16, 2))
+axs[0, 0].axhline(38, color="k", linestyle="--")
+
+# accuracy
+axs[1, 0].plot(x, acc.cpu())
+axs[1, 0].set_ylabel("Correct predictions")
+axs[1, 0].axhline(19, color="k", linestyle="--")
+
+# accuracy
+axs[0, 1].plot(x, log_prob[0, :, :].cpu())
+axs[0, 1].set_ylabel("log probability")
+
+# accuracy
+axs[1, 1].plot(x, log_prob[16, :, :].cpu())
+axs[1, 1].set_ylabel("log probability")
+axs[1, 1].set_title("Sequence 16")
+
+
+plt.tight_layout()
+fig.savefig(f"{dir_figures}/prediction/{factor_processes_method}_{aggregation_method}_{factor_samples}.pdf")
 # -----------------------------------------------------------------------------
-
-
 
 
 
@@ -105,22 +141,6 @@ for k, v in rhat.data_vars.items():
 	ax.set_ylabel("$\widehat{R}$")
 	fig.savefig(f"{dir_figures}rhat/{k}.pdf")
 	plt.close(fig)
-# -----------------------------------------------------------------------------
-
-
-
-# =============================================================================
-# Plot LLK
-fig, ax = plt.subplots()
-df = pd.DataFrame(results.chains["log_likelihood.observations"].cpu().T)
-sns.lineplot(
-	data=df
-)
-ax.set_ylim(-460_000, -454_000)
-ax.set_xticks(np.arange(0, 25_000, 5_000), np.arange(0, 250_000, 50_000))
-ax.axhline(y=true_values["observation_log_likelihood"], color="black")
-ax.set_title("Obs. log-likelihood")
-fig.savefig(f"{dir_figures}obsrevation_log_likelihood.pdf")
 
 # plot loadings
 for k in range(3):
@@ -132,105 +152,25 @@ for k in range(3):
 
 
 
-
-
-
 # =============================================================================
-# Prediction
-self = results.to_predict(n_samples=1000)
-factor_samples = 10
-log_probs, pred_one_hot = self.predict(order, sequence, factor_samples)
+# Plot LLK
+results = MCMCResults.from_files(
+	[dir_chains + f"seed{chain}.chain" for chain in chains],
+	warmup=0,
+	thin=10
+)
 
-# Hamming (2.43 -> about one swap)
-(pred_one_hot != target).double().sum(1).mean().item()
-
-# Accuracy (14.5%)
-(pred_one_hot == target).all(1).double().mean().item()
-
-# Recall (39.25%)
-(pred_one_hot == target)[target==1].double().mean().item()
-
-# At least one correct (64%)
-(pred_one_hot == target)[:, :3].all(1).double().mean().item() + \
-(pred_one_hot == target)[:, 3:].all(1).double().mean().item() - \
-(pred_one_hot == target).all(1).double().mean().item()
-
-# aggregate over repetitions
-nr = settings["n_repetitions"]
-nc = settings["n_characters"]
-log_probs_rep = torch.cat([
-	log_probs[i::nc, :].unsqueeze(0)
-	for i in range(nc)
-])
-agg_log_probs = log_probs_rep.cumsum(1)
-agg_pred_id = agg_log_probs.argmax(2)
-agg_pred_one_hot = self.combinations[agg_pred_id, :]
-target_ = target[:nc, :].unsqueeze(1).repeat(1, nr, 1)
-
-# number of col/row errors
-(agg_pred_one_hot != target_).double().sum(2).sum(0) / 2
-# total accuracy
-(agg_pred_one_hot == target_).all(2).double().sum(0)
-
-character_idx = torch.arange(nc).repeat(nr)
+fig, ax = plt.subplots()
+df = pd.DataFrame(results.chains["log_likelihood.observations"].cpu().T)
+sns.lineplot(
+	data=df
+)
+ax.set_ylim(-460_000, -454_000)
+ax.set_xticks(np.arange(0, 2000, 500), np.arange(0, 20000, 5000))
+ax.axhline(y=true_values["observation_log_likelihood"], color="black")
+ax.set_title("Obs. log-likelihood")
+fig.savefig(f"{dir_figures}obsrevation_log_likelihood.pdf")
 # -----------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# tmp
-llks = dict()
-for chain in chains:
-	with open(dir_chains + f"seed{chain}.chain", "rb") as f:
-		result = pickle.load(f)
-		llks[chain] = result["log_likelihood"]
-
-tllk = true_values["observation_log_likelihood"]
-
-fig, ax = plt.subplots()
-for chain, llk in llks.items():
-	ax.plot(llk["observations"], label=chain, c=f"C{chain}")
-ax.set_title("observation log-likelihood")
-ax.legend(title="chain")
-ax.axhline(tllk, c="k", ls="--")
-ax.set_ylim(-120000, -110000)
-fig.savefig(f"{dir_figures}/llk.pdf")
-plt.close(fig)
-
-
-fig, ax = plt.subplots()
-for chain, llk in llks.items():
-	ax.plot(np.abs(np.array(llk["observations"]) - tllk), label=chain, c=f"C{chain}")
-ax.set_title("observation log-likelihood absdiff")
-ax.legend(title="chain")
-ax.set_yscale("log")
-fig.savefig(f"{dir_figures}/llk_absdiff.pdf")
-plt.close(fig)
-
-
-
-
-file = "/home/simon/Documents/BCI/experiments/test3/chains/seed0.chain"
-
-
-
 
 
 
@@ -289,55 +229,5 @@ for var, metric in var_metric_list:
 	fig.savefig(f"{dir_figures}/{var}.{metric}.pdf")
 	plt.close(fig)
 # -----------------------------------------------------------------------------
-
-
-
-
-# =============================================================================
-# arViz
-import pandas as pd
-
-# rhat after drop burnin
-rhat = az.rhat(self.chains_cat.sel(draw=slice(100000, None, 10)))
-
-rhat_value = []
-rhat_varname = []
-for varname, var in rhat.items():
-	if varname == "observation_log_likelihood":
-		continue
-	values = var.values.flatten().tolist()
-	rhat_value.extend(values)
-	rhat_varname.extend([varname] * len(values))
-rhat_varname.extend(["all"] * len(rhat_value))
-rhat_value.extend(rhat_value)
-rhat_pd = pd.DataFrame({
-	"rhat": rhat_value,
-	"variable": rhat_varname
-})
-axs = rhat_pd.hist(by="variable", figsize=(12, 12))
-plt.tight_layout()
-plt.savefig(f"{dir_figures}/rhat/all.pdf")
-
-for vname in [
-	"smgp_scaling.target_signal",
-	"smgp_scaling.mixing_process",
-	"smgp_scaling.nontarget_process",
-	"smgp_scaling.target_process",
-	"smgp_factors.target_signal",
-	"smgp_factors.mixing_process",
-	"smgp_factors.nontarget_process",
-	"smgp_factors.target_process",
-]:
-	plt.clf()
-	plt.figure(figsize=(8, 4))
-	plt.plot(rhat[vname].T)
-	plt.title(vname)
-	plt.xlabel("time since stimulus onset")
-	plt.ylabel("rhat")
-	plt.tight_layout()
-	plt.savefig(f"{dir_figures}/rhat/{vname}.pdf")
-# -----------------------------------------------------------------------------
-
-
 
 
