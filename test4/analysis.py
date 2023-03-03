@@ -44,7 +44,11 @@ results = MCMCResults.from_files(
 	warmup=10_000,
 	thin=1
 )
+results.align()
+results.add_transformed_variables()
 # -----------------------------------------------------------------------------
+
+
 
 
 
