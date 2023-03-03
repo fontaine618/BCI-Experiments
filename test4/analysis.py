@@ -51,6 +51,109 @@ results.add_transformed_variables()
 
 
 
+# =============================================================================
+data = results.to_arviz()
+rhat = az.rhat(data)
+ess = az.ess(data)
+true_values = _flatten_dict(true_values)
+_add_transformed_variables(true_values)
+# -----------------------------------------------------------------------------
+
+
+
+# =============================================================================
+# Plot RHAT
+xmin = 0.95
+xmax = 2.3
+
+for k, v in rhat.data_vars.items():
+	fig, ax = plt.subplots()
+	vv = v.values
+	if v.shape:
+		if v.shape[0] == 3:
+			vv = vv.T
+		if len(v.shape) == 3:
+			vv = np.moveaxis(vv, 2, 0).reshape(3, -1).T
+	else:
+		vv = vv.reshape(1, -1)
+	df = pd.DataFrame(vv)
+	sns.histplot(df, ax=ax, bins=np.linspace(xmin, xmax, 28),
+				 multiple="stack", shrink=0.8, edgecolor="white")
+	ax.set_xlim(xmin, xmax)
+	ax.set_title(k)
+	ax.set_ylabel("$\widehat{R}$")
+	fig.savefig(f"{dir_figures}rhat/{k}.pdf")
+	plt.close(fig)
+
+# plot loadings
+for k in range(3):
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="loadings.norm_one", coords={"loadings.norm_one_dim_1": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/loadings_norm_one_{k}.pdf")
+	plt.cla()
+
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="loadings.times_shrinkage", coords={"loadings.times_shrinkage_dim_1": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/loadings_times_shrinkage_{k}.pdf")
+	plt.cla()
+
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="loadings", coords={"loadings_dim_1": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/loadings_{k}.pdf")
+	plt.cla()
+
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="smgp_factors.target_signal", coords={"smgp_factors.target_signal_dim_0": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/smgp_factors_target_signal_{k}.pdf")
+	plt.cla()
+
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="smgp_factors.nontarget_process", coords={"smgp_factors.nontarget_process_dim_0": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/smgp_factors_nontarget_process_{k}.pdf")
+	plt.cla()
+
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="smgp_factors.mixing_process", coords={"smgp_factors.mixing_process_dim_0": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/smgp_factors_mixing_process_{k}.pdf")
+	plt.cla()
+
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="smgp_scaling.target_signal", coords={"smgp_scaling.target_signal_dim_0": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/smgp_scaling_target_signal_{k}.pdf")
+	plt.cla()
+
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="smgp_scaling.nontarget_process", coords={"smgp_scaling.nontarget_process_dim_0": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/smgp_scaling_nontarget_process_{k}.pdf")
+	plt.cla()
+
+	fig, ax = plt.subplots()
+	axs = az.plot_forest(data, var_names="smgp_scaling.mixing_process", coords={"smgp_scaling.mixing_process_dim_0": k},
+						 show=False, ax=ax)
+	fig.savefig(f"{dir_figures}/posterior/smgp_scaling_mixing_process_{k}.pdf")
+	plt.cla()
+
+
+
+fig, ax = plt.subplots()
+axs = az.plot_forest(data, var_names="shrinkage_factor", show=False, ax=ax)
+fig.savefig(f"{dir_figures}/posterior/shrinkage_factor.pdf")
+plt.cla()
+# -----------------------------------------------------------------------------
+
+
+
+
+
+
 
 # =============================================================================
 # New prediction class
@@ -112,48 +215,6 @@ fig.savefig(f"{dir_figures}/prediction/{factor_processes_method}_{aggregation_me
 
 
 
-# =============================================================================
-data = results.to_arviz()
-rhat = az.rhat(data)
-ess = az.ess(data)
-true_values = _flatten_dict(true_values)
-_add_transformed_variables(true_values)
-# -----------------------------------------------------------------------------
-
-
-
-# =============================================================================
-# Plot RHAT
-xmin = 0.95
-xmax = 2.3
-
-for k, v in rhat.data_vars.items():
-	fig, ax = plt.subplots()
-	vv = v.values
-	if v.shape:
-		if v.shape[0] == 3:
-			vv = vv.T
-		if len(v.shape) == 3:
-			vv = np.moveaxis(vv, 2, 0).reshape(3, -1).T
-	else:
-		vv = vv.reshape(1, -1)
-	df = pd.DataFrame(vv)
-	sns.histplot(df, ax=ax, bins=np.linspace(xmin, xmax, 28),
-				 multiple="stack", shrink=0.8, edgecolor="white")
-	ax.set_xlim(xmin, xmax)
-	ax.set_title(k)
-	ax.set_ylabel("$\widehat{R}$")
-	fig.savefig(f"{dir_figures}rhat/{k}.pdf")
-	plt.close(fig)
-
-# plot loadings
-for k in range(3):
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="loadings", coords={"loadings_dim_1": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/loadings_{k}.pdf")
-# -----------------------------------------------------------------------------
-
 
 
 # =============================================================================
@@ -175,9 +236,6 @@ ax.axhline(y=true_values["observation_log_likelihood"], color="black")
 ax.set_title("Obs. log-likelihood")
 fig.savefig(f"{dir_figures}obsrevation_log_likelihood.pdf")
 # -----------------------------------------------------------------------------
-
-
-
 
 
 

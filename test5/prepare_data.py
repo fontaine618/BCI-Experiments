@@ -118,6 +118,7 @@ which = torch.randint(0, 2, (n_channels, latent_dim, ))
 heterogeneities = which*2+0.5
 z = torch.randn_like(heterogeneities)
 loadings = which * z / z.abs()
+loadings /=  shrinkage_factor.reshape(1, -1)
 
 # noise observation_variance
 observation_variance = torch.ones(n_channels)
@@ -133,10 +134,10 @@ model.variables["smgp_factors"].target_process.data = smgp_factor_target
 model.variables["smgp_factors"].nontarget_process.data = smgp_factor_nontarget
 model.variables["smgp_factors"].mixing_process.data = smgp_factor_mixing
 
-model.variables["heterogeneities"].data = heterogeneities
+model.variables["heterogeneities"].data = heterogeneities.pow(-2)
 model.variables["loadings"].data = loadings
 model.variables["observation_variance"].data = observation_variance
-model.variables["shrinkage_factor"].data = shrinkage_factor
+model.variables["shrinkage_factor"].data = shrinkage_factor.pow(2.)
 
 # generate the rest
 model.variables["loading_processes"].generate()
