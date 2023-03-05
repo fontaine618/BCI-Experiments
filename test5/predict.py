@@ -16,7 +16,7 @@ dir_train = dir + "data/train/"
 dir_test = dir + "data/test/"
 dir_chains = dir + "chains/"
 dir_figures = dir + "figures/"
-dir_results = dir + "results/posterior_mean/"
+dir_results = dir + "results/analytical/"
 
 with open(dir_train + "order.pkl", "rb") as f:
 	train_order = pickle.load(f)
@@ -41,7 +41,7 @@ with open(dir_test + "sequence.pkl", "rb") as f:
 n = int(sys.argv[1])
 
 factor_samples = 1
-factor_processes_method = "posterior_mean"
+factor_processes_method = "analytical"
 aggregation_method = "product"
 return_cumulative = True
 n_samples = 100
