@@ -16,7 +16,7 @@ dir_train = dir + "data/train/"
 dir_test = dir + "data/test/"
 dir_chains = dir + "chains/"
 dir_figures = dir + "figures/"
-dir_results = dir + "results/"
+dir_results = dir + "results/posterior_mean/"
 
 with open(dir_train + "order.pkl", "rb") as f:
 	train_order = pickle.load(f)
@@ -39,6 +39,11 @@ with open(dir_test + "sequence.pkl", "rb") as f:
 	test_sequence = pickle.load(f)
 
 n = int(sys.argv[1])
+
+factor_samples = 1
+factor_processes_method = "posterior_mean"
+aggregation_method = "product"
+return_cumulative = True
 # -----------------------------------------------------------------------------
 
 
@@ -64,12 +69,8 @@ nc = 20
 order = train_order
 sequence = train_sequence
 target = train_target
-return_cumulative = True
 
 self = results.to_predict(n_samples=10)
-factor_samples = 10
-factor_processes_method = "analytical"
-aggregation_method = "product"
 character_idx = torch.arange(0, nc).repeat_interleave(nr).int()
 
 _, wide_pred_one_hot, _ = self.predict(
@@ -106,12 +107,8 @@ nc = 100
 order = test_order
 sequence = test_sequence
 target = test_target
-return_cumulative = True
 
 self = results.to_predict(n_samples=10)
-factor_samples = 10
-factor_processes_method = "analytical"
-aggregation_method = "product"
 character_idx = torch.arange(0, nc).repeat_interleave(nr).int()
 
 _, wide_pred_one_hot, _ = self.predict(
