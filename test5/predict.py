@@ -44,6 +44,7 @@ factor_samples = 1
 factor_processes_method = "posterior_mean"
 aggregation_method = "product"
 return_cumulative = True
+n_samples = 100
 # -----------------------------------------------------------------------------
 
 
@@ -70,7 +71,7 @@ order = train_order
 sequence = train_sequence
 target = train_target
 
-self = results.to_predict(n_samples=10)
+self = results.to_predict(n_samples=n_samples)
 character_idx = torch.arange(0, nc).repeat_interleave(nr).int()
 
 _, wide_pred_one_hot, _ = self.predict(
@@ -108,7 +109,7 @@ order = test_order
 sequence = test_sequence
 target = test_target
 
-self = results.to_predict(n_samples=10)
+self = results.to_predict(n_samples=n_samples)
 character_idx = torch.arange(0, nc).repeat_interleave(nr).int()
 
 _, wide_pred_one_hot, _ = self.predict(
