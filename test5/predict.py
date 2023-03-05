@@ -66,14 +66,13 @@ sequence = train_sequence
 target = train_target
 return_cumulative = True
 
-self = results[n].to_predict(n_samples=10)
+self = results.to_predict(n_samples=10)
 factor_samples = 10
 factor_processes_method = "analytical"
 aggregation_method = "product"
-# character_idx = torch.arange(0, nc).repeat(nr).int()
 character_idx = torch.arange(0, nc).repeat_interleave(nr).int()
 
-log_prob, wide_pred_one_hot, chars = self.predict(
+_, wide_pred_one_hot, _ = self.predict(
 	order=order,
 	sequence=sequence,
 	factor_samples=factor_samples,
@@ -88,9 +87,9 @@ hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
 acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
 
 df = pd.DataFrame({
-	"hamming": hamming,
-	"acc": acc
-}, index=range(1, nr))
+	"hamming": hamming.cpu(),
+	"acc": acc.cpu()
+}, index=range(1, nr+1))
 
 
 df.to_csv(dir_results + f"train_nrep{n:02}.csv")
@@ -109,14 +108,13 @@ sequence = test_sequence
 target = test_target
 return_cumulative = True
 
-self = results[n].to_predict(n_samples=10)
+self = results.to_predict(n_samples=10)
 factor_samples = 10
 factor_processes_method = "analytical"
 aggregation_method = "product"
-# character_idx = torch.arange(0, nc).repeat(nr).int()
 character_idx = torch.arange(0, nc).repeat_interleave(nr).int()
 
-log_prob, wide_pred_one_hot, chars = self.predict(
+_, wide_pred_one_hot, _ = self.predict(
 	order=order,
 	sequence=sequence,
 	factor_samples=factor_samples,
@@ -131,9 +129,9 @@ hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
 acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
 
 df = pd.DataFrame({
-	"hamming": hamming,
-	"acc": acc
-}, index=range(1, nr))
+	"hamming": hamming.cpu(),
+	"acc": acc.cpu()
+}, index=range(1, nr+1))
 
 
 df.to_csv(dir_results + f"test_nrep{n:02}.csv")
