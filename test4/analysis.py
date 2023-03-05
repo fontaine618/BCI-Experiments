@@ -2,10 +2,9 @@ import torch
 import numpy as np
 import arviz as az
 import pickle
-from src.results import MCMCResults, _add_transformed_variables, _flatten_dict
+from src.results import MCMCResults, add_transformed_variables, _flatten_dict
 # from src.results_old import MCMCResults
 # from src.results_old import MCMCMultipleResults
-from src.bffmbci import BFFModel
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -15,7 +14,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-chains = [0, 1, 2, 3, 4]
+chains = [0, 2, 3, 4]
 
 # paths
 dir = "/home/simon/Documents/BCI/experiments/test4/"
@@ -44,8 +43,19 @@ results = MCMCResults.from_files(
 	warmup=10_000,
 	thin=1
 )
-results.align()
+
+true_values = _flatten_dict(true_values)
+add_transformed_variables(true_values)
+
+loadings=true_values["loadings"]
+self=results
+
+results.align(loadings=true_values["loadings"])
 results.add_transformed_variables()
+
+for k, v in results.metrics(true_values).items():
+	for m, vv in v.items():
+		print(f"{k:30s} {m:30s} {vv}")
 # -----------------------------------------------------------------------------
 
 
@@ -54,9 +64,6 @@ results.add_transformed_variables()
 # =============================================================================
 data = results.to_arviz()
 rhat = az.rhat(data)
-ess = az.ess(data)
-true_values = _flatten_dict(true_values)
-_add_transformed_variables(true_values)
 # -----------------------------------------------------------------------------
 
 
@@ -84,74 +91,98 @@ for k, v in rhat.data_vars.items():
 	ax.set_ylabel("$\widehat{R}$")
 	fig.savefig(f"{dir_figures}rhat/{k}.pdf")
 	plt.close(fig)
-
-# plot loadings
-for k in range(3):
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="loadings.norm_one", coords={"loadings.norm_one_dim_1": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/loadings_norm_one_{k}.pdf")
-	plt.cla()
-
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="loadings.times_shrinkage", coords={"loadings.times_shrinkage_dim_1": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/loadings_times_shrinkage_{k}.pdf")
-	plt.cla()
-
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="loadings", coords={"loadings_dim_1": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/loadings_{k}.pdf")
-	plt.cla()
-
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="smgp_factors.target_signal", coords={"smgp_factors.target_signal_dim_0": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/smgp_factors_target_signal_{k}.pdf")
-	plt.cla()
-
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="smgp_factors.nontarget_process", coords={"smgp_factors.nontarget_process_dim_0": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/smgp_factors_nontarget_process_{k}.pdf")
-	plt.cla()
-
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="smgp_factors.mixing_process", coords={"smgp_factors.mixing_process_dim_0": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/smgp_factors_mixing_process_{k}.pdf")
-	plt.cla()
-
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="smgp_scaling.target_signal", coords={"smgp_scaling.target_signal_dim_0": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/smgp_scaling_target_signal_{k}.pdf")
-	plt.cla()
-
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="smgp_scaling.nontarget_process", coords={"smgp_scaling.nontarget_process_dim_0": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/smgp_scaling_nontarget_process_{k}.pdf")
-	plt.cla()
-
-	fig, ax = plt.subplots()
-	axs = az.plot_forest(data, var_names="smgp_scaling.mixing_process", coords={"smgp_scaling.mixing_process_dim_0": k},
-						 show=False, ax=ax)
-	fig.savefig(f"{dir_figures}/posterior/smgp_scaling_mixing_process_{k}.pdf")
-	plt.cla()
-
-
-
-fig, ax = plt.subplots()
-axs = az.plot_forest(data, var_names="shrinkage_factor", show=False, ax=ax)
-fig.savefig(f"{dir_figures}/posterior/shrinkage_factor.pdf")
-plt.cla()
 # -----------------------------------------------------------------------------
 
 
+# =============================================================================
+# Plot posterior
+from collections import defaultdict
+plt.rcParams['text.usetex'] = True
+
+def vname_to_expr(vname, dim=None):
+	out = defaultdict(lambda: vname, {
+		"smgp_factors.nontarget_process": f"$\\alpha^z_{{0,{dim}}}$",
+		"smgp_factors.mixing_process": f"$\\zeta^z_{{{dim}}}$",
+		"smgp_factors.target_process": f"$\\alpha^z_{{1,{dim}}}$",
+		"smgp_factors.difference_process": f"$\\beta^z_{{1,{dim}}}-\\beta^z_{{0,{dim}}}$",
+		"smgp_factors.target_signal": f"$\\beta^z_{{1,{dim}}}$",
+
+		"smgp_scaling.nontarget_process": f"$\\alpha^\\xi_{{0,{dim}}}$",
+		"smgp_scaling.mixing_process": f"$\\zeta^\\xi_{{{dim}}}$",
+		"smgp_scaling.target_process": f"$\\alpha^\\xi_{{1,{dim}}}$",
+		"smgp_scaling.target_signal": f"$\\beta^\\xi_{{1,{dim}}}$",
+		"smgp_scaling.nontarget_process_centered": f"$\\alpha^\\xi_{{0,{dim}}}$ (centered)",
+		"smgp_scaling.target_multiplier_process":
+			f"$1+\\zeta^\\xi_{{{dim}}}\\alpha^\\xi_{{1,{dim}}}/\\alpha^\\xi_{{0,{dim}}}$",
+
+		"heterogeneities": f"$\\phi_{{\cdot{dim}}}$",
+		"loadings": f"$\\Theta_{{\cdot{dim}}}$",
+		"loadings.norm_one": f"$\\Theta_{{\cdot{dim}}} / \\Vert\\Theta_{{\cdot{dim}}}\\Vert_2$",
+		"loadings.times_shrinkage": f"$\\tau_{dim}^{{1/2}}\\Theta_{{\cdot{dim}}}$",
+
+		"observation_variance": "$\\sigma_e^2$",
+		"shrinkage_factor": "$\\tau_k$",
+		"log_likelihood.observations": "log-likelihood",
+		"scaling_factor": "scaling factor",
+	})[vname]
+	return out
 
 
+for vname in [
+	"smgp_factors.nontarget_process",
+	"smgp_factors.target_process",
+	"smgp_factors.mixing_process",
+	"smgp_factors.target_signal",
+	"smgp_factors.difference_process",
+
+	"smgp_scaling.nontarget_process",
+	"smgp_scaling.target_process",
+	"smgp_scaling.mixing_process",
+	"smgp_scaling.target_signal",
+	"smgp_scaling.nontarget_process_centered",
+	"smgp_scaling.target_multiplier_process"
+]:
+	plt.cla()
+	fig, axs = plt.subplots(3, 1, sharex="all", sharey="all", figsize=(5, 10))
+	for k, ax in enumerate(axs):
+		az.plot_forest(data, var_names=vname, coords={f"{vname}_dim_0": k}, show=False, ax=ax)
+		title = vname_to_expr(vname, k+1)
+		ax.set_title(title)
+		ax.set_yticklabels(range(20, 0, -1))
+	plt.tight_layout()
+	fig.savefig(f"{dir_figures}/posterior/{vname}.pdf")
+
+for vname in [
+	"heterogeneities",
+	"loadings",
+	"loadings.norm_one",
+	"loadings.times_shrinkage",
+]:
+	plt.cla()
+	fig, axs = plt.subplots(3, 1, sharex="all", sharey="all", figsize=(5, 10))
+	for k, ax in enumerate(axs):
+		az.plot_forest(data, var_names=vname, coords={f"{vname}_dim_1": k}, show=False, ax=ax)
+		title = vname_to_expr(vname, k+1)
+		ax.set_title(title)
+		ax.set_yticklabels(range(15, 0, -1))
+	plt.tight_layout()
+	fig.savefig(f"{dir_figures}/posterior/{vname}.pdf")
+
+for vname in [
+	"observation_variance",
+	"shrinkage_factor",
+	"log_likelihood.observations",
+	"scaling_factor"
+]:
+	plt.cla()
+	fig, ax = plt.subplots(figsize=(5, 5))
+	az.plot_forest(data, var_names=vname, show=False, ax=ax)
+	title = vname_to_expr(vname)
+	ax.set_title(title)
+	ax.set_yticklabels([])
+	plt.tight_layout()
+	fig.savefig(f"{dir_figures}/posterior/{vname}.pdf")
+# -----------------------------------------------------------------------------
 
 
 
@@ -230,66 +261,12 @@ df = pd.DataFrame(results.chains["log_likelihood.observations"].cpu().T)
 sns.lineplot(
 	data=df
 )
-ax.set_ylim(-460_000, -454_000)
+ax.set_ylim(-456_000, -454_000)
 ax.set_xticks(np.arange(0, 2000, 500), np.arange(0, 20000, 5000))
 ax.axhline(y=true_values["observation_log_likelihood"], color="black")
 ax.set_title("Obs. log-likelihood")
 fig.savefig(f"{dir_figures}obsrevation_log_likelihood.pdf")
 # -----------------------------------------------------------------------------
 
-
-
-
-
-
-# =============================================================================
-# LOAD CHAINS
-# TODO Update this
-results = {
-	seed: MCMCResults.load(
-		dir_chains + f"seed{seed}.chain"
-	)
-	for seed in chains
-}
-
-self = MCMCMultipleResults(results)
-# -----------------------------------------------------------------------------
-
-
-# =============================================================================
-# COMPUTE METRICS EVERY 1000 ITERATIONS
-metrics = {
-	seed: result.moving_metrics(true_values, 1)
-	for seed, result in results.items()
-}
-
-# get all metrics
-var_metric_list = set()
-for moving_metrics, meta in metrics.values():
-	for metrics_dict in moving_metrics.values():
-		for var, var_metrics in metrics_dict.items():
-			for metric in var_metrics.keys():
-				var_metric_list.add((var, metric))
-# -----------------------------------------------------------------------------
-
-
-# =============================================================================
-# PLOT METRIC FIGURES
-for var, metric in var_metric_list:
-	fig, ax = plt.subplots()
-	for chain_id, (moving_metrics, meta) in metrics.items():
-		x = [(m["lower"] + m["upper"])/2 for k, m in meta.items()]
-		x = np.array(x)
-		y = [m[var][metric] for k, m in moving_metrics.items()]
-		y = np.array(y)
-		ax.plot(x, y, label=chain_id, c=f"C{chain_id}")
-	ax.set_title(var)
-	ax.set_ylabel(metric)
-	ax.legend(title="chain")
-	if not (("likelihood" in var) or ("similarity" in metric)):
-		ax.set_yscale("log")
-	fig.savefig(f"{dir_figures}/{var}.{metric}.pdf")
-	plt.close(fig)
-# -----------------------------------------------------------------------------
 
 

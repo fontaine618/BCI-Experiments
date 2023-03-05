@@ -2,10 +2,9 @@ import torch
 import numpy as np
 import arviz as az
 import pickle
-from src.results import MCMCResults, _add_transformed_variables, _flatten_dict
+from src.results import MCMCResults, add_transformed_variables, _flatten_dict
 # from src.results_old import MCMCResults
 # from src.results_old import MCMCMultipleResults
-from src.bffmbci import BFFMPredict
 import matplotlib.pyplot as plt
 
 plt.style.use("seaborn-v0_8-whitegrid")
@@ -50,7 +49,7 @@ data = results.to_arviz()
 rhat = az.rhat(data)
 ess = az.ess(data)
 true_values = _flatten_dict(true_values)
-_add_transformed_variables(true_values)
+add_transformed_variables(true_values)
 # -----------------------------------------------------------------------------
 
 

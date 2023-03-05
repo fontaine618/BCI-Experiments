@@ -60,8 +60,8 @@ smgp_scaling_target = smgp_scaling_target * \
 						 (torch.sigmoid((t-1)*2)*torch.sigmoid((stimulus_window-t-10)/3)).reshape(1, -1)
 smgp_scaling_target = 1 + smgp_scaling_target * 0.5
 
-plt.plot(smgp_scaling_target.T.cpu().numpy())
-plt.show()
+# plt.plot(smgp_scaling_target.T.cpu().numpy())
+# plt.show()
 
 smgp_scaling_nontarget = torch.vstack([
 	-torch.sin(2 * torch.pi * (t - 2*i) / 12)
@@ -69,16 +69,16 @@ smgp_scaling_nontarget = torch.vstack([
 ])
 smgp_scaling_nontarget = 1 + smgp_scaling_nontarget * 0.2
 
-plt.plot(smgp_scaling_nontarget.T.cpu().numpy())
-plt.show()
+# plt.plot(smgp_scaling_nontarget.T.cpu().numpy())
+# plt.show()
 
 smgp_scaling_mixing = torch.vstack([
 	(torch.sigmoid((t-1-2*i))*torch.sigmoid((stimulus_window-t-10+2*i))).reshape(1, -1)
 	for i in range(latent_dim)
 ])
 
-plt.plot(smgp_scaling_mixing.T.cpu().numpy())
-plt.show()
+# plt.plot(smgp_scaling_mixing.T.cpu().numpy())
+# plt.show()
 
 
 # smgp_factor
@@ -91,8 +91,8 @@ smgp_factor_target = smgp_factor_target * \
 						 (torch.sigmoid((t-1)*2)*torch.sigmoid((stimulus_window-t-10)/3)).reshape(1, -1)
 smgp_factor_target = smgp_factor_target * 0.5
 
-plt.plot(smgp_factor_target.T.cpu().numpy())
-plt.show()
+# plt.plot(smgp_factor_target.T.cpu().numpy())
+# plt.show()
 
 smgp_factor_nontarget = torch.vstack([
 	-torch.sin(2 * torch.pi * (t - 2*i) / 12)
@@ -100,16 +100,16 @@ smgp_factor_nontarget = torch.vstack([
 ])
 smgp_factor_nontarget = smgp_factor_nontarget * 0.2
 
-plt.plot(smgp_factor_nontarget.T.cpu().numpy())
-plt.show()
+# plt.plot(smgp_factor_nontarget.T.cpu().numpy())
+# plt.show()
 
 smgp_factor_mixing = torch.vstack([
 	(torch.sigmoid((t-1-2*i))*torch.sigmoid((stimulus_window-t-10+2*i))).reshape(1, -1)
 	for i in range(latent_dim)
 ])
 
-plt.plot(smgp_factor_mixing.T.cpu().numpy())
-plt.show()
+# plt.plot(smgp_factor_mixing.T.cpu().numpy())
+# plt.show()
 
 
 # loadings
@@ -118,7 +118,7 @@ which = torch.randint(0, 2, (n_channels, latent_dim, ))
 heterogeneities = which*2+0.5
 z = torch.randn_like(heterogeneities)
 loadings = which * z / z.abs()
-loadings /=  shrinkage_factor.reshape(1, -1)
+loadings /= shrinkage_factor.reshape(1, -1)
 
 # noise observation_variance
 observation_variance = torch.ones(n_channels)
