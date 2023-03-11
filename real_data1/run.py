@@ -23,7 +23,7 @@ name = f"K{subject}_{session}_BCI_{type}"
 window = 800.0
 bandpass_window = (0.1, 15.0)
 bandpass_order = 2
-downsample = 4
+downsample = 8
 seed = int(sys.argv[1])
 n_iter = 20
 
@@ -102,7 +102,7 @@ for i in range(n_iter):
 # SAVE CHAIN
 # NB: use .chain to avoid VC-ing large objects
 dir_out = dir + "chains/" + name + "/"
-os.mkdirs(dir_out, exist_ok=True)
+os.makedirs(dir_out, exist_ok=True)
 out = model.results()
 with open(dir_out + f"seed{seed}.chain", "wb") as f:
     pickle.dump(out, f)
