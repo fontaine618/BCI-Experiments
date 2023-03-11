@@ -25,7 +25,7 @@ bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
 seed = int(sys.argv[1])
-n_iter = 20_000
+n_iter = 50_000
 
 eeg = KProtocol(
     filename=filename,
@@ -52,7 +52,7 @@ settings = {
 prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
-    "shrinkage_factor": (2., 3.),
+    "shrinkage_factor": (2., 5.),
     "kernel_gp_factor_processes": (0.95, 1., 1.),
     "kernel_tgp_factor_processes": (0.95, 0.5, 1.),
     "kernel_gp_loading_processes": (0.95, 1., 1.),
