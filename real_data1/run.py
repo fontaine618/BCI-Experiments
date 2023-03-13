@@ -25,7 +25,7 @@ bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
 seed = int(sys.argv[1])
-n_iter = 50_000
+n_iter = 20_000
 
 eeg = KProtocol(
     filename=filename,
@@ -107,3 +107,4 @@ out = model.results()
 with open(dir_out + f"seed{seed}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
+
