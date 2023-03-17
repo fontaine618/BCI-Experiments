@@ -14,7 +14,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-chains = [ 2, 3]
+chains = [1, ]
 
 # paths
 dir = "/home/simon/Documents/BCI/experiments/real_data1/"
@@ -26,7 +26,7 @@ dir_figures = dir + "figures/"
 # =============================================================================
 results = MCMCResults.from_files(
 	[dir_chains + f"seed{chain}.chain" for chain in chains],
-	warmup=10_000,
+	warmup=0,
 	thin=1
 )
 
@@ -37,6 +37,31 @@ results.add_transformed_variables()
 # -----------------------------------------------------------------------------
 
 
+
+n = 13879
+results.chains["log_likelihood.observations"][0, n-2]
+results.chains["loadings"][0, n-1, :, :]
+
+for k, v in results.chains.items():
+	print(k)
+	print(v[0, n-1, ...].abs().max())
+
+# first problem
+# loadings
+# tensor(nan)
+# smgp_scaling.nontarget_process
+# tensor(2.7188e+11)
+# smgp_scaling.target_process
+# tensor(4.3640)
+# smgp_scaling.mixing_process
+# tensor(1.)
+# smgp_factors.nontarget_process
+# tensor(nan)
+
+results.chains["smgp_scaling.nontarget_process"][0, n-1, ...]
+results.chains["smgp_scaling.mixing_process"][0, n-1, ...]
+results.chains["smgp_scaling.target_process"][0, n-1, ...]
+results.chains["loadings"][0, n-2, ...]
 
 
 # =============================================================================
@@ -127,6 +152,14 @@ for vname in [
 		title = vname_to_expr(vname, k+1)
 		ax.set_title(title)
 		ax.set_yticklabels(range(nt, 0, -1))
+		if vname in [
+			"smgp_scaling.nontarget_process",
+			"smgp_scaling.target_process",
+			"smgp_scaling.target_signal",
+			"smgp_scaling.nontarget_process_centered",
+			"smgp_scaling.target_multiplier_process"
+		]:
+			ax.set_xscale("log")
 	plt.tight_layout()
 	fig.savefig(f"{dir_figures}/posterior/{vname}.pdf")
 
