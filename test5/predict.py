@@ -122,7 +122,7 @@ target = test_target
 self = results.to_predict(n_samples=n_samples)
 character_idx = torch.arange(0, nc).repeat_interleave(nr).int()
 
-_, wide_pred_one_hot, _ = self.predict(
+log_prob, wide_pred_one_hot, _ = self.predict(
 	order=order,
 	sequence=sequence,
 	factor_samples=factor_samples,
