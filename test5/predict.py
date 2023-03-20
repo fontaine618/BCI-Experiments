@@ -5,6 +5,7 @@ import pickle
 from src.results import MCMCResults
 import matplotlib.pyplot as plt
 import pandas as pd
+from torch.distributions import Categorical
 
 plt.style.use("seaborn-v0_8-whitegrid")
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
@@ -41,7 +42,7 @@ with open(dir_test + "sequence.pkl", "rb") as f:
 n = int(sys.argv[1])
 
 factor_samples = 1
-factor_processes_method = "analytical"
+factor_processes_method = "posterior_mean"
 aggregation_method = "product"
 return_cumulative = True
 n_samples = 100
@@ -74,7 +75,7 @@ target = train_target
 self = results.to_predict(n_samples=n_samples)
 character_idx = torch.arange(0, nc).repeat_interleave(nr).int()
 
-_, wide_pred_one_hot, _ = self.predict(
+log_prob, wide_pred_one_hot, _ = self.predict(
 	order=order,
 	sequence=sequence,
 	factor_samples=factor_samples,
@@ -84,13 +85,22 @@ _, wide_pred_one_hot, _ = self.predict(
 	return_cumulative=return_cumulative
 )
 
+entropy = Categorical(logits=log_prob).entropy()
+
 target_ = target[::nr, :].unsqueeze(1).repeat(1, nr, 1)
 hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
 acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
 
+target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_))
+bce = (target36 * log_prob).sum(-1).mean(0)
+
 df = pd.DataFrame({
 	"hamming": hamming.cpu(),
-	"acc": acc.cpu()
+	"acc": acc.cpu(),
+	"max_entropy": entropy.max(0)[0].abs().cpu(),
+	"mean_entropy": entropy.mean(0).abs().cpu(),
+	"min_max_proba": log_prob.max(2)[0].min(0)[0].cpu().exp(),
+	"bce": bce.cpu()
 }, index=range(1, nr+1))
 
 
