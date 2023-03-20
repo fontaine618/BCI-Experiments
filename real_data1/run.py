@@ -84,6 +84,7 @@ while not status:
 
 # =============================================================================
 # RUN CHAIN
+torch.manual_seed(seed)
 t0 = time.time()
 t00 = t0
 for i in range(n_iter):
