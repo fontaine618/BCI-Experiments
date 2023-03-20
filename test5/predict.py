@@ -17,7 +17,7 @@ dir_train = dir + "data/train/"
 dir_test = dir + "data/test/"
 dir_chains = dir + "chains/"
 dir_figures = dir + "figures/"
-dir_results = dir + "results/analytical/"
+dir_results = dir + "results/posterior_mean/"
 
 with open(dir_train + "order.pkl", "rb") as f:
 	train_order = pickle.load(f)
@@ -132,13 +132,22 @@ _, wide_pred_one_hot, _ = self.predict(
 	return_cumulative=return_cumulative
 )
 
+entropy = Categorical(logits=log_prob).entropy()
+
 target_ = target[::nr, :].unsqueeze(1).repeat(1, nr, 1)
 hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
 acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
 
+target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_))
+bce = (target36 * log_prob).sum(-1).mean(0)
+
 df = pd.DataFrame({
 	"hamming": hamming.cpu(),
-	"acc": acc.cpu()
+	"acc": acc.cpu(),
+	"max_entropy": entropy.max(0)[0].abs().cpu(),
+	"mean_entropy": entropy.mean(0).abs().cpu(),
+	"min_max_proba": log_prob.max(2)[0].min(0)[0].cpu().exp(),
+	"bce": bce.cpu()
 }, index=range(1, nr+1))
 
 
