@@ -8,13 +8,14 @@ from src.results import MCMCResults, add_transformed_variables, _flatten_dict
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import networkx as nx
 
 plt.style.use("seaborn-v0_8-whitegrid")
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-chains = [1, ]
+chains = [4, ]
 
 # paths
 dir = "/home/simon/Documents/BCI/experiments/real_data1/"
@@ -26,7 +27,7 @@ dir_figures = dir + "figures/"
 # =============================================================================
 results = MCMCResults.from_files(
 	[dir_chains + f"seed{chain}.chain" for chain in chains],
-	warmup=0,
+	warmup=10_000,
 	thin=1
 )
 
@@ -38,35 +39,10 @@ results.add_transformed_variables()
 
 
 
-n = 13879
-results.chains["log_likelihood.observations"][0, n-2]
-results.chains["loadings"][0, n-1, :, :]
-
-for k, v in results.chains.items():
-	print(k)
-	print(v[0, n-1, ...].abs().max())
-
-# first problem
-# loadings
-# tensor(nan)
-# smgp_scaling.nontarget_process
-# tensor(2.7188e+11)
-# smgp_scaling.target_process
-# tensor(4.3640)
-# smgp_scaling.mixing_process
-# tensor(1.)
-# smgp_factors.nontarget_process
-# tensor(nan)
-
-results.chains["smgp_scaling.nontarget_process"][0, n-1, ...]
-results.chains["smgp_scaling.mixing_process"][0, n-1, ...]
-results.chains["smgp_scaling.target_process"][0, n-1, ...]
-results.chains["loadings"][0, n-2, ...]
-
-
 # =============================================================================
 data = results.to_arviz()
 rhat = az.rhat(data)
+ess = az.ess(data)
 # -----------------------------------------------------------------------------
 
 
@@ -97,6 +73,34 @@ for k, v in rhat.data_vars.items():
 # -----------------------------------------------------------------------------
 
 
+
+# =============================================================================
+# Plot ESS
+xmin = 1
+xmax = 10_000
+
+for k, v in ess.data_vars.items():
+	fig, ax = plt.subplots()
+	vv = v.values
+	if v.shape:
+		if v.shape[0] == latent_dim:
+			vv = vv.T
+		if len(v.shape) == 3:
+			vv = np.moveaxis(vv, 2, 0).reshape(latent_dim, -1).T
+	else:
+		vv = vv.reshape(1, -1)
+	df = pd.DataFrame(vv)
+	sns.histplot(df, ax=ax, bins=np.logspace(np.log10(xmin), np.log10(xmax), 21),
+				 multiple="stack", shrink=0.8, edgecolor="white")
+	ax.set_xlim(xmin, xmax)
+	ax.set_title(k)
+	ax.set_ylabel("ESS")
+	ax.set_xscale("log")
+	fig.savefig(f"{dir_figures}ess/{k}.pdf")
+	plt.close(fig)
+# -----------------------------------------------------------------------------
+
+
 # =============================================================================
 # Plot posterior
 from collections import defaultdict
@@ -116,7 +120,7 @@ def vname_to_expr(vname, dim=None):
 		"smgp_scaling.target_signal": f"$\\beta^\\xi_{{1,{dim}}}$",
 		"smgp_scaling.nontarget_process_centered": f"$\\alpha^\\xi_{{0,{dim}}}$ (centered)",
 		"smgp_scaling.target_multiplier_process":
-			f"$1+\\zeta^\\xi_{{{dim}}}\\alpha^\\xi_{{1,{dim}}}/\\alpha^\\xi_{{0,{dim}}}$",
+			f"$1+\\zeta^\\xi_{{{dim}}}\\delta^\\xi_{{1,{dim}}}/\\alpha^\\xi_{{0,{dim}}}$",
 
 		"heterogeneities": f"$\\phi_{{\cdot{dim}}}$",
 		"loadings": f"$\\Theta_{{\cdot{dim}}}$",
@@ -153,10 +157,10 @@ for vname in [
 		ax.set_title(title)
 		ax.set_yticklabels(range(nt, 0, -1))
 		if vname in [
-			"smgp_scaling.nontarget_process",
-			"smgp_scaling.target_process",
-			"smgp_scaling.target_signal",
-			"smgp_scaling.nontarget_process_centered",
+			# "smgp_scaling.nontarget_process",
+			# "smgp_scaling.target_process",
+			# "smgp_scaling.target_signal",
+			# "smgp_scaling.nontarget_process_centered",
 			"smgp_scaling.target_multiplier_process"
 		]:
 			ax.set_xscale("log")
@@ -198,69 +202,56 @@ for vname in [
 
 
 # =============================================================================
-# New prediction class
-self = results.to_predict(n_samples=10)
-factor_samples = 10
-factor_processes_method = "analytical"
-aggregation_method = "integral"
-character_idx = torch.arange(0, 19).repeat(15).int()
-log_prob, wide_pred_one_hot, chars = self.predict(
-	order=order,
-	sequence=sequence,
-	factor_samples=factor_samples,
-	character_idx=character_idx,
-	factor_processes_method=factor_processes_method,
-	aggregation_method=aggregation_method,
-	return_cumulative=True
-)
+# Plot Networks
+channel_names = ['F3', 'Fz', 'F4', 'T7', 'C3', 'Cz', 'C4', 'T8',
+                       'CP3', 'CP4', 'P3', 'Pz', 'P4', 'PO7', 'PO8', 'Oz']
 
-nr = settings["n_repetitions"]
-nc = settings["n_characters"]
-target_ = target[:nc, :].unsqueeze(1).repeat(1, nr, 1)
+pos = {
+    'F3': (1, 4),
+    'Fz': (2, 4),
+    'F4': (3, 4),
+    'T7': (0, 3),
+    'C3': (1, 3),
+    'Cz': (2, 3),
+    'C4': (3, 3),
+    'T8': (4, 3),
+    'CP3': (1, 2),
+    'CP4': (3, 2),
+    'P3': (1, 1),
+    'Pz': (2, 1),
+    'P4': (3, 1),
+    'PO7': (1, 0),
+    'Oz': (2, 0),
+    'PO8': (3, 0),
+}
 
-# number of col/row errors
-hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
-# total accuracy
-acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
-
-x = np.arange(1, 16)
-
-
-
-fig, axs = plt.subplots(2, 2, sharex="all", figsize=(8, 6))
-# hamming
-axs[0, 0].plot(x, 38 - hamming.cpu())
-axs[0, 0].set_ylabel("Nb. correct rows/cols")
-axs[0, 0].set_title(f"factor method={factor_processes_method}\nagg method={aggregation_method}\n"
-					f"factor_samples={factor_samples}\nn_posterior=10")
-axs[0, 0].set_xticks(np.arange(1, 16, 2))
-axs[0, 0].axhline(38, color="k", linestyle="--")
-
-# accuracy
-axs[1, 0].plot(x, acc.cpu())
-axs[1, 0].set_ylabel("Correct predictions")
-axs[1, 0].axhline(19, color="k", linestyle="--")
-
-# accuracy
-axs[0, 1].plot(x, log_prob[0, :, :].cpu())
-axs[0, 1].set_ylabel("log probability")
-
-# accuracy
-axs[1, 1].plot(x, log_prob[16, :, :].cpu())
-axs[1, 1].set_ylabel("log probability")
-axs[1, 1].set_title("Sequence 16")
-
-
-plt.tight_layout()
-fig.savefig(f"{dir_figures}/prediction/{factor_processes_method}_{aggregation_method}_{factor_samples}.pdf")
+for k in range(latent_dim):
+	component = results.chains["loadings"][0, :, :, k].mean(0).reshape(-1, 1)
+	network = component @ component.T
+	edgelist = torch.tril_indices(16, 16, offset=-1)
+	weights = network[edgelist[0], edgelist[1]]
+	G = nx.from_edgelist(edgelist.T.cpu().numpy(), create_using=nx.DiGraph)
+	for i, (u, v) in enumerate(G.edges()):
+		G.edges[u, v]['weight'] = weights[i].item()
+	G = nx.relabel_nodes(G, {i: channel_names[i] for i in range(16)})
+	G.edges(data=True)
+	plt.cla()
+	nx.draw_networkx_nodes(G, pos=pos, node_size=600, node_color='k', edgecolors='w', linewidths=2)
+	nx.draw_networkx_edges(G, pos=pos, width=weights.abs().cpu().numpy() / 50,
+						   edge_color=["b" if w > 0 else "r" for w in weights],
+						   connectionstyle='arc3, rad=0.1', arrowsize=20, arrowstyle='-')
+	nx.draw_networkx_labels(G, pos=pos, font_size=12, font_color='w', font_weight='bold')
+	plt.axis('off')
+	plt.title(f"Network {k+1}")
+	plt.tight_layout()
+	plt.savefig(f"{dir_figures}posterior/network_{k+1}.pdf")
 # -----------------------------------------------------------------------------
-
-
-
 
 
 # =============================================================================
 # Plot LLK
+chains = [0, 1, 2, 3, 4]
+
 results = MCMCResults.from_files(
 	[dir_chains + f"seed{chain}.chain" for chain in chains],
 	warmup=0,
@@ -272,7 +263,7 @@ df = pd.DataFrame(results.chains["log_likelihood.observations"].cpu().T)
 sns.lineplot(
 	data=df
 )
-ax.set_ylim(-1_040_000, -1_010_000)
+ax.set_ylim(-850_000, -765_000)
 ax.set_xticks(np.arange(0, 2000, 500), np.arange(0, 20000, 5000))
 ax.set_title("Obs. log-likelihood")
 fig.savefig(f"{dir_figures}observation_log_likelihood.pdf")

@@ -19,28 +19,30 @@ dir_results = dir + f"results/{method}/"
 results = pd.DataFrame()
 for n in range(1, 16):
     df = pd.read_csv(dir_results + f"train_nrep{n:02}.csv")
-    df.columns = ["testing_reps", "hamming_distance", "accuracy"]
+    # df.columns = ["testing_reps", "hamming_distance", "accuracy"]
     df["training_reps"] = n
     df["pred_set"] = "train"
     results = pd.concat([df, results],  ignore_index=True)
     df = pd.read_csv(dir_results + f"test_nrep{n:02}.csv")
-    df.columns = ["testing_reps", "hamming_distance", "accuracy"]
+    # df.columns = ["testing_reps", "hamming_distance", "accuracy"]
     df["training_reps"] = n
     df["pred_set"] = "test"
     results = pd.concat([df, results],  ignore_index=True)
+results.rename(columns={"Unnamed: 0": "testing_reps"}, inplace=True)
 # -----------------------------------------------------------------------------
+
+results["log_mean_entropy"] = np.log(results["mean_entropy"])
 
 
 # =============================================================================
 # PLOT RESULTS
 cmap = LinearSegmentedColormap.from_list("RdYlGn", [(0, "#d73027"), (0.9, "#ffffbf"), (1, "#1a9850")])
 
-fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex="all", sharey="all")
+fig, axs = plt.subplots(2, 4, figsize=(16, 6), sharex="all", sharey="all")
 for row, predset in enumerate(["train", "test"]):
     df = results.loc[results["pred_set"] == predset]
-    for col, metric in enumerate(["hamming_distance", "accuracy"]):
+    for col, metric in enumerate(["acc", "bce", "log_mean_entropy", "min_max_proba"]):
         mat = pd.pivot(df, index="training_reps", columns="testing_reps", values=metric).values
-        print(mat)
         if metric == "hamming_distance":
             axs[row, col].imshow(mat, cmap=cmap.reversed())
         else:

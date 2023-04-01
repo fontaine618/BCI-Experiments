@@ -8,6 +8,7 @@ from src.results import MCMCResults, add_transformed_variables, _flatten_dict
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import numpy as np
 
 plt.style.use("seaborn-v0_8-whitegrid")
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
@@ -47,15 +48,8 @@ results = MCMCResults.from_files(
 true_values = _flatten_dict(true_values)
 add_transformed_variables(true_values)
 
-loadings=true_values["loadings"]
-self=results
-
 results.align(loadings=true_values["loadings"])
 results.add_transformed_variables()
-
-for k, v in results.metrics(true_values).items():
-	for m, vv in v.items():
-		print(f"{k:30s} {m:30s} {vv}")
 # -----------------------------------------------------------------------------
 
 
@@ -64,6 +58,7 @@ for k, v in results.metrics(true_values).items():
 # =============================================================================
 data = results.to_arviz()
 rhat = az.rhat(data)
+ess = az.ess(data)
 # -----------------------------------------------------------------------------
 
 
@@ -94,6 +89,34 @@ for k, v in rhat.data_vars.items():
 # -----------------------------------------------------------------------------
 
 
+
+# =============================================================================
+# Plot ESS
+xmin = 1
+xmax = 10_000
+
+for k, v in ess.data_vars.items():
+	fig, ax = plt.subplots()
+	vv = v.values
+	if v.shape:
+		if v.shape[0] == settings["latent_dim"]:
+			vv = vv.T
+		if len(v.shape) == 3:
+			vv = np.moveaxis(vv, 2, 0).reshape(settings["latent_dim"], -1).T
+	else:
+		vv = vv.reshape(1, -1)
+	df = pd.DataFrame(vv)
+	sns.histplot(df, ax=ax, bins=np.logspace(np.log10(xmin), np.log10(xmax), 21),
+				 multiple="stack", shrink=0.8, edgecolor="white")
+	ax.set_xlim(xmin, xmax)
+	ax.set_title(k)
+	ax.set_ylabel("ESS")
+	ax.set_xscale("log")
+	fig.savefig(f"{dir_figures}ess/{k}.pdf")
+	plt.close(fig)
+# -----------------------------------------------------------------------------
+
+
 # =============================================================================
 # Plot posterior
 from collections import defaultdict
@@ -113,7 +136,7 @@ def vname_to_expr(vname, dim=None):
 		"smgp_scaling.target_signal": f"$\\beta^\\xi_{{1,{dim}}}$",
 		"smgp_scaling.nontarget_process_centered": f"$\\alpha^\\xi_{{0,{dim}}}$ (centered)",
 		"smgp_scaling.target_multiplier_process":
-			f"$1+\\zeta^\\xi_{{{dim}}}\\alpha^\\xi_{{1,{dim}}}/\\alpha^\\xi_{{0,{dim}}}$",
+			f"$1+\\zeta^\\xi_{{{dim}}}\\delta^\\xi_{{1,{dim}}}/\\alpha^\\xi_{{0,{dim}}}$",
 
 		"heterogeneities": f"$\\phi_{{\cdot{dim}}}$",
 		"loadings": f"$\\Theta_{{\cdot{dim}}}$",
