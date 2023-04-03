@@ -4,15 +4,15 @@ import torch
 import time
 import pickle
 
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/home/simon/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 from src.data.k_protocol import KProtocol
 from src.bffmbci.bffm import BFFModel
 
 
-dir = "/home/simfont/Documents/BCI/experiments/real_data1/"
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir = "/home/simon/Documents/BCI/experiments/real_data1/"
+dir_data = "/home/simon/Documents/BCI/K_Protocol/"
 
 filename = dir_data + "K114_001_BCI_TRN.mat"
 
@@ -24,7 +24,7 @@ window = 800.0
 bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
-seed = int(sys.argv[1])
+seed = 0 # int(sys.argv[1])
 n_iter = 20_000
 
 eeg = KProtocol(
@@ -45,7 +45,8 @@ settings = {
     "stimulus_window": eeg.stimulus_window,
     "n_stimulus": (12, ),
     "n_sequences": eeg.sequence.shape[0],
-    "nonnegative_smgp": True,
+    "nonnegative_smgp": False,
+    "scaling_activation": "exp",
     "seed": seed
 }
 
@@ -89,7 +90,7 @@ t0 = time.time()
 t00 = t0
 for i in range(n_iter):
     model.sample()
-    if i % 100 == 0:
+    if i % 1 == 0:
         print(f"{i:>10} "
               f"{model.variables['observations'].log_density_history[-1]:>20.4f}"
               f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")
