@@ -25,7 +25,7 @@ bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
 seed = 0 # int(sys.argv[1])
-n_iter = 20_000
+n_iter = 10_000
 
 eeg = KProtocol(
     filename=filename,
@@ -43,7 +43,7 @@ settings = {
     "n_channels": eeg.sequence.shape[1],
     "stimulus_to_stimulus_interval": eeg.stimulus_to_stimulus_interval,
     "stimulus_window": eeg.stimulus_window,
-    "n_stimulus": (12, ),
+    "n_stimulus": (12, 2),
     "n_sequences": eeg.sequence.shape[0],
     "nonnegative_smgp": False,
     "scaling_activation": "exp",
@@ -56,7 +56,7 @@ prior_parameters = {
     "shrinkage_factor": (2., 5.),
     "kernel_gp_factor_processes": (0.95, 1., 1.),
     "kernel_tgp_factor_processes": (0.95, 0.5, 1.),
-    "kernel_gp_loading_processes": (0.95, 1., 1.),
+    "kernel_gp_loading_processes": (0.95, 0.1, 1.),
     "kernel_tgp_loading_processes": (0.95, 0.5, 1.),
     "kernel_gp_factor": (0.95, 1., 1.)
 }
@@ -106,7 +106,7 @@ for i in range(n_iter):
 dir_out = dir + "chains/" + name + "/"
 os.makedirs(dir_out, exist_ok=True)
 out = model.results()
-with open(dir_out + f"seed{seed}.chain", "wb") as f:
+with open(dir_out + f"exp_seed{seed}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 

@@ -15,7 +15,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-chains = [4, ]
+chains = [0, ]
 
 # paths
 dir = "/home/simon/Documents/BCI/experiments/real_data1/"
@@ -249,8 +249,27 @@ for k in range(latent_dim):
 
 
 # =============================================================================
+# Trace plots
+vname="smgp_scaling.nontarget_process"
+
+plt.cla()
+fig, ax = plt.subplots(1, 2, figsize=(6, 6), squeeze=False)
+az.plot_trace(data, var_names=vname, show=False, axes=ax,
+			  kind="trace", compact=True, combined=True,
+			  coords={f"{vname}_dim_0": 0})
+title = vname_to_expr(vname, 0)
+plt.suptitle(title)
+plt.tight_layout()
+fig.savefig(f"{dir_figures}/trace/{vname}.pdf")
+
+# -----------------------------------------------------------------------------
+
+
+
+
+# =============================================================================
 # Plot LLK
-chains = [0, 1, 2, 3, 4]
+chains = [0, ]
 
 results = MCMCResults.from_files(
 	[dir_chains + f"seed{chain}.chain" for chain in chains],
@@ -264,7 +283,7 @@ sns.lineplot(
 	data=df
 )
 ax.set_ylim(-850_000, -765_000)
-ax.set_xticks(np.arange(0, 2000, 500), np.arange(0, 20000, 5000))
+ax.set_xticks(np.arange(0, 2001, 500), np.arange(0, 20001, 5000))
 ax.set_title("Obs. log-likelihood")
 fig.savefig(f"{dir_figures}observation_log_likelihood.pdf")
 # -----------------------------------------------------------------------------
