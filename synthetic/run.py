@@ -13,11 +13,14 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 # 27h, 2GB
 
 # parameters
-seed = 0 #sys.argv[1]
+seed = 2 #sys.argv[1]
+# 0: ASRWMH
+# 1: MALA
+# 2: ESS Posterior
 n_iter = 20_000
 
 # paths
-dir = "/home/simfont/Documents/BCI/experiments/test4/"
+dir = "/home/simon/Documents/BCI/experiments/synthetic/"
 dir_data = dir + "data/"
 dir_chains = dir + "chains/"
 
@@ -66,7 +69,7 @@ t0 = time.time()
 t00 = t0
 for i in range(n_iter):
 	model.sample()
-	if i % 1000 == 0:
+	if i % 1 == 0:
 		print(f"{i:>10} "
 			  f"{model.variables['observations'].log_density_history[-1]:>20.4f}"
 			  f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")

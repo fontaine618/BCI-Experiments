@@ -226,7 +226,7 @@ pos = {
 }
 
 for k in range(latent_dim):
-	component = results.chains["loadings"][0, :, :, k].mean(0).reshape(-1, 1)
+	component = results.chains["loadings"][0, :, :, k]._mean(0).reshape(-1, 1)
 	network = component @ component.T
 	edgelist = torch.tril_indices(16, 16, offset=-1)
 	weights = network[edgelist[0], edgelist[1]]

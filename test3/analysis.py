@@ -83,18 +83,18 @@ factor_samples = 10
 log_probs, pred_one_hot = self.predict(order, sequence, factor_samples)
 
 # Hamming (2.43 -> about one swap)
-(pred_one_hot != target).double().sum(1).mean().item()
+(pred_one_hot != target).double().sum(1)._mean().item()
 
 # Accuracy (14.5%)
-(pred_one_hot == target).all(1).double().mean().item()
+(pred_one_hot == target).all(1).double()._mean().item()
 
 # Recall (39.25%)
-(pred_one_hot == target)[target==1].double().mean().item()
+(pred_one_hot == target)[target==1].double()._mean().item()
 
 # At least one correct (64%)
-(pred_one_hot == target)[:, :3].all(1).double().mean().item() + \
-(pred_one_hot == target)[:, 3:].all(1).double().mean().item() - \
-(pred_one_hot == target).all(1).double().mean().item()
+(pred_one_hot == target)[:, :3].all(1).double()._mean().item() + \
+(pred_one_hot == target)[:, 3:].all(1).double()._mean().item() - \
+(pred_one_hot == target).all(1).double()._mean().item()
 # -----------------------------------------------------------------------------
 
 

@@ -92,7 +92,7 @@ hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
 acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
 
 target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_))
-bce = (target36 * log_prob).sum(-1).mean(0)
+bce = (target36 * log_prob).sum(-1)._mean(0)
 
 df = pd.DataFrame({
 	"hamming": hamming.cpu(),
@@ -139,7 +139,7 @@ hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
 acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
 
 target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_))
-bce = (target36 * log_prob).sum(-1).mean(0)
+bce = (target36 * log_prob).sum(-1)._mean(0)
 
 df = pd.DataFrame({
 	"hamming": hamming.cpu(),
