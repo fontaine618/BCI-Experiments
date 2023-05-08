@@ -4,15 +4,15 @@ import torch
 import time
 import pickle
 
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 from src.data.k_protocol import KProtocol
 from src.bffmbci.bffm import BFFModel
 
 
-dir = "/home/simon/Documents/BCI/experiments/real_data1/"
-dir_data = "/home/simon/Documents/BCI/K_Protocol/"
+dir = "/home/simfont/Documents/BCI/experiments/real_data1/"
+dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 
 filename = dir_data + "K114_001_BCI_TRN.mat"
 
@@ -24,8 +24,8 @@ window = 800.0
 bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
-seed = 0 # int(sys.argv[1])
-n_iter = 10_000
+seed = int(sys.argv[1])
+n_iter = 20_000
 
 eeg = KProtocol(
     filename=filename,
@@ -106,7 +106,7 @@ for i in range(n_iter):
 dir_out = dir + "chains/" + name + "/"
 os.makedirs(dir_out, exist_ok=True)
 out = model.results()
-with open(dir_out + f"exp_seed{seed}.chain", "wb") as f:
+with open(dir_out + f"seed{seed}_mala.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 
