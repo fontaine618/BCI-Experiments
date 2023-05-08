@@ -20,13 +20,13 @@ chains = [0, ]
 # paths
 dir = "/home/simon/Documents/BCI/experiments/real_data1/"
 dir_chains = dir + "chains/K114_001_BCI_TRN/"
-dir_figures = dir + "figures/"
+dir_figures = dir + "figures_mala/"
 # -----------------------------------------------------------------------------
 
 
 # =============================================================================
 results = MCMCResults.from_files(
-	[dir_chains + f"seed{chain}.chain" for chain in chains],
+	[dir_chains + f"seed{chain}_mala.chain" for chain in chains],
 	warmup=10_000,
 	thin=1
 )
@@ -118,6 +118,7 @@ def vname_to_expr(vname, dim=None):
 		"smgp_scaling.mixing_process": f"$\\zeta^\\xi_{{{dim}}}$",
 		"smgp_scaling.target_process": f"$\\alpha^\\xi_{{1,{dim}}}$",
 		"smgp_scaling.target_signal": f"$\\beta^\\xi_{{1,{dim}}}$",
+		"smgp_scaling.difference_process": f"$\\beta^\\xi_{{1,{dim}}}-\\beta^\\xi_{{0,{dim}}}$",
 		"smgp_scaling.nontarget_process_centered": f"$\\alpha^\\xi_{{0,{dim}}}$ (centered)",
 		"smgp_scaling.target_multiplier_process":
 			f"$1+\\zeta^\\xi_{{{dim}}}\\delta^\\xi_{{1,{dim}}}/\\alpha^\\xi_{{0,{dim}}}$",
@@ -147,6 +148,7 @@ for vname in [
 	"smgp_scaling.mixing_process",
 	"smgp_scaling.target_signal",
 	"smgp_scaling.nontarget_process_centered",
+	"smgp_scaling.difference_process",
 	"smgp_scaling.target_multiplier_process"
 ]:
 	plt.cla()
@@ -226,7 +228,7 @@ pos = {
 }
 
 for k in range(latent_dim):
-	component = results.chains["loadings"][0, :, :, k]._mean(0).reshape(-1, 1)
+	component = results.chains["loadings"][0, :, :, k].mean(0).reshape(-1, 1)
 	network = component @ component.T
 	edgelist = torch.tril_indices(16, 16, offset=-1)
 	weights = network[edgelist[0], edgelist[1]]
@@ -272,7 +274,7 @@ fig.savefig(f"{dir_figures}/trace/{vname}.pdf")
 chains = [0, ]
 
 results = MCMCResults.from_files(
-	[dir_chains + f"seed{chain}.chain" for chain in chains],
+	[dir_chains + f"seed{chain}_mala.chain" for chain in chains],
 	warmup=0,
 	thin=10
 )
@@ -282,7 +284,7 @@ df = pd.DataFrame(results.chains["log_likelihood.observations"].cpu().T)
 sns.lineplot(
 	data=df
 )
-ax.set_ylim(-850_000, -765_000)
+ax.set_ylim(-750_000, -735_000)
 ax.set_xticks(np.arange(0, 2001, 500), np.arange(0, 20001, 5000))
 ax.set_title("Obs. log-likelihood")
 fig.savefig(f"{dir_figures}observation_log_likelihood.pdf")
