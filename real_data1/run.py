@@ -106,7 +106,7 @@ for i in range(n_iter):
 dir_out = dir + "chains/" + name + "/"
 os.makedirs(dir_out, exist_ok=True)
 out = model.results()
-with open(dir_out + f"seed{seed}_mala.chain", "wb") as f:
+with open(dir_out + f"seed{seed}_asm.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 
