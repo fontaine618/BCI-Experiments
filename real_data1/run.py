@@ -26,7 +26,7 @@ bandpass_order = 2
 downsample = 8
 seed = 0
 K = int(sys.argv[1])
-n_iter = 50_000
+n_iter = 20_000
 
 eeg = KProtocol(
     filename=filename,
