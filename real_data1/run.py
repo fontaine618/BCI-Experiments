@@ -25,8 +25,9 @@ bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
 seed = 0
-K = int(sys.argv[1])
+K = 5
 n_iter = 20_000
+cor = [0.95, 0.97, 0.99, 0.995, 0.999][int(sys.argv[1])]
 
 eeg = KProtocol(
     filename=filename,
@@ -55,11 +56,11 @@ prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
     "shrinkage_factor": (2., 5.),
-    "kernel_gp_factor_processes": (0.95, 1., 1.),
-    "kernel_tgp_factor_processes": (0.95, 0.5, 1.),
-    "kernel_gp_loading_processes": (0.95, 0.1, 1.),
-    "kernel_tgp_loading_processes": (0.95, 0.5, 1.),
-    "kernel_gp_factor": (0.95, 1., 1.)
+    "kernel_gp_factor_processes": (cor, 1., 1.),
+    "kernel_tgp_factor_processes": (cor, 0.5, 1.),
+    "kernel_gp_loading_processes": (cor, 0.1, 1.),
+    "kernel_tgp_loading_processes": (cor, 0.5, 1.),
+    "kernel_gp_factor": (cor, 1., 1.)
 }
 
 model = BFFModel(
@@ -107,7 +108,7 @@ for i in range(n_iter):
 dir_out = dir + "chains/" + name + "/"
 os.makedirs(dir_out, exist_ok=True)
 out = model.results()
-with open(dir_out + f"seed0_K{K}.chain", "wb") as f:
+with open(dir_out + f"seed0_K5_cor{cor*1000}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 
