@@ -2,7 +2,7 @@ import sys
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
 import pickle
-from src.results import MCMCResults
+from src.bffmbci import BFFMResults
 import matplotlib.pyplot as plt
 import pandas as pd
 from torch.distributions import Categorical
@@ -15,9 +15,9 @@ from src.data.k_protocol import KProtocol
 
 # =============================================================================
 # SETUP
-dir = "/home/simfont/Documents/BCI/experiments/real_data1/"
+dir = "/home/simon/Documents/BCI/experiments/real_data1/"
 dir_chains = dir + "chains/K114_001_BCI_TRN/"
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir_data = "/home/simon/Documents/BCI/K_Protocol/"
 dir_results = dir + "predict/"
 filename = dir_data + "K114_001_BCI_TRN.mat"
 
@@ -44,7 +44,7 @@ eeg = KProtocol(
 )
 
 factor_samples = 1
-factor_processes_method = "analytical"
+factor_processes_method = "posterior_mean"
 aggregation_method = "product"
 return_cumulative = True
 n_samples = 100
@@ -52,7 +52,7 @@ n_samples = 100
 
 
 # =============================================================================
-results = MCMCResults.from_files(
+results = BFFMResults.from_files(
 	[dir_chains + f"seed{chain}_mala.chain" for chain in chains],
 	warmup=30_000,
 	thin=1
@@ -69,7 +69,7 @@ nr = 15
 nc = 19
 
 order = eeg.stimulus_order
-sequence = eeg.sequence
+sequences = eeg.sequence
 target = eeg.target
 
 self = results.to_predict(n_samples=n_samples)
@@ -77,7 +77,7 @@ character_idx = eeg.character_idx
 
 log_prob, wide_pred_one_hot, _ = self.predict(
 	order=order,
-	sequence=sequence,
+	sequence=sequences,
 	factor_samples=factor_samples,
 	character_idx=character_idx,
 	factor_processes_method=factor_processes_method,
@@ -108,6 +108,41 @@ df.to_csv(dir_results + f"train_{factor_processes_method}_{n_samples}.csv")
 # -----------------------------------------------------------------------------
 
 
+
+# =============================================================================
+import numpy as np
+
+
+order = eeg.stimulus_order
+sequences = eeg.sequence
+target = eeg.target
+
+self = results.to_predict(n_samples=n_samples)
+
+
+def llk(bffmodel: BFFModel):
+	return bffmodel.variables["observations"].log_density
+
+statistics = dict(llk=llk)
+
+obs, sam = self.posterior_checks(
+	order,
+	target,
+	sequences,
+	llk=llk
+)
+
+torch.Tensor(obs["llk"]) - torch.Tensor(sam["llk"])
+
+plt.cla()
+plt.scatter(x=np.array(obs["llk"]), y=np.array(sam["llk"]))
+# plt.axline((min(obs["llk"]), max(obs["llk"])), slope=1)
+plt.show()
+
+bffmodel.variables["loading_processes"].data
+bffmodel.variables["smgp_scaling"].mixing_process.data
+
+# -----------------------------------------------------------------------------
 
 
 

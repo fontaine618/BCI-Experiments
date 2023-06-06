@@ -4,15 +4,15 @@ import torch
 import time
 import pickle
 
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/home/simon/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 from src.data.k_protocol import KProtocol
 from src.bffmbci.bffm import BFFModel
 
 
-dir = "/home/simfont/Documents/BCI/experiments/real_data1/"
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir = "/home/simon/Documents/BCI/experiments/real_data1/"
+dir_data = "/home/simon/Documents/BCI/K_Protocol/"
 
 filename = dir_data + "K114_001_BCI_TRN.mat"
 

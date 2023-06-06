@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import arviz as az
 import pickle
-from src.results import MCMCResults, add_transformed_variables, _flatten_dict
+from src.results import BFFMResults, add_transformed_variables, _flatten_dict
 # from src.results_old import MCMCResults
 # from src.results_old import MCMCMultipleResults
 import matplotlib.pyplot as plt
@@ -39,7 +39,7 @@ with open(dir_data + "true_values.pkl", "rb") as f:
 
 
 # =============================================================================
-results = MCMCResults.from_files(
+results = BFFMResults.from_files(
 	[dir_chains + f"seed{chain}.chain" for chain in chains],
 	warmup=10_000,
 	thin=1
@@ -273,7 +273,7 @@ fig.savefig(f"{dir_figures}/prediction/{factor_processes_method}_{aggregation_me
 
 # =============================================================================
 # Plot LLK
-results = MCMCResults.from_files(
+results = BFFMResults.from_files(
 	[dir_chains + f"seed{chain}.chain" for chain in chains],
 	warmup=0,
 	thin=10

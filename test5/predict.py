@@ -2,7 +2,7 @@ import sys
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
 import pickle
-from src.results import MCMCResults
+from src.results import BFFMResults
 import matplotlib.pyplot as plt
 import pandas as pd
 from torch.distributions import Categorical
@@ -51,7 +51,7 @@ n_samples = 100
 
 
 # =============================================================================
-results = MCMCResults.from_files(
+results = BFFMResults.from_files(
 	[dir_chains + f"nrep{n:02}.chain"],
 	warmup=10_000,
 	thin=1

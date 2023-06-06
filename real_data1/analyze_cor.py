@@ -15,19 +15,18 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-chains = [0, 1, 2, 3, 4, ]
-chains = [0, ]
-
+chains = [0.95, 0.97, 0.99, 0.995, 0.999]
+cor = chains[4]
 # paths
 dir = "/home/simon/Documents/BCI/experiments/real_data1/"
 dir_chains = dir + "chains/K114_001_BCI_TRN/"
-dir_figures = dir + "figures_mala/"
+dir_figures = dir + "figures_cor/"
 # -----------------------------------------------------------------------------
 
 
 # =============================================================================
 results = BFFMResults.from_files(
-	[dir_chains + f"seed{chain}_mala.chain" for chain in chains],
+	[dir_chains + f"seed0_K5_cor{cor*1000}.chain"],
 	warmup=10_000,
 	thin=1
 )
@@ -42,64 +41,8 @@ results.add_transformed_variables()
 
 # =============================================================================
 data = results.to_arviz()
-rhat = az.rhat(data)
-ess = az.ess(data)
 # -----------------------------------------------------------------------------
 
-
-
-# =============================================================================
-# Plot RHAT
-xmin = 0.95
-xmax = 2.3
-
-for k, v in rhat.data_vars.items():
-	fig, ax = plt.subplots()
-	vv = v.values
-	if v.shape:
-		if v.shape[0] == latent_dim:
-			vv = vv.T
-		if len(v.shape) == 3:
-			vv = np.moveaxis(vv, 2, 0).reshape(latent_dim, -1).T
-	else:
-		vv = vv.reshape(1, -1)
-	df = pd.DataFrame(vv)
-	sns.histplot(df, ax=ax, bins=np.linspace(xmin, xmax, 28),
-				 multiple="stack", shrink=0.8, edgecolor="white")
-	ax.set_xlim(xmin, xmax)
-	ax.set_title(k)
-	ax.set_ylabel("$\widehat{R}$")
-	fig.savefig(f"{dir_figures}rhat/{k}.pdf")
-	plt.close(fig)
-# -----------------------------------------------------------------------------
-
-
-
-# =============================================================================
-# Plot ESS
-xmin = 1
-xmax = 40_000
-
-for k, v in ess.data_vars.items():
-	fig, ax = plt.subplots()
-	vv = v.values
-	if v.shape:
-		if v.shape[0] == latent_dim:
-			vv = vv.T
-		if len(v.shape) == 3:
-			vv = np.moveaxis(vv, 2, 0).reshape(latent_dim, -1).T
-	else:
-		vv = vv.reshape(1, -1)
-	df = pd.DataFrame(vv)
-	sns.histplot(df, ax=ax, bins=np.logspace(np.log10(xmin), np.log10(xmax), 21),
-				 multiple="stack", shrink=0.8, edgecolor="white")
-	ax.set_xlim(xmin, xmax)
-	ax.set_title(k)
-	ax.set_ylabel("ESS")
-	ax.set_xscale("log")
-	fig.savefig(f"{dir_figures}ess/{k}.pdf")
-	plt.close(fig)
-# -----------------------------------------------------------------------------
 
 
 # =============================================================================
@@ -168,7 +111,7 @@ for vname in [
 		]:
 			ax.set_xscale("log")
 	plt.tight_layout()
-	fig.savefig(f"{dir_figures}/posterior/{vname}.pdf")
+	fig.savefig(f"{dir_figures}/posterior/cor{cor}/{vname}.pdf")
 
 for vname in [
 	"heterogeneities",
@@ -184,7 +127,7 @@ for vname in [
 		ax.set_title(title)
 		ax.set_yticklabels(range(16, 0, -1))
 	plt.tight_layout()
-	fig.savefig(f"{dir_figures}/posterior/{vname}.pdf")
+	fig.savefig(f"{dir_figures}/posterior/cor{cor}/{vname}.pdf")
 
 for vname in [
 	"observation_variance",
@@ -199,7 +142,7 @@ for vname in [
 	ax.set_title(title)
 	ax.set_yticklabels([])
 	plt.tight_layout()
-	fig.savefig(f"{dir_figures}/posterior/{vname}.pdf")
+	fig.savefig(f"{dir_figures}/posterior/cor{cor}/{vname}.pdf")
 # -----------------------------------------------------------------------------
 
 
@@ -247,48 +190,33 @@ for k in range(latent_dim):
 	plt.axis('off')
 	plt.title(f"Network {k+1}")
 	plt.tight_layout()
-	plt.savefig(f"{dir_figures}posterior/network_{k+1}.pdf")
+	plt.savefig(f"{dir_figures}posterior/cor{cor}/network_{k+1}.pdf")
 # -----------------------------------------------------------------------------
 
-
-# =============================================================================
-# Trace plots
-vname="smgp_scaling.nontarget_process"
-
-plt.cla()
-fig, ax = plt.subplots(1, 2, figsize=(6, 6), squeeze=False)
-az.plot_trace(data, var_names=vname, show=False, axes=ax,
-			  kind="trace", compact=True, combined=True,
-			  coords={f"{vname}_dim_0": 0})
-title = vname_to_expr(vname, 0)
-plt.suptitle(title)
-plt.tight_layout()
-fig.savefig(f"{dir_figures}/trace/{vname}.pdf")
-
-# -----------------------------------------------------------------------------
 
 
 
 
 # =============================================================================
 # Plot LLK
-chains = [0, 1, 2, 3, 4]
+# chains = [0, 1, 2, 3, 4]
 
 results = BFFMResults.from_files(
-	[dir_chains + f"seed{chain}_mala.chain" for chain in chains],
+	[dir_chains + f"seed0_K5_cor{cor*1000}.chain" for cor in chains],
 	warmup=0,
 	thin=10
 )
 
 fig, ax = plt.subplots()
 df = pd.DataFrame(results.chains["log_likelihood.observations"].cpu().T)
+df.columns = chains
 sns.lineplot(
 	data=df,
 	alpha=0.5
 )
-ax.set_ylim(-750_000, -735_000)
-ax.set_xticks(np.arange(0, 5001, 500), np.arange(0, 50001, 5000))
-ax.set_title("MALA Sampling (exponential link)")
+ax.set_ylim(-800_000, -735_000)
+ax.set_xticks(np.arange(0, 2001, 500), np.arange(0, 20001, 5000))
+ax.set_title("Smoothness of priors")
 ax.set_xlabel("Iteration")
 ax.set_ylabel("Log-likelihood")
 # ax.set_xscale("log")
