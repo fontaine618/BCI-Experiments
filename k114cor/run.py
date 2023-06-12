@@ -5,7 +5,6 @@ import time
 import pickle
 
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
-sys.path.extend(['/home/simfont/Documents/BCI', '/home/simon/Documents/BCI/src'])
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 from src.data.k_protocol import KProtocol
