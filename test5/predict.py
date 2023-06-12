@@ -1,8 +1,8 @@
 import sys
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/home/simfont/Documents/BCI/source')
 import torch
 import pickle
-from src.results import BFFMResults
+from source.results import BFFMResults
 import matplotlib.pyplot as plt
 import pandas as pd
 from torch.distributions import Categorical

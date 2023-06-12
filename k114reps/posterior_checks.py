@@ -5,19 +5,19 @@ import time
 import pickle
 import numpy as np
 
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
-sys.path.extend(['/home/simon/Documents/BCI', '/home/simon/Documents/BCI/src'])
+sys.path.insert(1, '/')
+sys.path.extend(['/home/simon/Documents/BCI', '/home/simon/Documents/BCI/source'])
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
-from src.bffmbci import BFFMResults
+from source.bffmbci import BFFMResults
 import matplotlib.pyplot as plt
 import pandas as pd
 from torch.distributions import Categorical
-from src.bffmbci.bffm import BFFModel
+from source.bffmbci.bffm import BFFModel
 
 plt.style.use("seaborn-v0_8-whitegrid")
 
-from src.data.k_protocol import KProtocol
+from source.data.k_protocol import KProtocol
 
 # =============================================================================
 # SETUP

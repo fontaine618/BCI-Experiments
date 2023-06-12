@@ -1,6 +1,6 @@
 import torch
 import pickle
-from src.bffmbci.bffm import BFFModel
+from source.bffmbci.bffm import BFFModel
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================

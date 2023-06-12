@@ -1,10 +1,10 @@
 import sys
-sys.path.extend(['/home/simon/Documents/BCI', '/home/simon/Documents/BCI/src'])
+sys.path.extend(['/home/simon/Documents/BCI', '/home/simon/Documents/BCI/source'])
 
 
 import torch
 import pickle
-from src.bffmbci.bffm import BFFModel
+from source.bffmbci.bffm import BFFModel
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================

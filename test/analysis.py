@@ -1,7 +1,7 @@
 import torch
 import numpy as np
-from src.models.bffmbci.bffm import BFFModel
-from src.results_old.mcmc_results import MCMCResults
+from source.models.bffmbci.bffm import BFFModel
+from source.results_old.mcmc_results import MCMCResults
 import matplotlib.pyplot as plt
 
 plt.style.use("seaborn-whitegrid")

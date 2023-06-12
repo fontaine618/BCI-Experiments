@@ -1,10 +1,10 @@
 import sys
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/home/simfont/Documents/BCI/source')
 
 import time
 import torch
 import pickle
-from src.bffmbci.bffm import BFFModel
+from source.bffmbci.bffm import BFFModel
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================

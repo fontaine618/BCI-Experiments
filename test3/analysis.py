@@ -2,9 +2,9 @@ import torch
 import numpy as np
 import arviz as az
 import pickle
-from src.results import BFFMResults, add_transformed_variables, _flatten_dict
-# from src.results_old import MCMCResults
-# from src.results_old import MCMCMultipleResults
+from source.results import BFFMResults, add_transformed_variables, _flatten_dict
+# from source.results_old import MCMCResults
+# from source.results_old import MCMCMultipleResults
 import matplotlib.pyplot as plt
 
 plt.style.use("seaborn-v0_8-whitegrid")

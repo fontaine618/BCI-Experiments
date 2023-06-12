@@ -7,10 +7,10 @@ import pickle
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
-from src.data.k_protocol import KProtocol
-from src.bffmbci.bffm import BFFModel
+from source.data.k_protocol import KProtocol
+from source.bffmbci.bffm import BFFModel
 
-dir = "/experiments/k114cor/"
+dir = "/home/simfont/Documents/BCI/experiments/k114cor/"
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 
 type = "TRN"
