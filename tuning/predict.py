@@ -46,7 +46,7 @@ nreps = 7
 seed = 0
 cor = [0.7, 0.8, 0.85, 0.9, 0.95, 0.97, 0.99][int(sys.argv[1]) % 7]
 shrinkage = [3., 4., 5., 7.][int(sys.argv[1]) // 7]
-file = f"seed{seed}_nreps{nreps}_cor{cor}_shrinkage{shrinkage}.chain.chain"
+file = f"seed{seed}_nreps{nreps}_cor{cor}_shrinkage{shrinkage}.chain"
 
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
@@ -190,5 +190,5 @@ out.append(df)
 
 df = pd.concat(out)
 os.makedirs(dir_results, exist_ok=True)
-df.to_csv(dir_results + f"seed{seed}_nreps{nreps}_cor{cor}_shrinkage{shrinkage}.chain.csv")
+df.to_csv(dir_results + f"seed{seed}_nreps{nreps}_cor{cor}_shrinkage{shrinkage}.csv")
 print(df)
