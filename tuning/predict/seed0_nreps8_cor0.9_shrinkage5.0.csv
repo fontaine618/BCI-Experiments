@@ -1,0 +1,16 @@
+,hamming,acc,max_entropy,mean_entropy,min_max_proba,bce,dataset,training_reps,repetition,cor,sample_mean,which_first
+1,9.0,11.0,1.9669279,0.8359899,0.39786965,-1.1394814,training,7,1,0.9,geometric,sequence
+2,4.0,16.0,0.81051606,0.108500354,0.6484921,-0.85325867,training,7,2,0.9,geometric,sequence
+3,2.0,17.0,0.9045205,0.15379708,0.5147559,-0.16262336,training,7,3,0.9,geometric,sequence
+4,1.0,18.0,0.6363579,0.08528455,0.7111867,-0.18600945,training,7,4,0.9,geometric,sequence
+5,1.0,18.0,0.69649696,0.07514993,0.5028316,-0.06383635,training,7,5,0.9,geometric,sequence
+6,1.0,18.0,0.65881675,0.036871355,0.63316053,-0.05314556,training,7,6,0.9,geometric,sequence
+7,0.0,19.0,0.40388566,0.021276906,0.8603718,-0.007915296,training,7,7,0.9,geometric,sequence
+1,19.0,4.0,2.5646052,1.5339451,0.19580907,-3.0091875,testing,8,1,0.9,geometric,sequence
+2,12.0,8.0,1.8399472,0.7612101,0.37900162,-1.4242393,testing,8,2,0.9,geometric,sequence
+3,5.0,14.0,1.8218658,0.39853257,0.40246132,-0.5125411,testing,8,3,0.9,geometric,sequence
+4,6.0,14.0,1.2709098,0.21903042,0.5431599,-0.86251026,testing,8,4,0.9,geometric,sequence
+5,4.0,15.0,1.1983799,0.15177071,0.47840163,-1.1384149,testing,8,5,0.9,geometric,sequence
+6,4.0,15.0,0.9217472,0.120684296,0.5511749,-1.2381785,testing,8,6,0.9,geometric,sequence
+7,4.0,15.0,0.7044623,0.03995078,0.51879317,-1.311472,testing,8,7,0.9,geometric,sequence
+8,3.0,16.0,0.51208603,0.028530814,0.7910651,-1.1987047,testing,8,8,0.9,geometric,sequence
