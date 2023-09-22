@@ -47,9 +47,9 @@ seed = 0
 cor = 0.5
 shrinkage = 7.
 heterogeneity = 3.
-xi_var = [0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.][int(sys.argv[1]) // 7]
+xi_var = [0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.][int(sys.argv[1]) % 7]
 
-file = f"seed{seed}_nreps{nreps}_cor{cor}_shrinkage{shrinkage}.chain"
+file = f"xi_var{xi_var}.chain"
 
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(

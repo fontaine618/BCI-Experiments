@@ -28,7 +28,7 @@ n_iter = 20_000
 nreps = 7
 cor = 0.5
 shrinkage = 7.
-heterogeneity = [1., 2., 3., 5., 7., 10., 15., 20.][int(sys.argv[1]) // 8]
+heterogeneity = [1., 2., 3., 5., 7., 10., 15., 20.][int(sys.argv[1]) % 8]
 xi_var = 1.
 
 eeg = KProtocol(

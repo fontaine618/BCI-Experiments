@@ -18,3 +18,4 @@
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
 python -O heterogeneity.py $SLURM_ARRAY_TASK_ID
+python -O heterogeneity_predict.py $SLURM_ARRAY_TASK_ID
