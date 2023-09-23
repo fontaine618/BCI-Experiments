@@ -193,5 +193,5 @@ out.append(df)
 
 df = pd.concat(out)
 os.makedirs(dir_results, exist_ok=True)
-df.to_csv(dir_results + f"seed{seed}_nreps{nreps}_cor{cor}_shrinkage{shrinkage}.csv")
+df.to_csv(dir_results + f"xi_var{xi_var}.csv")
 print(df)
