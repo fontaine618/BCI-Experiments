@@ -13,7 +13,7 @@ from source.bffmbci.bffm import BFFModel
 # =============================================================================
 # SETUP
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/tuning/chains/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/k114/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # file
@@ -31,13 +31,13 @@ downsample = 8
 
 # model
 seed = 0
-K = 8
+K = 5
 n_iter = 20_000
 nreps = 15
-cor = 0.6
+cor = 0.7
 shrinkage = 5.
-heterogeneity = 10.
-xi_var = 0.01
+heterogeneity = 3.
+xi_var = 0.1
 # -----------------------------------------------------------------------------
 
 

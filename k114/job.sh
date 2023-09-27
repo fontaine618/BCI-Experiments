@@ -4,7 +4,7 @@
 #SBATCH --job-name=bci_tuning
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=10:00:00
+#SBATCH --time=5:00:00
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
