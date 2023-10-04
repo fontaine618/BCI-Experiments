@@ -29,7 +29,7 @@ nreps = 7
 cor = 0.5
 shrinkage = 7.
 heterogeneity = 3.
-xi_var = [0.000001, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.][int(sys.argv[1]) % 7]
+xi_var = [0.000001, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.][int(sys.argv[1])]
 
 eeg = KProtocol(
     filename=filename,
