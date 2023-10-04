@@ -35,30 +35,29 @@ nchars = 19
 K = 8
 nreps = 7
 seed = 0
-cor = 0.5
-shrinkage = 7.
-heterogeneity = [1., 2., 3., 5., 7., 10., 15., 20.]
-xi_var = 1.
+cor = 0.6
+shrinkage = [3., 4., 5., 7., 10.]
+file = f"seed{seed}_nreps{nreps}_cor{cor}_shrinkage{shrinkage}.chain"
 # -----------------------------------------------------------------------------
 
 
 # =============================================================================
 # get psoterior values
-for h in heterogeneity:
+for s in shrinkage:
     # load chain
-    file = f"heterogeneity{h}.chain"
+    file = f"seed{seed}_nreps{nreps}_cor{cor}_shrinkage{s}.chain"
     torch.cuda.empty_cache()
     results = BFFMResults.from_files(
         [dir_chains + file],
         warmup=10_000,
         thin=1
     )
-    h_chain = results.chains["heterogeneities"]
+    s_chain = results.chains["shrinkage_factor"]
     l_chain = results.chains["loadings"]
     # get posterior mean
-    h_mean = h_chain.mean(dim=(0, 1))
+    s_mean = s_chain.mean(dim=(0, 1))
     l_mean = l_chain.mean(dim=(0, 1))
     # save to csv
-    pd.DataFrame(h_mean.cpu().numpy()).to_csv(dir_results + f"heterogeneity{h}_hmean.csv")
-    pd.DataFrame(l_mean.cpu().numpy()).to_csv(dir_results + f"heterogeneity{h}_lmean.csv")
+    pd.DataFrame(s_mean.cpu().numpy()).to_csv(dir_results + f"shrinkage{s}_smean.csv")
+    pd.DataFrame(l_mean.cpu().numpy()).to_csv(dir_results + f"shrinkage{s}_lmean.csv")
 # -----------------------------------------------------------------------------
