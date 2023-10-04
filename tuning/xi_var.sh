@@ -5,7 +5,7 @@
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
 #SBATCH --time=3:00:00
-#SBATCH --array=0-6
+#SBATCH --array=0
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
@@ -17,5 +17,5 @@
 # The application(s) to execute along with its input arguments and options:
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
-#python -O xi_var.py $SLURM_ARRAY_TASK_ID
+python -O xi_var.py $SLURM_ARRAY_TASK_ID
 python -O xi_var_predict.py $SLURM_ARRAY_TASK_ID
