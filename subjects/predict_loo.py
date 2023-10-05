@@ -20,8 +20,8 @@ from source.data.k_protocol import KProtocol
 # =============================================================================
 # SETUP
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subjects/"
-dir_results = "/home/simfont/Documents/BCI/experiments/predict/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/subjects/chains/"
+dir_results = "/home/simfont/Documents/BCI/experiments/subjects/predict/"
 os.makedirs(dir_results, exist_ok=True)
 
 
