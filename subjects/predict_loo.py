@@ -4,7 +4,7 @@ import torch
 import time
 import pickle
 
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 from source.bffmbci import BFFMResults
