@@ -13,7 +13,7 @@ from source.bffmbci.bffm import BFFModel
 # =============================================================================
 # SETUP
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subjects/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/subjects/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # file
@@ -124,7 +124,7 @@ for i in range(n_iter):
 # =============================================================================
 # SAVE CHAIN
 out = model.results(
-    warmup=10_000,
+    start=10_000,
     thin=10
 )
 with open(dir_chains + f"K{subject}.chain", "wb") as f:

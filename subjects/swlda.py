@@ -14,7 +14,7 @@ from source.swlda.swlda import swlda, swlda_predict
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simon/Documents/BCI/K_Protocol/"
+dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 dir_chains = "/home/simfont/Documents/BCI/experiments/subjects/"
 dir_results = "/home/simfont/Documents/BCI/experiments/predict/"
 os.makedirs(dir_results, exist_ok=True)
@@ -87,7 +87,7 @@ np.save(dir_chains + f"K{subject}.swlda", Bmat.cpu().numpy())
 
 # =============================================================================
 # PREDICTIONS
-dir_data = "/home/simon/Documents/BCI/K_Protocol/"
+dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 dir_results = "/home/simfont/Documents/BCI/experiments/predict/"
 os.makedirs(dir_results, exist_ok=True)
 
