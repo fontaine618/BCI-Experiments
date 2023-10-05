@@ -48,8 +48,10 @@ cor = 0.5
 shrinkage = 7.
 heterogeneity = [1., 2., 3., 5., 7., 10., 15., 20.][int(sys.argv[1]) % 8]
 xi_var = 1.
+sparse = True
 
-file = f"heterogeneity{heterogeneity}.chain"
+# file = f"heterogeneity{heterogeneity}.chain"
+file = f"heterogeneity_sparse.chain"
 
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
@@ -193,5 +195,6 @@ out.append(df)
 
 df = pd.concat(out)
 os.makedirs(dir_results, exist_ok=True)
-df.to_csv(dir_results + f"heterogeneity{heterogeneity}.csv")
+# df.to_csv(dir_results + f"heterogeneity{heterogeneity}.csv")
+df.to_csv(dir_results + f"heterogeneity_sparse.csv")
 print(df)

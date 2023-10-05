@@ -61,4 +61,22 @@ for h in heterogeneity:
     # save to csv
     pd.DataFrame(h_mean.cpu().numpy()).to_csv(dir_results + f"heterogeneity{h}_hmean.csv")
     pd.DataFrame(l_mean.cpu().numpy()).to_csv(dir_results + f"heterogeneity{h}_lmean.csv")
+
+
+# load chain
+file = f"heterogeneity_sparse.chain"
+torch.cuda.empty_cache()
+results = BFFMResults.from_files(
+    [dir_chains + file],
+    warmup=10_000,
+    thin=1
+)
+h_chain = results.chains["heterogeneities"]
+l_chain = results.chains["loadings"]
+# get posterior mean
+h_mean = h_chain.mean(dim=(0, 1))
+l_mean = l_chain.mean(dim=(0, 1))
+# save to csv
+pd.DataFrame(h_mean.cpu().numpy()).to_csv(dir_results + f"heterogeneity_sparse_hmean.csv")
+pd.DataFrame(l_mean.cpu().numpy()).to_csv(dir_results + f"heterogeneity_sparse_lmean.csv")
 # -----------------------------------------------------------------------------

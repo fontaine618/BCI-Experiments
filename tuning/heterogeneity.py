@@ -30,6 +30,7 @@ cor = 0.5
 shrinkage = 7.
 heterogeneity = [1., 2., 3., 5., 7., 10., 15., 20.][int(sys.argv[1]) % 8]
 xi_var = 1.
+sparse = True
 
 eeg = KProtocol(
     filename=filename,
@@ -54,7 +55,8 @@ settings = {
     "n_sequences": eeg.sequence.shape[0],
     "nonnegative_smgp": False,
     "scaling_activation": "exp",
-    "seed": seed
+    "seed": seed,
+    "sparse": sparse
 }
 
 prior_parameters = {
@@ -113,7 +115,8 @@ for i in range(n_iter):
 dir_out = dir + "chains/"
 os.makedirs(dir_out, exist_ok=True)
 out = model.results()
-with open(dir_out + f"heterogeneity{heterogeneity}.chain", "wb") as f:
+# with open(dir_out + f"heterogeneity{heterogeneity}.chain", "wb") as f:
+with open(dir_out + f"heterogeneity_sparse.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 
