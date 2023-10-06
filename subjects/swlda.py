@@ -2,6 +2,7 @@ import sys
 import torch
 import numpy as np
 import os
+
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
@@ -76,8 +77,6 @@ np.save(dir_chains + f"K{subject}.swlda", Bmat.cpu().numpy())
 # -----------------------------------------------------------------------------
 
 
-
-
 # =============================================================================
 # PREDICTIONS
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
@@ -88,7 +87,7 @@ os.makedirs(dir_results, exist_ok=True)
 # file
 type = "FRT"
 subject = ["114"][int(sys.argv[1])]
-session = "001"
+session = "002"
 name = f"K{subject}_{session}_BCI_{type}"
 filename = dir_data + name + ".mat"
 
@@ -98,8 +97,6 @@ bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
 # -----------------------------------------------------------------------------
-
-
 
 
 # =============================================================================
@@ -144,9 +141,9 @@ true["char"] = eeg.keyboard[true["row"] - 1, true["col"] - 7]
 
 # metrics
 trndf = trn_cum_pred.join(true.set_index("character"), on="character", how="left", rsuffix="_true", lsuffix="_pred")
-trndf["hamming"] = (trndf["row_pred"] == trndf["row_true"]).astype(float) \
-                   + (trndf["col_pred"] == trndf["col_true"]).astype(float)
-trndf["acc"] = (trndf["char_pred"] == trndf["char_true"]).astype(float) / 2.
+trndf["hamming"] = ((trndf["row_pred"] != trndf["row_true"]).astype(float) +
+                    (trndf["col_pred"] != trndf["col_true"]).astype(float))
+trndf["acc"] = (trndf["char_pred"] == trndf["char_true"]).astype(float)
 trndf = trndf.groupby("repetition").agg({"hamming": "mean", "acc": "mean"})
 trndf["dataset"] = "FRT"
 trndf["method"] = "swLDA"

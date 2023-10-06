@@ -35,6 +35,7 @@ cor = 0.8
 shrinkage = 5.
 heterogeneity = 3.
 xi_var = 0.003
+sparse = False
 # -----------------------------------------------------------------------------
 
 
@@ -64,6 +65,7 @@ settings = {
     "n_sequences": eeg.sequence.shape[0],
     "nonnegative_smgp": False,
     "scaling_activation": "exp",
+    "sparse": sparse,
     "seed": seed
 }
 

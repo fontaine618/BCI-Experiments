@@ -87,7 +87,7 @@ dir_figures = "/home/simon/Documents/BCI/experiments/tuning/figures/"
 K = 8
 nreps = 7
 seed = 0
-heterogeneities = [1., 2., 3., 5., 7., 10., 15., 20.]
+heterogeneities = ["_sparse", 1., 2., 3., 5., 7., 10., 15., 20.]
 
 pred_list = []
 for h in heterogeneities:
@@ -104,6 +104,7 @@ pred = pred.melt(
     var_name="metric",
     value_name="value"
 )
+pred["heterogenetiy"] = pred["heterogenetiy"].replace("_sparse", "Horseshoe")
 
 # plot acc and bce as rows, training testing as columsn
 fig, ax = plt.subplots(1, 1, figsize=(8, 4))

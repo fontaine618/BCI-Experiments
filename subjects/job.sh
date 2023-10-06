@@ -19,6 +19,6 @@ module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
 #python -O train.py $SLURM_ARRAY_TASK_ID
 python -O predict_loo.py $SLURM_ARRAY_TASK_ID
-python -O predict_frt.py $SLURM_ARRAY_TASK_ID
-python -O swlda.py $SLURM_ARRAY_TASK_ID
+#python -O predict_frt.py $SLURM_ARRAY_TASK_ID
+#python -O swlda.py $SLURM_ARRAY_TASK_ID
 
