@@ -4,6 +4,7 @@ import seaborn as sns
 plt.style.use("seaborn-v0_8-whitegrid")
 
 
+# =============================================================================
 # GRID EXPERIMENT: correlation and shrinkage
 dir_results = "/home/simon/Documents/BCI/experiments/tuning/predict/"
 dir_figures = "/home/simon/Documents/BCI/experiments/tuning/figures/"
@@ -15,8 +16,6 @@ shrinkages = [3., 4., 5., 7.]
 
 # source the scratch/swlda.py file first
 # swlda_df contains the predictions
-
-
 
 # load prediction results
 pred_list = []
@@ -76,6 +75,7 @@ sns.relplot(
 )
 plt.savefig(dir_figures + "acc.pdf", bbox_inches="tight")
 
+# =============================================================================
 # HETEROGENEITY EXPERIMENT
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -124,6 +124,8 @@ sns.relplot(
 )
 plt.savefig(dir_figures + "heterogeneity.pdf", bbox_inches="tight")
 
+
+# =============================================================================
 # XI_VAR EXPERIMENT
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -136,7 +138,7 @@ dir_figures = "/home/simon/Documents/BCI/experiments/tuning/figures/"
 K = 8
 nreps = 7
 seed = 0
-xi_vars = [0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.]
+xi_vars = [1e-6, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.]
 
 pred_list = []
 for xi in xi_vars:
