@@ -72,7 +72,7 @@ sequence = eeg.sequence
 target = eeg.target
 character_idx = eeg.character_idx
 
-for c in [None, 0, 1, 2, 3, 4, 5]:
+for c in [None, 0, 1, 2, 3, 4,]:
     torch.cuda.empty_cache()
     results = BFFMResults.from_files(
         [dir_chains + file],
