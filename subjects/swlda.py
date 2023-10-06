@@ -130,7 +130,7 @@ eeg = KProtocol(
 
 # =============================================================================
 # swLDA predictions
-Bmat = np.load(dir_chains + f"K{subject}.swlda")
+Bmat = np.load(dir_chains + f"K{subject}.swlda.npy")
 # prepare data
 response = eeg.stimulus.cpu().numpy()
 type = eeg.stimulus_data["type"].values
