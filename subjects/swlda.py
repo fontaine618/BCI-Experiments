@@ -1,14 +1,9 @@
 import sys
 import torch
 import numpy as np
-import pandas as pd
 import os
-
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
-import matplotlib.pyplot as plt
-
-plt.style.use("seaborn-v0_8-whitegrid")
 from source.data.k_protocol import KProtocol
 from source.swlda.swlda import swlda, swlda_predict
 
@@ -31,10 +26,6 @@ window = 800.0
 bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
-
-# settings
-nchars = 19  # FIXME get this from the data instead
-nreps = 15  # FIXME get this from the data instead
 # -----------------------------------------------------------------------------
 
 
@@ -50,6 +41,8 @@ eeg = KProtocol(
     bandpass_order=bandpass_order,
     downsample=downsample,
 )
+nchars = eeg.stimulus_data["character"].nunique()
+nreps = eeg.stimulus_data["repetition"].nunique()
 # -----------------------------------------------------------------------------
 
 
@@ -104,10 +97,6 @@ window = 800.0
 bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
-
-# settings
-nchars = 27  # FIXME get this from the data instead
-nreps = 4  # FIXME get this from the data instead
 # -----------------------------------------------------------------------------
 
 
@@ -125,6 +114,8 @@ eeg = KProtocol(
     bandpass_order=bandpass_order,
     downsample=downsample,
 )
+nchars = eeg.stimulus_data["character"].nunique()
+nreps = eeg.stimulus_data["repetition"].nunique()
 # -----------------------------------------------------------------------------
 
 
@@ -153,10 +144,10 @@ true["char"] = eeg.keyboard[true["row"] - 1, true["col"] - 7]
 
 # metrics
 trndf = trn_cum_pred.join(true.set_index("character"), on="character", how="left", rsuffix="_true", lsuffix="_pred")
-trndf["hamming"] = (trndf["row_pred"] == trndf["row_true"]).astype(int) \
-                   + (trndf["col_pred"] == trndf["col_true"]).astype(int)
-trndf["acc"] = (trndf["char_pred"] == trndf["char_true"]).astype(int)
-trndf = trndf.groupby("repetition").agg({"hamming": "sum", "acc": "sum"})
+trndf["hamming"] = (trndf["row_pred"] == trndf["row_true"]).astype(float) \
+                   + (trndf["col_pred"] == trndf["col_true"]).astype(float)
+trndf["acc"] = (trndf["char_pred"] == trndf["char_true"]).astype(float) / 2.
+trndf = trndf.groupby("repetition").agg({"hamming": "mean", "acc": "mean"})
 trndf["dataset"] = "FRT"
 trndf["method"] = "swLDA"
 trndf.reset_index(inplace=True)

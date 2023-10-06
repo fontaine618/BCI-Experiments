@@ -1,22 +1,11 @@
 import sys
 import os
-
-import numpy as np
 import torch
-import time
-import pickle
-
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
-
 from source.bffmbci import BFFMResults
-import matplotlib.pyplot as plt
 import pandas as pd
 from torch.distributions import Categorical
-from source.swlda.swlda import swlda_predict
-
-plt.style.use("seaborn-v0_8-whitegrid")
-
 from source.data.k_protocol import KProtocol
 
 # =============================================================================
@@ -25,7 +14,6 @@ dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 dir_chains = "/home/simfont/Documents/BCI/experiments/subjects/chains/"
 dir_results = "/home/simfont/Documents/BCI/experiments/subjects/predict/"
 os.makedirs(dir_results, exist_ok=True)
-
 
 # file
 type = "FRT"
@@ -56,8 +44,6 @@ sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = True
 n_samples = 100
-nchars = 27  # FIXME get this from the data instead
-nreps = 4  # FIXME get this from the data instead
 factor_samples = 10
 # -----------------------------------------------------------------------------
 
@@ -75,6 +61,8 @@ eeg = KProtocol(
     bandpass_order=bandpass_order,
     downsample=downsample,
 )
+nchars = eeg.stimulus_data["character"].nunique()
+nreps = eeg.stimulus_data["repetition"].nunique()
 
 order = eeg.stimulus_order
 sequence = eeg.sequence
@@ -110,8 +98,8 @@ wide_pred_one_hot = self.get_predictions(log_prob, True)
 entropy = Categorical(logits=log_prob).entropy()
 
 target_ = target[::nreps, :].unsqueeze(1).repeat(1, nreps, 1)
-hamming = (wide_pred_one_hot != target_).double().sum(2).sum(0) / 2
-acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
+hamming = (wide_pred_one_hot != target_).double().sum(2).mean(0) / 2
+acc = (wide_pred_one_hot == target_).all(2).double().mean(0)
 
 target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 36)
 bce = (target36 * log_prob).sum(-1).mean(0)

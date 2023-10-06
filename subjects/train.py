@@ -3,10 +3,8 @@ import os
 import torch
 import time
 import pickle
-
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
-
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import BFFModel
 
