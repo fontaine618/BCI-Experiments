@@ -4,8 +4,8 @@
 #SBATCH --job-name=bci_subject
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=3:00:00
-#SBATCH --array=0
+#SBATCH --time=0:20:00
+#SBATCH --array=0-40
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
@@ -18,7 +18,7 @@
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
 #python -O train.py $SLURM_ARRAY_TASK_ID
-python -O predict_loo.py $SLURM_ARRAY_TASK_ID
+#python -O predict_loo.py $SLURM_ARRAY_TASK_ID
 #python -O predict_frt.py $SLURM_ARRAY_TASK_ID
-#python -O swlda.py $SLURM_ARRAY_TASK_ID
+python -O swlda.py $SLURM_ARRAY_TASK_ID
 

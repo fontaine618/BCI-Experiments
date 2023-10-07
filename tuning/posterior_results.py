@@ -1,24 +1,12 @@
 import sys
-import os
-
 import numpy as np
 import torch
-import time
-import pickle
 import seaborn as sns
-
 sys.path.insert(1, '/home/simon/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
-
-from source.bffmbci import BFFMResults
 import matplotlib.pyplot as plt
 import pandas as pd
-from torch.distributions import Categorical
-from source.swlda.swlda import swlda_predict
-
 plt.style.use("seaborn-v0_8-whitegrid")
-
-from source.data.k_protocol import KProtocol
 
 
 # =============================================================================
@@ -51,7 +39,7 @@ nreps = 7
 seed = 0
 cor = 0.5
 shrinkage = 7.
-heterogeneity = [1., 2., 3., 5., 7., 10., 15., 20.]
+heterogeneity = ["_sparse", 1., 2., 3., 5., 7., 10., 15., 20.]
 xi_var = 1.
 
 h_means = dict()
@@ -65,13 +53,16 @@ for h in heterogeneity:
 
 # merge together
 df = pd.concat([
-    pd.DataFrame({"heterogneity": h_means[h], "loading": l_means[h], "gamma": h})
+    pd.DataFrame({"heterogeneity": h_means[h], "loading": l_means[h], "gamma": h})
     for h in heterogeneity
 ])
 # clamp heterogeneity
-df["heterogneity"] = df["heterogneity"].clip(-10., 10.)
+df["heterogeneity"] = df["heterogeneity"].clip(-10., 10.)
 # melt loading and heterogeneity into rows
-df = df.melt(id_vars=["gamma"], value_vars=["loading", "heterogneity"])
+df = df.melt(id_vars=["gamma"], value_vars=["loading", "heterogeneity"])
+
+
+df["gamma"] = df["gamma"].replace("_sparse", "Horseshoe")
 
 # plot with seaborn kde plot
 # two plots from variable
