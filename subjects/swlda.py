@@ -103,7 +103,7 @@ subject = [
     # "169", "171", "172", "177", "178", "179", "183",
     # "184", "185", "190", "191", "212"
 ][int(sys.argv[1])]
-session = "002"
+session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 filename = dir_data + name + ".mat"
 
