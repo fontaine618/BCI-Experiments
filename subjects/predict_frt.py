@@ -51,7 +51,7 @@ factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = True
-n_samples = 100
+n_samples = 10
 factor_samples = 10
 # -----------------------------------------------------------------------------
 

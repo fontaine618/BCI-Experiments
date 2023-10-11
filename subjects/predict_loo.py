@@ -52,7 +52,7 @@ factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = True
-n_samples = 100
+n_samples = 10
 factor_samples = 10
 
 out = []
@@ -129,6 +129,7 @@ for c in [None, 0, 1, 2, 3, 4,]:
         "method": "BFFM",
     }, index=range(1, nreps + 1))
     print(df)
+    print(df[["acc", "bce", "mean_entropy"]])
 
     out.append(df)
 
