@@ -177,3 +177,4 @@ sns.relplot(
     hue_norm=LogNorm(vmin=0.003, vmax=3)
 )
 plt.savefig(dir_figures + "xi_var.pdf", bbox_inches="tight")
+

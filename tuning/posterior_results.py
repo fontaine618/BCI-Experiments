@@ -91,6 +91,9 @@ plt.savefig(dir_figures + "heterogeneity_posterior.pdf", bbox_inches="tight")
 
 
 
+
+
+
 # =============================================================================
 # Shrinkage
 dir = "/home/simon/Documents/BCI/experiments/tuning/"
@@ -120,25 +123,38 @@ K = 8
 nreps = 7
 seed = 0
 cor = 0.6
-shrinkage = [3., 4., 5., 7., 10.]
+shrinkage = [2., 5., 10.]
+reverse = [True, False]
 xi_var = 1.
 
-h_means = dict()
+l_means = dict()
 s_means = dict()
 for s in shrinkage:
-    # load posterior
-    s_mean = pd.read_csv(dir_results + f"shrinkage{s}_smean.csv", index_col=0).values
-    l_mean = pd.read_csv(dir_results + f"shrinkage{s}_lmean.csv", index_col=0).values
-    s_means[s] = s_mean.flatten()**0.5
-    l_means[s] = (l_mean**2).sum(0)**0.5
+    l_means[s] = dict()
+    s_means[s] = dict()
+    for r in reverse:
+        file = f"shrinkage{s}_{'reversed' if r else 'original'}"
+
+        # load posterior
+        s_mean = pd.read_csv(dir_results + file + "_smean.csv", index_col=0).values
+        l_mean = pd.read_csv(dir_results + file + "_lmean.csv", index_col=0).values
+        s_means[s][r] = s_mean.flatten()**0.5
+        l_means[s][r] = (l_mean**2).sum(0)**0.5
 
 # merge together
 df = pd.concat([
-    pd.DataFrame({"shrinkage_factor": s_means[s], "loading_norm": l_means[s], "shrinkage": s, "component": np.arange(8)+1})
+    pd.DataFrame({
+        "shrinkage_factor": s_means[s][r],
+        "initialization": "reversed" if r else "original",
+        "loading_norm": l_means[s][r],
+        "shrinkage": s,
+        "component": np.arange(8)+1}
+    )
     for s in shrinkage
+    for r in reverse
 ])
 # melt loading and heterogeneity into rows
-df = df.melt(id_vars=["shrinkage", "component"], value_vars=["shrinkage_factor", "loading_norm"])
+df = df.melt(id_vars=["shrinkage", "component", "initialization"], value_vars=["shrinkage_factor", "loading_norm"])
 
 
 plt.cla()
@@ -148,6 +164,7 @@ g = sns.relplot(
     y="value",
     row="variable",
     hue="shrinkage",
+    style="initialization",
     kind="line",
     aspect=2,
     height=2,
@@ -156,5 +173,5 @@ g = sns.relplot(
 # log scale on y axis
 # g.set(yscale="log")
 # save
-plt.savefig(dir_figures + "shrinkage_posterior.pdf", bbox_inches="tight")
+plt.savefig(dir_figures + "shrinkage_posterior_init.pdf", bbox_inches="tight")
 # -----------------------------------------------------------------------------
