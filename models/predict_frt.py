@@ -19,7 +19,7 @@ os.makedirs(dir_results, exist_ok=True)
 model_name = ["drcrm", "dcrm", "scrm", "drcsm", "scrmfr"][int(sys.argv[1])]
 
 # file
-type = "TRN"
+type = "FRT"
 subject = "114"
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
