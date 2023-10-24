@@ -11,8 +11,8 @@ from source.data.k_protocol import KProtocol
 # =============================================================================
 # SETUP
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subjects/chains/"
-dir_results = "/home/simfont/Documents/BCI/experiments/subjects/predict/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/models/chains/"
+dir_results = "/home/simfont/Documents/BCI/experiments/models/predict/"
 os.makedirs(dir_results, exist_ok=True)
 
 # choose model
