@@ -21,7 +21,7 @@ dir_data = "/home/simon/Documents/BCI/K_Protocol/"
 os.makedirs(dir_figures, exist_ok=True)
 os.makedirs(dir_results, exist_ok=True)
 
-Ks = list(range(2, 13))
+Ks = list(range(2, 14))
 
 subject = "114"
 
@@ -161,24 +161,15 @@ for K in Ks:
     mllk_posterior_mean = mllk[-1].item()
 
 
-    # get likelihood at posterior mean using posterior mean for latent factors
-
-    # set posterior mean
-    model.set(**variables)
-
-    # get likelihood at posterior mean
-    # to this end, we need to update the local variables
-    model.generate_local_variables()
-
-    model.variables["factor_processes"].data = \
-        model.variables["factor_processes"].posterior_mean_by_conditionals
-
-    model.variables["observations"].store_log_density()
-    llk_postmean = model.variables["observations"].log_density_history[-1]
-
-
-
-    # # get likelihood at posterior mean using posterior samples for latent factors
+    # WAIC computations
+    log_mean_mlk = torch.logsumexp(llk_long[:-1, ...], dim=1).sum().item() - np.log(n_samples)
+    var_mllk = llk_long[:-1, ...].var(dim=1).sum().item()
+    # NB: expected mllk is already copmuted by mllk_mean
+    # pWAIC = log_mean_mlk - mllk_mean
+    # WAIC = -2 * log_exp_mlk - pWAIC
+    #
+    #
+    # # get likelihood at posterior mean using posterior mean for latent factors
     #
     # # set posterior mean
     # model.set(**variables)
@@ -187,18 +178,21 @@ for K in Ks:
     # # to this end, we need to update the local variables
     # model.generate_local_variables()
     #
-    # for iter in range(1000 if K > 8 else 500):
-    #     model.variables["factor_processes"].sample()
-    #     model.variables["observations"].store_log_density()
-    #     if iter % 100 == 0:
-    #         print(iter, model.variables["observations"].log_density_history[-1])
-    #     llk_postmean = torch.Tensor(model.variables["observations"].log_density_history[-100:]).mean().item()
+    # model.variables["factor_processes"].data = \
+    #     model.variables["factor_processes"].posterior_mean_by_conditionals
+    #
+    # model.variables["observations"].store_log_density()
+    # llk_postmean = model.variables["observations"].log_density_history[-1]
 
+    # store
+    out[K] = {
+        "K": K,
+        "mean_mllk": mllk_mean, "mllk_postmean": mllk_posterior_mean,
+        "mean_llk": llk_mean, # "llk_postmean": llk_postmean,
+        "log_mean_mlk": log_mean_mlk, "var_mllk": var_mllk
+    }
 
-    out[K] = {"mean_mllk": mllk_mean, "mllk_postmean": mllk_posterior_mean,
-              "mean_llk": llk_mean, "llk_postmean": llk_postmean}
-
-    print(K, mllk_mean, mllk_posterior_mean, llk_mean, llk_postmean)
+    print(K, mllk_mean, mllk_posterior_mean)
     # -----------------------------------------------------------------------------
 
     # =============================================================================

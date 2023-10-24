@@ -94,6 +94,7 @@ os.makedirs(dir_results, exist_ok=True)
 
 # file
 type = "FRT"
+# type = "TRN"
 subject = [
     "106", "107", "108", "111", "112", "113", "114", "115",
     "117", "118", "119", "120", "121", "122", "123",
@@ -165,5 +166,6 @@ trndf["dataset"] = "FRT"
 trndf["method"] = "swLDA"
 trndf.reset_index(inplace=True)
 trndf["subject"] = subject
+# trndf.to_csv(dir_results + f"K{subject}.swlda")
 trndf.to_csv(dir_results + f"K{subject}.frtswlda")
 # -----------------------------------------------------------------------------
