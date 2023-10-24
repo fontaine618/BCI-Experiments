@@ -33,7 +33,7 @@ downsample = 8
 # model
 seed = 0
 K = 8
-n_iter = 20_000
+n_iter = 20#_000
 cor = 0.8
 xi_var = 0.1
 # -----------------------------------------------------------------------------
@@ -136,8 +136,8 @@ for i in range(n_iter):
 # =============================================================================
 # SAVE CHAIN
 out = model.results(
-    start=10_000,
-    thin=10
+    start=10,#_000,
+    thin=1#0
 )
 with open(dir_chains + f"K{subject}_{model_name}.chain", "wb") as f:
     pickle.dump(out, f)
