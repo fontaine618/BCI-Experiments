@@ -1,0 +1,5 @@
+,hamming,acc,mean_entropy,bce,dataset,repetition,subject,sample_mean,which_first,method
+1,1.5925925925925926,0.1111111111111111,2.0884705,-5.6271067,FRT,1,114,harmonic,sample,BFFM(scrmfr)
+2,1.3703703703703702,0.07407407407407407,1.4911965,-6.0484304,FRT,2,114,harmonic,sample,BFFM(scrmfr)
+3,1.5185185185185184,0.037037037037037035,1.1508521,-7.488498,FRT,3,114,harmonic,sample,BFFM(scrmfr)
+4,1.259259259259259,0.1111111111111111,1.1949366,-6.8346353,FRT,4,114,harmonic,sample,BFFM(scrmfr)
