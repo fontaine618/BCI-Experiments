@@ -59,7 +59,7 @@ file = f"xi_var{xi_var}.chain"
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
     [dir_chains + file],
-    warmup=10_000,
+    warmup=0,
     thin=1
 )
 self = results.to_predict(n_samples=n_samples)
