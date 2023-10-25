@@ -24,33 +24,38 @@ dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 dir_chains = dir + "chains/"
 dir_results = dir + "predict/"
 
+# file
 type = "TRN"
 subject = "114"
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 filename = dir_data + name + ".mat"
+
+# preprocessing
 window = 800.0
 bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
-factor_samples = 10
+
+# model
+seed = 0
+K = 8
+n_iter = 20_000
+cor = 0.8
+trnreps = 7
+xi_var = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.][int(sys.argv[1])]
+
+# prediction settings
 factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = True
 n_samples = 100
-nchars = 19
+# -----------------------------------------------------------------------------
 
-K = 8
-nreps = 7
-seed = 0
-cor = 0.5
-shrinkage = 7.
-heterogeneity = 3.
-xi_var = [0.000001, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.][int(sys.argv[1])]
-
+# =============================================================================
+# LOAD CHAIN
 file = f"xi_var{xi_var}.chain"
-
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
     [dir_chains + file],
@@ -74,7 +79,9 @@ eeg = KProtocol(
     bandpass_order=bandpass_order,
     downsample=downsample,
 )
-eeg = eeg.repetitions(range(1, nreps + 1))
+eeg = eeg.repetitions(range(1, trnreps + 1))
+nchars = eeg.stimulus_data["character"].nunique()
+nreps = eeg.stimulus_data["repetition"].nunique()
 
 order = eeg.stimulus_order
 sequence = eeg.sequence
@@ -84,7 +91,6 @@ character_idx = eeg.character_idx
 llk_long, chars = self.predict(
     order=order,
     sequence=sequence,
-    factor_samples=factor_samples,
     character_idx=character_idx,
     factor_processes_method=factor_processes_method
 )
@@ -114,9 +120,9 @@ df = pd.DataFrame({
     "min_max_proba": log_prob.max(2)[0].min(0)[0].cpu().exp(),
     "bce": bce.cpu(),
     "dataset": "training",
-    "training_reps": nreps,
+    "training_reps": trnreps,
     "repetition": range(1, nreps + 1),
-    "cor": cor,
+    "xi_var": xi_var,
     "sample_mean": sample_mean,
     "which_first": which_first,
 }, index=range(1, nreps + 1))
@@ -138,8 +144,9 @@ eeg = KProtocol(
     bandpass_order=bandpass_order,
     downsample=downsample,
 )
-eeg = eeg.repetitions(range(nreps + 1, 16))
-nreps = 15 - nreps
+eeg = eeg.repetitions(range(trnreps + 1, 16))
+nchars = eeg.stimulus_data["character"].nunique()
+nreps = eeg.stimulus_data["repetition"].nunique()
 
 order = eeg.stimulus_order
 sequence = eeg.sequence
@@ -149,7 +156,6 @@ character_idx = eeg.character_idx
 llk_long, chars = self.predict(
     order=order,
     sequence=sequence,
-    factor_samples=factor_samples,
     character_idx=character_idx,
     factor_processes_method=factor_processes_method
 )
@@ -179,9 +185,9 @@ df = pd.DataFrame({
     "min_max_proba": log_prob.max(2)[0].min(0)[0].cpu().exp(),
     "bce": bce.cpu(),
     "dataset": "testing",
-    "training_reps": nreps,
+    "training_reps": trnreps,
     "repetition": range(1, nreps + 1),
-    "cor": cor,
+    "xi_var": xi_var,
     "sample_mean": sample_mean,
     "which_first": which_first,
 }, index=range(1, nreps + 1))

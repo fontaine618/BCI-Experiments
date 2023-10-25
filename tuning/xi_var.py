@@ -3,34 +3,43 @@ import os
 import torch
 import time
 import pickle
-
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
-
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import BFFModel
 
+# =============================================================================
+# SETUP
 dir = "/home/simfont/Documents/BCI/experiments/tuning/"
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 
+# file
 type = "TRN"
 subject = "114"
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 filename = dir_data + name + ".mat"
+
+# preprocessing
 window = 800.0
 bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 8
+
+# model
 seed = 0
 K = 8
 n_iter = 20_000
-nreps = 7
-cor = 0.5
-shrinkage = 7.
-heterogeneity = 3.
-xi_var = [0.000001, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.][int(sys.argv[1])]
+cor = 0.8
+trnreps = 7
+xi_var = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.][int(sys.argv[1])]
+# -----------------------------------------------------------------------------
 
+
+
+
+# =============================================================================
+# LOAD DATA
 eeg = KProtocol(
     filename=filename,
     type=type,
@@ -43,7 +52,12 @@ eeg = KProtocol(
 )
 
 # subset to first repetitions
-eeg = eeg.repetitions(range(1, nreps+1))
+eeg = eeg.repetitions(range(1, trnreps+1))
+# -----------------------------------------------------------------------------
+
+
+# =============================================================================
+# INITIALIZE MODEL
 
 settings = {
     "latent_dim": K,
@@ -52,18 +66,18 @@ settings = {
     "stimulus_window": eeg.stimulus_window,
     "n_stimulus": (12, 2),
     "n_sequences": eeg.sequence.shape[0],
-    "nonnegative_smgp": False,
-    "scaling_activation": "exp",
+    "sparse": False,
+    "shrinkage": "none",
     "seed": seed
 }
 
 prior_parameters = {
     "observation_variance": (1., 10.),
-    "heterogeneities": heterogeneity,
-    "shrinkage_factor": (2., shrinkage),
-    "kernel_gp_factor_processes": (cor, xi_var, 1.),
+    "heterogeneities": 3.,
+    "shrinkage_factor": (1., 3.),
+    "kernel_gp_factor_processes": (cor, xi_var, 1.), # (1-step correlation, variance, power)
     "kernel_tgp_factor_processes": (cor, 0.5, 1.),
-    "kernel_gp_loading_processes": (cor, 0.1, 1.),
+    "kernel_gp_loading_processes": (cor, 1., 1.),
     "kernel_tgp_loading_processes": (cor, 0.5, 1.),
     "kernel_gp_factor": (cor, 1., 1.)
 }
@@ -75,7 +89,7 @@ model = BFFModel(
     **settings,
     **prior_parameters
 )
-
+# -----------------------------------------------------------------------------
 
 
 # =============================================================================
@@ -112,7 +126,10 @@ for i in range(n_iter):
 # SAVE CHAIN
 dir_out = dir + "chains/"
 os.makedirs(dir_out, exist_ok=True)
-out = model.results()
+out = model.results(
+    start=10_000,
+    thin=10
+)
 with open(dir_out + f"xi_var{xi_var}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
