@@ -175,6 +175,7 @@ wide_pred_one_hot = self.get_predictions(log_prob, True)
 entropy = Categorical(logits=log_prob).entropy()
 
 target_ = target[::nreps, :].unsqueeze(1).repeat(1, nreps, 1)
+target_ = target_.flip(0)
 hamming = (wide_pred_one_hot != target_).double().sum(2).mean(0) / 2
 acc = (wide_pred_one_hot == target_).all(2).double().mean(0)
 

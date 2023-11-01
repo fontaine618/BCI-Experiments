@@ -4,7 +4,7 @@
 #SBATCH --job-name=bci_subject
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=8:00:00
+#SBATCH --time=2:00:00
 #SBATCH --array=3-10
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
@@ -17,6 +17,6 @@
 # The application(s) to execute along with its input arguments and options:
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
-python -O train_nreps.py $SLURM_ARRAY_TASK_ID
+#python -O train_nreps.py $SLURM_ARRAY_TASK_ID
 python -O predict_nreps.py $SLURM_ARRAY_TASK_ID
 
