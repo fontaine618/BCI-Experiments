@@ -74,7 +74,7 @@ prior_parameters = {
     "heterogeneities": 3.,
     "shrinkage_factor": (1., 3.),
     "kernel_gp_factor_processes": (cor, 1., 1.), # (1-step correlation, variance, power)
-    "kernel_tgp_factor_processes": (cor, 1., 1.),
+    "kernel_tgp_factor_processes": (cor, 0.5, 1.),
     "kernel_gp_loading_processes": (cor, xi_var, 1.),
     "kernel_tgp_loading_processes": (cor, 0.5, 1.),
     "kernel_gp_factor": (cor, 1., 1.)

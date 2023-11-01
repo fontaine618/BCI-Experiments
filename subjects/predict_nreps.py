@@ -33,19 +33,20 @@ downsample = 8
 
 # model
 seed = 0
-K = 5
+K = 8
 n_iter = 20_000
-cor = 0.8
+cor = 0.7
 shrinkage = 5.
 heterogeneity = 3.
-xi_var = 0.003
+xi_var = 0.1
+sparse = False
 
 # settings
 factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = True
-n_samples = 3
+n_samples = 100
 
 out = []
 # -----------------------------------------------------------------------------
@@ -158,7 +159,6 @@ self = results.to_predict(n_samples=n_samples)
 llk_long, chars = self.predict(
     order=order,
     sequence=sequence,
-    factor_samples=factor_samples,
     character_idx=character_idx,
     factor_processes_method=factor_processes_method,
     drop_component=None

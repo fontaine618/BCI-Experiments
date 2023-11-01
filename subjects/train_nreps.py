@@ -30,12 +30,12 @@ downsample = 8
 
 # model
 seed = 0
-K = 5
-n_iter = 2_000
-cor = 0.8
+K = 8
+n_iter = 20_000
+cor = 0.7
 shrinkage = 5.
 heterogeneity = 3.
-xi_var = 0.003
+xi_var = 0.1
 sparse = False
 # -----------------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ settings = {
 prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
-    "shrinkage_factor": (2., shrinkage),
+    "shrinkage_factor": (1., shrinkage),
     "kernel_gp_factor_processes": (cor, 1., 1.),
     "kernel_tgp_factor_processes": (cor, 0.5, 1.),
     "kernel_gp_loading_processes": (cor, 0.1, 1.),
@@ -126,7 +126,7 @@ for i in range(n_iter):
 # =============================================================================
 # SAVE CHAIN
 out = model.results(
-    start=1_000,
+    start=10_000,
     thin=10
 )
 with open(dir_chains + f"K{subject}_trnreps{trn_reps}.chain", "wb") as f:
