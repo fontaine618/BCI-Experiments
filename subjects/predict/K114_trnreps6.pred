@@ -1,0 +1,16 @@
+,hamming,acc,mean_entropy,bce,dataset,repetition,subject,sample_mean,which_first,drop_component,method,training_reps
+1,0.42105263157894735,0.631578947368421,0.74155486,-0.92863387,training,1,114,harmonic,sample,None,BFFM,6
+2,0.05263157894736842,0.9473684210526315,0.17165245,-0.2786287,training,2,114,harmonic,sample,None,BFFM,6
+3,0.0,1.0,0.061325256,-0.018606085,training,3,114,harmonic,sample,None,BFFM,6
+4,0.0,1.0,0.028945817,-0.0064761513,training,4,114,harmonic,sample,None,BFFM,6
+5,0.0,1.0,0.007736488,-0.0015419408,training,5,114,harmonic,sample,None,BFFM,6
+6,0.0,1.0,0.030611198,-0.016344573,training,6,114,harmonic,sample,None,BFFM,6
+1,0.6842105263157894,0.3684210526315789,1.2286626,-1.9400699,testing,1,114,harmonic,sample,None,BFFM,6
+2,0.10526315789473684,0.894736842105263,0.4026296,-0.6956209,testing,2,114,harmonic,sample,None,BFFM,6
+3,0.15789473684210525,0.8421052631578947,0.14106439,-0.8973581,testing,3,114,harmonic,sample,None,BFFM,6
+4,0.15789473684210525,0.8421052631578947,0.07389592,-0.4140625,testing,4,114,harmonic,sample,None,BFFM,6
+5,0.21052631578947367,0.7894736842105263,0.14444695,-0.5243627,testing,5,114,harmonic,sample,None,BFFM,6
+6,0.05263157894736842,0.9473684210526315,0.0115682185,-0.27703536,testing,6,114,harmonic,sample,None,BFFM,6
+7,0.0,1.0,0.04838322,-0.024054276,testing,7,114,harmonic,sample,None,BFFM,6
+8,0.0,1.0,0.008352551,-0.0013363487,testing,8,114,harmonic,sample,None,BFFM,6
+9,0.0,1.0,0.0003106837,0.0,testing,9,114,harmonic,sample,None,BFFM,6
