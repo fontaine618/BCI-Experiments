@@ -31,7 +31,7 @@ downsample = 8
 # model
 seed = 0
 K = 5
-n_iter = 20_000
+n_iter = 2_000
 cor = 0.8
 shrinkage = 5.
 heterogeneity = 3.
@@ -126,7 +126,7 @@ for i in range(n_iter):
 # =============================================================================
 # SAVE CHAIN
 out = model.results(
-    start=10_000,
+    start=1_000,
     thin=10
 )
 with open(dir_chains + f"K{subject}_trnreps{trn_reps}.chain", "wb") as f:

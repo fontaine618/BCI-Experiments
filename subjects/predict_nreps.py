@@ -45,8 +45,7 @@ factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = True
-n_samples = 10
-factor_samples = 10
+n_samples = 3
 
 out = []
 # -----------------------------------------------------------------------------
@@ -85,7 +84,6 @@ self = results.to_predict(n_samples=n_samples)
 llk_long, chars = self.predict(
     order=order,
     sequence=sequence,
-    factor_samples=factor_samples,
     character_idx=character_idx,
     factor_processes_method=factor_processes_method,
     drop_component=None
