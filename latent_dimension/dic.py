@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import torch
+import arviz as az
 from source.bffmbci import BFFMResults
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import BFFModel
@@ -148,51 +149,50 @@ for K in Ks:
     sequence = eeg.sequence
     target = eeg.target
     character_idx = eeg.character_idx
-    llk_long = predobj.marginal_log_likelihood(
+    mllk_long = predobj.marginal_log_likelihood(
         order=order,
         sequence=sequence,
         target=target,
         batch_size=10 if K > 8 else 25
     )
-    mllk = llk_long.sum(0)
-    # all but last one are posterior samples to average over
-    mllk_mean = mllk[:-1].mean().item()
-    # last one is at posterior mean
-    mllk_posterior_mean = mllk[-1].item()
 
+    lppd_i = torch.logsumexp(mllk_long[:, :-1], dim=1) - np.log(n_samples)
+    lppd = lppd_i.sum().item()
 
-    # WAIC computations
-    log_mean_mlk = torch.logsumexp(llk_long[:-1, ...], dim=1).sum().item() - np.log(n_samples)
-    var_mllk = llk_long[:-1, ...].var(dim=1).sum().item()
-    # NB: expected mllk is already copmuted by mllk_mean
-    # pWAIC = log_mean_mlk - mllk_mean
-    # WAIC = -2 * log_exp_mlk - pWAIC
-    #
-    #
-    # # get likelihood at posterior mean using posterior mean for latent factors
-    #
-    # # set posterior mean
-    # model.set(**variables)
-    #
-    # # get likelihood at posterior mean
-    # # to this end, we need to update the local variables
-    # model.generate_local_variables()
-    #
-    # model.variables["factor_processes"].data = \
-    #     model.variables["factor_processes"].posterior_mean_by_conditionals
-    #
-    # model.variables["observations"].store_log_density()
-    # llk_postmean = model.variables["observations"].log_density_history[-1]
+    # WAIC
+    vars_lpd = mllk_long[:, :-1].var(dim=1)
+    waic_i = -2 * (lppd_i - vars_lpd)
+    waic_se = (n_samples * waic_i.var()).pow(0.5).item()
+    waic_sum = waic_i.sum().item()
+    waic_p = vars_lpd.sum().item()
+
+    # # DIC
+    # mllk_posterior_mean = mllk_long[:, -1]
+    # dic_p_i = 2 * (mllk_posterior_mean - lppd_i)
+    # dic_i = -2 * (lppd_i - mllk_posterior_mean)
+    # dic_se = (n_samples * dic_i.var()).pow(0.5).item()
+    # dic_sum = dic_i.sum().item()
+    # dic_p = mllk_posterior_mean.sum().item()
+
+    # PSIS-LOO
+    llk = mllk_long[:, :-1].unsqueeze(0).cpu().numpy()
+    log_weights, kss = az.psislw(-llk, reff=0.1)
+    log_weights += llk
+    log_weights = torch.Tensor(log_weights)
+    loo_lppi_i = torch.logsumexp(log_weights, dim=-1)
+    loo_lppd = loo_lppi_i.sum().item()
+    loo_lppd_se = (n_samples * torch.var(loo_lppi_i)).pow(0.5).item()
+    loo_p = lppd - loo_lppd
 
     # store
     out[K] = {
         "K": K,
-        "mean_mllk": mllk_mean, "mllk_postmean": mllk_posterior_mean,
-        "mean_llk": llk_mean, # "llk_postmean": llk_postmean,
-        "log_mean_mlk": log_mean_mlk, "var_mllk": var_mllk
+        "lppd": lppd,
+        "elpd_loo": loo_lppd, "elpd_loo_se": loo_lppd_se, "p_loo": loo_p,
+        "elpd_waic": waic_sum, "elpd_waic_se": waic_se, "p_waic": waic_p,
     }
 
-    print(K, mllk_mean, mllk_posterior_mean)
+    print(out)
     # -----------------------------------------------------------------------------
 
     # =============================================================================

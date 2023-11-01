@@ -25,25 +25,27 @@ Ks = list(range(2, 13))
 subject = "114"
 
 out = pd.read_csv(dir_results + f"K{subject}_llk.csv", index_col=0)
+out["elpd_loo"] *= -2
+out["elpd_loo_se"] *= 2
 # -----------------------------------------------------------------------------
 
 
 
-# =============================================================================
-# COMPUTE ICs
-out["p_mllk"] = 2 * (out["mllk_postmean"] - out["mean_mllk"])
-out["p_waic2"] = out["var_mllk"]
-out["DIC"] = -2 * out["mllk_postmean"] + 2 * out["p_mllk"]
-out["WAIC"] = -2 * out["mean_mllk"] + 2 * out["p_waic2"]
-out["Deviance"] = -2 * out["mean_mllk"]
-
-n = 285
-out["Deviance/n"] = -2 * out["mean_mllk"] / n
-out["DIC/n"] = -2 * out["mllk_postmean"] / n + 2 * out["p_mllk"]
-out["WAIC/n"] = -2 * out["mean_mllk"] / n + 2 * out["p_waic2"]
-
-out["AIC"] = -2 * out["mllk_postmean"] + 2 * n * 80 * out["K"]
-# -----------------------------------------------------------------------------
+# # =============================================================================
+# # COMPUTE ICs
+# out["p_mllk"] = 2 * (out["mllk_postmean"] - out["mean_mllk"])
+# out["p_waic2"] = out["var_mllk"]
+# out["DIC"] = -2 * out["mllk_postmean"] + 2 * out["p_mllk"]
+# out["WAIC"] = -2 * out["mean_mllk"] + 2 * out["p_waic2"]
+# out["Deviance"] = -2 * out["mean_mllk"]
+#
+# n = 285
+# out["Deviance/n"] = -2 * out["mean_mllk"] / n
+# out["DIC/n"] = -2 * out["mllk_postmean"] / n + 2 * out["p_mllk"]
+# out["WAIC/n"] = -2 * out["mean_mllk"] / n + 2 * out["p_waic2"]
+#
+# out["AIC"] = -2 * out["mllk_postmean"] + 2 * n * 80 * out["K"]
+# # -----------------------------------------------------------------------------
 
 
 

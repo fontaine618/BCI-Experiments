@@ -139,7 +139,7 @@ dir_figures = "/home/simon/Documents/BCI/experiments/tuning/figures/"
 K = 8
 nreps = 7
 seed = 0
-xi_vars = [1e-6, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.]
+xi_vars = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1., 3.]
 
 pred_list = []
 for xi in xi_vars:
