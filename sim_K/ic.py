@@ -189,7 +189,7 @@ loo_p = lppd - loo_lppd
 
 # store
 out = {
-    "K": K,
+    "K": K, "seed": seed, "Ktrue": Ktrue,
     "log_bf": log_bf, "log_bf_loo": log_bf_loo_mean, "log_bf_loo_se": log_bf_loo_se,
     "lppd": lppd,
     "elpd_loo": loo_lppd, "elpd_loo_se": loo_lppd_se, "p_loo": loo_p,
@@ -201,5 +201,5 @@ print(out)
 
 # =============================================================================
 # SAVE RESULTS
-pd.DataFrame(out).T.to_csv(dir_results + f"dim{Ktrue}_seed{seed}_K{K}.ic")
+pd.DataFrame(out, index=[0]).to_csv(dir_results + f"dim{Ktrue}_seed{seed}_K{K}.ic")
 # -----------------------------------------------------------------------------
