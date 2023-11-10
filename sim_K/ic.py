@@ -33,7 +33,7 @@ seed, Ktrue, K = list(combinations)[i]
 
 # file
 file_data = f"dim{Ktrue}_seed{seed}"
-file_chain = f"dim{Ktrue}_seed{seed}_K{K}.chain"
+file_chain = f"dim{Ktrue}_K{K}_seed{seed}.chain"
 
 # model
 n_iter = 10_000
