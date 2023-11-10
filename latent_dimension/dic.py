@@ -126,6 +126,7 @@ for K in Ks:
         warmup=0,
         thin=1
     )
+    results.add_transformed_variables()
     llk = results.chains["log_likelihood.observations"]
     llk_mean = llk.mean().item()
 
@@ -134,7 +135,6 @@ for K in Ks:
         k: v.mean(dim=(0, 1))
         for k, v in results.chains.items()
     }
-    del variables["log_likelihood.observations"]
 
     # get marginal likelihood for posterior samples
     # and for the mean (last in the list)
@@ -153,11 +153,22 @@ for K in Ks:
         order=order,
         sequence=sequence,
         target=target,
-        batch_size=10 if K > 8 else 25
+        batch_size=10
     )
 
     lppd_i = torch.logsumexp(mllk_long[:, :-1], dim=1) - np.log(n_samples)
     lppd = lppd_i.sum().item()
+
+    # Bayes Factor through harmonic mean estimator
+    llk = mllk_long[:, :-1]
+    llk_sum = llk.sum(0)
+    log_bf = - torch.logsumexp(-llk_sum, dim=0).item() + np.log(n_samples)
+    # LOO variance estimate
+    n_obs = llk.shape[0]
+    log_bf_loo = - torch.logsumexp(-llk_sum + llk, dim=0) + np.log(n_samples-1)
+    log_bf_loo *= n_obs / (n_obs - 1)
+    log_bf_loo_mean = log_bf_loo.mean().item()
+    log_bf_loo_se = (n_samples * torch.var(log_bf_loo)).pow(0.5).item()
 
     # WAIC
     vars_lpd = mllk_long[:, :-1].var(dim=1)
@@ -187,6 +198,7 @@ for K in Ks:
     # store
     out[K] = {
         "K": K,
+        "log_bf": log_bf, "log_bf_loo": log_bf_loo_mean, "log_bf_loo_se": log_bf_loo_se,
         "lppd": lppd,
         "elpd_loo": loo_lppd, "elpd_loo_se": loo_lppd_se, "p_loo": loo_p,
         "elpd_waic": waic_sum, "elpd_waic_se": waic_se, "p_waic": waic_p,

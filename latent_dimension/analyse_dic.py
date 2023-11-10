@@ -27,7 +27,63 @@ subject = "114"
 out = pd.read_csv(dir_results + f"K{subject}_llk.csv", index_col=0)
 out["elpd_loo"] *= -2
 out["elpd_loo_se"] *= 2
+out["BF"] = out["log_bf_loo"].diff()
 # -----------------------------------------------------------------------------
+
+
+# =============================================================================
+# PLOT RESULTS
+filename = dir_figures + "ics.pdf"
+fig, axes = plt.subplots(1, 4, figsize=(10, 3), sharey=None, sharex="all")
+# PSIS-LOO
+ax = axes[0]
+ax.plot(out["K"], out["elpd_loo"], marker="o")
+ax.fill_between(
+    out["K"],
+    out["elpd_loo"] - out["elpd_loo_se"],
+    out["elpd_loo"] + out["elpd_loo_se"],
+    alpha=0.5,
+)
+ax.set_xlabel("Number of components")
+ax.set_ylabel("PSIS-LOO")
+# WAIC
+ax = axes[1]
+ax.plot(out["K"], out["elpd_waic"], marker="o")
+ax.fill_between(
+    out["K"],
+    out["elpd_waic"] - out["elpd_waic_se"],
+    out["elpd_waic"] + out["elpd_waic_se"],
+    alpha=0.5,
+)
+ax.set_xlabel("Number of components")
+ax.set_ylabel("WAIC")
+# ML
+ax = axes[2]
+ax.plot(out["K"], out["log_bf_loo"], marker="o")
+ax.fill_between(
+    out["K"],
+    out["log_bf_loo"] - out["log_bf_loo_se"],
+    out["log_bf_loo"] + out["log_bf_loo_se"],
+    alpha=0.5,
+)
+ax.set_xlabel("Number of components")
+ax.set_ylabel("Marginal llk (HM)")
+# BF
+ax = axes[3]
+ax.plot(out["K"], out["BF"], marker="o")
+ax.set_xlabel("Number of components")
+ax.set_ylabel("log(BF)")
+
+plt.suptitle(f"Subject {subject}: latent dimension selection")
+plt.tight_layout()
+# plt.show()
+plt.savefig(filename, bbox_inches="tight")
+# -----------------------------------------------------------------------------
+
+
+
+
+
 
 
 
