@@ -149,11 +149,16 @@ for K in Ks:
     sequence = eeg.sequence
     target = eeg.target
     character_idx = eeg.character_idx
-    mllk_long = predobj.marginal_log_likelihood(
+    # mllk_long = predobj.marginal_log_likelihood(
+    #     order=order,
+    #     sequence=sequence,
+    #     target=target,
+    #     batch_size=10
+    # )
+    mllk_long = predobj.maximum_log_likelihood(
         order=order,
         sequence=sequence,
-        target=target,
-        batch_size=10
+        target=target
     )
 
     lppd_i = torch.logsumexp(mllk_long[:, :-1], dim=1) - np.log(n_samples)
@@ -209,5 +214,5 @@ for K in Ks:
 
     # =============================================================================
     # SAVE RESULTS
-    pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_llk.csv")
+    pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_llk2.csv")
     # -----------------------------------------------------------------------------
