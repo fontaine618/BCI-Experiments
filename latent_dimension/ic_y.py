@@ -8,8 +8,6 @@ import torch
 import arviz as az
 from source.bffmbci import BFFMResults
 from source.data.k_protocol import KProtocol
-
-plt.style.use('seaborn-whitegrid')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 
@@ -45,7 +43,7 @@ factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = False
-n_samples = 3
+n_samples = 1000
 factor_samples = 10
 # -----------------------------------------------------------------------------
 

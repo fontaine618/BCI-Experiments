@@ -4,7 +4,7 @@
 #SBATCH --job-name=bci_K
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=0:03:00
+#SBATCH --time=3:00:00
 #SBATCH --array=2-13
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
