@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
 import arviz as az
 from source.bffmbci import BFFMResults
