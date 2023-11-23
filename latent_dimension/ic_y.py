@@ -1,14 +1,12 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 import sys
 import torch
 import arviz as az
 from source.bffmbci import BFFMResults
 from source.data.k_protocol import KProtocol
-from source.bffmbci.bffm import BFFModel
 
 plt.style.use('seaborn-whitegrid')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
