@@ -132,6 +132,8 @@ llk_long = np.load(dir_results + f"dim{Ktrue}_K{K}_seed{seed}.npy")
 
 # =============================================================================
 # TRANSFORM TO BCE
+chars = 19
+reps = 15
 # llk_long is ncahrs x nreps x 36 x nsamples
 # reshape to (nchars x nreps) x 36 x nsamples
 llk_long2 = llk_long.reshape(nchars * nreps, 36, n_samples)
