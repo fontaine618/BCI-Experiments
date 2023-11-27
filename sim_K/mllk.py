@@ -12,7 +12,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 # SETUP
 dir_results = "/home/simfont/Documents/BCI/experiments/sim_K/results/"
 dir_chains = "/home/simfont/Documents/BCI/experiments/sim_K/chains/"
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir_data = "/home/simfont/Documents/BCI/experiments/sim_K/data/"
 os.makedirs(dir_results, exist_ok=True)
 
 # experiments
