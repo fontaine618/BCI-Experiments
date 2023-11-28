@@ -4,8 +4,8 @@
 #SBATCH --job-name=bci_sim_K
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=0:10:00
-#SBATCH --array=0
+#SBATCH --time=5:00:00
+#SBATCH --array=0-80
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
@@ -20,6 +20,6 @@ source /home/simfont/venvs/bci/bin/activate
 #python -O train.py $SLURM_ARRAY_TASK_ID
 #python -O ic.py $SLURM_ARRAY_TASK_ID
 #python -O ic2.py $SLURM_ARRAY_TASK_ID
-#python -O mllk.py $SLURM_ARRAY_TASK_ID
+python -O mllk.py $SLURM_ARRAY_TASK_ID
 python -O ic_y.py $SLURM_ARRAY_TASK_ID
 
