@@ -81,7 +81,7 @@ llk_long, chars = self.predict(
 )
 # save
 np.save(
-    dir_results + f"dim{Ktrue}_K{K}_seed{seed}.npy{n_samples}",
+    dir_results + f"dim{Ktrue}_K{K}_seed{seed}.npy",
     llk_long.cpu().numpy()
 )
 # -----------------------------------------------------------------------------

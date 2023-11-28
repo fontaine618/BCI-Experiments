@@ -124,7 +124,7 @@ self = results.to_predict(n_samples=n_samples)
 
 # =============================================================================
 # GET PREDICTIVE PROBABILITIES
-llk_long = np.load(dir_results + f"dim{Ktrue}_K{K}_seed{seed}.npy{n_samples}")
+llk_long = np.load(dir_results + f"dim{Ktrue}_K{K}_seed{seed}.npy")
 llk_long = torch.Tensor(llk_long)
 # -----------------------------------------------------------------------------
 
