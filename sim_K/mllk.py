@@ -76,11 +76,12 @@ llk_long, chars = self.predict(
     factor_samples=factor_samples,
     character_idx=character_idx,
     factor_processes_method=factor_processes_method,
-    drop_component=None
+    drop_component=None,
+    batchsize=10
 )
 # save
 np.save(
-    dir_results + f"dim{Ktrue}_K{K}_seed{seed}.npy",
+    dir_results + f"dim{Ktrue}_K{K}_seed{seed}.npy{n_samples}",
     llk_long.cpu().numpy()
 )
 # -----------------------------------------------------------------------------
