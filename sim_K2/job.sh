@@ -5,7 +5,7 @@
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
 #SBATCH --time=12:00:00
-#SBATCH --array=1-10
+#SBATCH --array=9
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
