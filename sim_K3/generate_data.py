@@ -20,8 +20,8 @@ n_channels = 16
 n_characters = 19
 n_repetitions = 15
 n_stimulus = (12, 2)
-stimulus_window = 55
-stimulus_to_stimulus_interval = 10
+stimulus_window = 26
+stimulus_to_stimulus_interval = 5
 n_sequences = n_repetitions * n_characters
 
 # experiments
@@ -123,8 +123,8 @@ for seed, Kx, Ky in combinations:
                 variables[k][dim, ...] = 0.
     # reduce signal, otherwise it is too easy
     for k in [
-        "smgp_scaling.target_process",
-        "smgp_factors.target_process",
+        "smgp_scaling.mixing_process",
+        "smgp_factors.mixing_process",
     ]:
         variables[k] *= 0.2
     # put in model

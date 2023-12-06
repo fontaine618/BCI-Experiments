@@ -41,8 +41,8 @@ sparse = False
 
 # dimensions
 n_channels = 16
-stimulus_window = 55
-stimulus_to_stimulus_interval = 10
+stimulus_window = 26
+stimulus_to_stimulus_interval = 5
 # -----------------------------------------------------------------------------
 
 

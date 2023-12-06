@@ -48,8 +48,8 @@ sparse = False
 n_characters = 19
 n_repetitions = 15
 n_channels = 16
-stimulus_window = 55
-stimulus_to_stimulus_interval = 10
+stimulus_window = 26
+stimulus_to_stimulus_interval = 5
 
 # prediction settings
 factor_processes_method = "analytical"
