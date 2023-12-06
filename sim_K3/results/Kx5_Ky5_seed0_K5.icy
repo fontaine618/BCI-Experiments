@@ -1,0 +1,12 @@
+,0
+K,5.0
+log_bf,-6.395087392974119e-08
+log_bf_loo,-1.0610923767089844
+log_bf_loo_se,0.0
+lppd,0.0
+elpd_loo,0.0
+elpd_loo_se,0.0
+p_loo,0.0
+elpd_waic,0.0
+elpd_waic_se,0.0
+p_waic,0.0
