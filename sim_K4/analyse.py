@@ -12,8 +12,8 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simon/Documents/BCI/experiments/sim_K3/results/"
-dir_figures = "/home/simon/Documents/BCI/experiments/sim_K3/figures/"
+dir_results = "/home/simon/Documents/BCI/experiments/sim_K4/results/"
+dir_figures = "/home/simon/Documents/BCI/experiments/sim_K4/figures/"
 os.makedirs(dir_figures, exist_ok=True)
 
 # experiments

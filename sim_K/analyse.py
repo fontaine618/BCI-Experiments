@@ -30,7 +30,11 @@ combinations = it.product(seeds, Ktrues, Ks)
 out = []
 for i, (seed, Ktrue, K) in enumerate(list(combinations)):
     try:
-        out.append(pd.read_csv(dir_results + f"dim{Ktrue}_seed{seed}_K{K}.ic", index_col=0))
+        # out.append(pd.read_csv(dir_results + f"dim{Ktrue}_seed{seed}_K{K}.ic", index_col=0))
+        df = pd.read_csv(dir_results + f"dim{Ktrue}_K{K}_seed{seed}.icy", index_col=0).T
+        df["seed"] = seed
+        df["Ktrue"] = Ktrue
+        out.append(df)
     except FileNotFoundError:
         print(i, seed, Ktrue, K)
 out = pd.concat(out)
@@ -81,6 +85,6 @@ for row, n in enumerate(metrics_display):
     g.axes[row, 0].set_ylabel(n)
 g.set_titles(template="True K={col_name}")
 # plt.show()
-plt.savefig(dir_results + "ics.pdf")
+plt.savefig(dir_results + "ics_y.pdf")
 
 # -----------------------------------------------------------------------------

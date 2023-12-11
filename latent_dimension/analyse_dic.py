@@ -23,138 +23,81 @@ os.makedirs(dir_results, exist_ok=True)
 
 Ks = list(range(2, 13))
 subject = "114"
-
-out = pd.read_csv(dir_results + f"K{subject}_llk.csv", index_col=0)
-out["elpd_loo"] *= -2
-out["elpd_loo_se"] *= 2
-out["BF"] = out["log_bf_loo"].diff()
 # -----------------------------------------------------------------------------
+
+
+
+# =============================================================================
+# LOAD RESULTS
+out = pd.DataFrame()
+for K in Ks:
+    file = f"K{subject}_dim{K}_llk_y.csv"
+    res = pd.read_csv(dir_results + file, index_col=0).T
+    out = pd.concat([out, res], axis=0)
+# -----------------------------------------------------------------------------
+
+
 
 
 # =============================================================================
 # PLOT RESULTS
-filename = dir_figures + "ics.pdf"
-fig, axes = plt.subplots(1, 4, figsize=(10, 3), sharey=None, sharex="all")
-# PSIS-LOO
-ax = axes[0]
-ax.plot(out["K"], out["elpd_loo"], marker="o")
-ax.fill_between(
-    out["K"],
-    out["elpd_loo"] - out["elpd_loo_se"],
-    out["elpd_loo"] + out["elpd_loo_se"],
-    alpha=0.5,
-)
-ax.set_xlabel("Number of components")
-ax.set_ylabel("PSIS-LOO")
-# WAIC
-ax = axes[1]
-ax.plot(out["K"], out["elpd_waic"], marker="o")
-ax.fill_between(
-    out["K"],
-    out["elpd_waic"] - out["elpd_waic_se"],
-    out["elpd_waic"] + out["elpd_waic_se"],
-    alpha=0.5,
-)
-ax.set_xlabel("Number of components")
-ax.set_ylabel("WAIC")
-# ML
-ax = axes[2]
-ax.plot(out["K"], out["log_bf_loo"], marker="o")
-ax.fill_between(
-    out["K"],
-    out["log_bf_loo"] - out["log_bf_loo_se"],
-    out["log_bf_loo"] + out["log_bf_loo_se"],
-    alpha=0.5,
-)
-ax.set_xlabel("Number of components")
-ax.set_ylabel("Marginal llk (HM)")
-# BF
-ax = axes[3]
-ax.plot(out["K"], out["BF"], marker="o")
-ax.set_xlabel("Number of components")
+filename = dir_figures + "ics_y.pdf"
+
+fig, axs = plt.subplots(1, 3, figsize=(12, 4), sharex=True)
+# fig 1: Bayes factor
+ax = axs[0]
+ax.axhline(0, color="black", linestyle="--")
+log_bf = out["log_bf_loo"]
+# log_bf_se = out["log_bf_loo_se"]
+K = out["K"][1:]
+log_bf = log_bf.diff()[1:]
+# log_bf_se = np.sqrt(log_bf_se.values[1:]**2 + log_bf_se.values[:-1]**2)
+ax.plot(K, log_bf, color="black")
+# ax.fill_between(K, log_bf - 2*log_bf_se, log_bf + 2*log_bf_se, color="black", alpha=0.2)
 ax.set_ylabel("log(BF)")
+ax.set_title("Bayes factor")
+ax.set_xlabel("Comparison K v. K-1")
+ax.set_xticks(K)
+ax.set_xticklabels(K)
+# ax.set_yscale("symlog")
 
-plt.suptitle(f"Subject {subject}: latent dimension selection")
+# fig 2: WAIC
+K = out["K"].astype(int)
+ax = axs[1]
+waic = out["elpd_waic"]
+waic_se = out["elpd_waic_se"]
+ax.plot(K, waic, color="black")
+ax.fill_between(K, waic - 2*waic_se, waic + 2*waic_se, color="black", alpha=0.2)
+ax.set_ylabel("elpd")
+ax.set_title("WAIC")
+ax.set_xlabel("Number of components")
+ax.set_xticks(K)
+ax.set_xticklabels(K)
+
+# fig 3: PSIS-LOO
+ax = axs[2]
+loo = out["elpd_loo"]
+loo_se = out["elpd_loo_se"]
+ax.plot(K, loo, color="black")
+ax.fill_between(K, loo - 2*loo_se, loo + 2*loo_se, color="black", alpha=0.2)
+ax.set_ylabel("elpd")
+ax.set_title("PSIS-LOO")
+ax.set_xlabel("Number of components")
+ax.set_xticks(K)
+ax.set_xticklabels(K)
+
+# # fig4: LPPD
+# ax = axs[3]
+# lppd = out["lppd"]
+# ax.plot(K, lppd, color="black")
+# ax.set_ylabel("lppd")
+# ax.set_title("LPPD")
+# ax.set_xlabel("Number of components")
+# ax.set_xticks(K)
+# ax.set_xticklabels(K)
+
+
 plt.tight_layout()
-# plt.show()
-plt.savefig(filename, bbox_inches="tight")
+plt.savefig(filename)
+
 # -----------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-# # =============================================================================
-# # COMPUTE ICs
-# out["p_mllk"] = 2 * (out["mllk_postmean"] - out["mean_mllk"])
-# out["p_waic2"] = out["var_mllk"]
-# out["DIC"] = -2 * out["mllk_postmean"] + 2 * out["p_mllk"]
-# out["WAIC"] = -2 * out["mean_mllk"] + 2 * out["p_waic2"]
-# out["Deviance"] = -2 * out["mean_mllk"]
-#
-# n = 285
-# out["Deviance/n"] = -2 * out["mean_mllk"] / n
-# out["DIC/n"] = -2 * out["mllk_postmean"] / n + 2 * out["p_mllk"]
-# out["WAIC/n"] = -2 * out["mean_mllk"] / n + 2 * out["p_waic2"]
-#
-# out["AIC"] = -2 * out["mllk_postmean"] + 2 * n * 80 * out["K"]
-# # -----------------------------------------------------------------------------
-
-
-
-# =============================================================================
-# PLOT RESULTS
-filename = dir_figures + "ics.pdf"
-
-# melt DIC and WAIC into one column
-ics = out.melt(
-    id_vars=["K"],
-    value_vars=["DIC", "WAIC", "Deviance", "AIC"],
-    var_name="name",
-    value_name="value"
-)
-ics["type"] = "IC"
-icsbyn = out.melt(
-    id_vars=["K"],
-    value_vars=["DIC/n", "WAIC/n", "Deviance/n"],
-    var_name="name",
-    value_name="value"
-)
-icsbyn["type"] = "IC/n"
-penalties = out.melt(
-    id_vars=["K"],
-    value_vars=["p_mllk", "p_waic2"],
-    var_name="name",
-    value_name="value"
-)
-penalties["type"] = "Penalty"
-penalties.replace({"p_mllk": "DIC", "p_waic2": "WAIC"}, inplace=True)
-# merge
-df = pd.concat([ics, penalties, icsbyn], axis=0)
-
-# plot
-rawdf = lambda x: x + 16*x*2 + 6*25*x
-
-plt.cla()
-g = sns.FacetGrid(
-    data=df,
-    row="type",
-    hue="name",
-    sharey=False,
-    aspect=2,
-    height=2,
-    palette="colorblind",
-    margin_titles=False,
-)
-g.map(sns.lineplot, "K", "value")
-g.set_axis_labels("Number of components")
-for ax, n in zip(g.axes.flat, ["IC value", "Est. df", "IC value"]):
-    ax.set_ylabel(n)
-g.axes[1][0].axline((2, rawdf(2)), (13, rawdf(13)), color="black", linestyle="--")
-g.set_titles("")
-g.add_legend()
-# plt.show()
-g.savefig(filename)

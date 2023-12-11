@@ -52,7 +52,7 @@ factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = False
-n_samples = 100
+n_samples = 1000
 factor_samples = 10
 # -----------------------------------------------------------------------------
 
@@ -149,17 +149,17 @@ for K in Ks:
     sequence = eeg.sequence
     target = eeg.target
     character_idx = eeg.character_idx
-    # mllk_long = predobj.marginal_log_likelihood(
-    #     order=order,
-    #     sequence=sequence,
-    #     target=target,
-    #     batch_size=10
-    # )
-    mllk_long = predobj.maximum_log_likelihood(
+    mllk_long = predobj.marginal_log_likelihood(
         order=order,
         sequence=sequence,
-        target=target
+        target=target,
+        batch_size=10
     )
+    # mllk_long = predobj.maximum_log_likelihood(
+    #     order=order,
+    #     sequence=sequence,
+    #     target=target
+    # )
 
     lppd_i = torch.logsumexp(mllk_long[:, :-1], dim=1) - np.log(n_samples)
     lppd = lppd_i.sum().item()
@@ -192,7 +192,7 @@ for K in Ks:
 
     # PSIS-LOO
     llk = mllk_long[:, :-1].unsqueeze(0).cpu().numpy()
-    log_weights, kss = az.psislw(-llk, reff=0.1)
+    log_weights, kss = az.psislw(-llk, reff=1.)
     log_weights += llk
     log_weights = torch.Tensor(log_weights)
     loo_lppi_i = torch.logsumexp(log_weights, dim=-1)
@@ -214,5 +214,5 @@ for K in Ks:
 
     # =============================================================================
     # SAVE RESULTS
-    pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_llk2.csv")
+    pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_llk_1k.csv")
     # -----------------------------------------------------------------------------

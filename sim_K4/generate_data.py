@@ -10,7 +10,7 @@ from source.bffmbci.bffm import BFFModel
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simon/Documents/BCI/experiments/sim_K2/data/"
+dir_data = "/home/simon/Documents/BCI/experiments/sim_K4/data/"
 
 # file
 file_post = f"K114_dim10.postmean"
@@ -18,10 +18,10 @@ file_post = f"K114_dim10.postmean"
 # dimensions
 n_channels = 16
 n_characters = 19
-n_repetitions = 15
+n_repetitions = 5
 n_stimulus = (12, 2)
-stimulus_window = 55
-stimulus_to_stimulus_interval = 10
+stimulus_window = 26
+stimulus_to_stimulus_interval = 5
 n_sequences = n_repetitions * n_characters
 
 # experiments
@@ -37,7 +37,7 @@ combinations = it.product(seeds, Kxs, Kys)
 cor = 0.8
 shrinkage = 3.
 heterogeneity = 3.
-xi_var = 0.003
+xi_var = 0.1
 sparse = False
 # -----------------------------------------------------------------------------
 
@@ -58,7 +58,10 @@ for seed, Kx, Ky in combinations:
         "nonnegative_smgp": False,
         "scaling_activation": "exp",
         "sparse": sparse,
-        "seed": seed
+        "seed": seed,
+        "n_characters": n_characters,
+        "n_repetitions": n_repetitions,
+        "latent_dim": Kx,
     }
 
     prior_parameters = {
@@ -73,7 +76,6 @@ for seed, Kx, Ky in combinations:
     }
 
     model = BFFModel.generate_from_dimensions(
-        latent_dim=Kx,
         **settings,
         **prior_parameters
     )
@@ -119,12 +121,12 @@ for seed, Kx, Ky in combinations:
         "smgp_factors.mixing_process",
     ]:
         for dim in range(Kx):
-            if dim >= Ky:
+            if dim != Ky-1:
                 variables[k][dim, ...] = 0.
     # reduce signal, otherwise it is too easy
     for k in [
-        "smgp_scaling.target_process",
-        "smgp_factors.target_process",
+        "smgp_scaling.mixing_process",
+        "smgp_factors.mixing_process",
     ]:
         variables[k] *= 0.2
     # put in model

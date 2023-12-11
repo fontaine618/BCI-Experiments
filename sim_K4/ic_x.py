@@ -1,79 +1,120 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import sys
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
 import arviz as az
+import itertools as it
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 from source.bffmbci import BFFMResults
 from source.data.k_protocol import KProtocol
+from source.bffmbci.bffm import BFFModel
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 
 # =============================================================================
 # SETUP
-dir_figures = "/home/simfont/Documents/BCI/experiments/latent_dimension/figures/"
-dir_results = "/home/simfont/Documents/BCI/experiments/latent_dimension/results/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/latent_dimension/chains/"
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-os.makedirs(dir_figures, exist_ok=True)
+dir_results = "/home/simfont/Documents/BCI/experiments/sim_K4/results/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/sim_K4/chains/"
+dir_data = "/home/simfont/Documents/BCI/experiments/sim_K4/data/"
 os.makedirs(dir_results, exist_ok=True)
 
-Ks = list(range(2, 14))
-K = int(sys.argv[1])
-subject = "114"
+# experiments
+seeds = range(3)
+Kxs = [5, 8]
+Kys = [3, 5]
+Ks = range(1, 11)
+
+# combinations
+combinations = it.product(seeds, Kxs, Kys, Ks)
+
+# current experiment from command line
+i = int(sys.argv[1])
+seed, Kx, Ky, K = list(combinations)[i]
 
 # file
-type = "TRN"
-session = "001"
-name = f"K{subject}_{session}_BCI_{type}"
-filename = dir_data + name + ".mat"
+file_data = f"Kx{Kx}_Ky{Ky}_seed{seed}"
+file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
 
-# preprocessing
-window = 800.0
-bandpass_window = (0.1, 15.0)
-bandpass_order = 2
-downsample = 8
+# model
+n_iter = 10_000
+cor = 0.8
+shrinkage = 3.
+heterogeneity = 3.
+xi_var = 0.003
+sparse = False
+
+# dimensions
+n_characters = 19
+n_repetitions = 5
+n_channels = 16
+stimulus_window = 26
+stimulus_to_stimulus_interval = 5
 
 # prediction settings
 factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
 return_cumulative = False
-n_samples = 1000
+n_samples = 100
 factor_samples = 10
 # -----------------------------------------------------------------------------
 
 
+
+
+
 # =============================================================================
 # LOAD DATA
-eeg = KProtocol(
-    filename=filename,
-    type=type,
-    subject=subject,
-    session=session,
-    window=window,
-    bandpass_window=bandpass_window,
-    bandpass_order=bandpass_order,
-    downsample=downsample,
-)
-nchars = eeg.stimulus_data["character"].nunique()
-nreps = eeg.stimulus_data["repetition"].nunique()
-
-order = eeg.stimulus_order
-sequence = eeg.sequence
-target = eeg.target
-character_idx = eeg.character_idx
+observations = torch.load(dir_data + file_data + ".observations")
+order = torch.load(dir_data + file_data + ".order")
+target = torch.load(dir_data + file_data + ".target")
 # -----------------------------------------------------------------------------
+
+
+
+# =============================================================================
+# INITIALIZE MODEL
+settings = {
+    "latent_dim": K,
+    "n_channels": observations.shape[1],
+    "stimulus_to_stimulus_interval": stimulus_to_stimulus_interval,
+    "stimulus_window": stimulus_window,
+    "n_stimulus": (12, 2),
+    "n_sequences": observations.shape[0],
+    "nonnegative_smgp": False,
+    "scaling_activation": "exp",
+    "sparse": sparse,
+    "seed": 0  # NB this is the seed for the chain, not the data generation
+}
+
+prior_parameters = {
+    "observation_variance": (1., 10.),
+    "heterogeneities": heterogeneity,
+    "shrinkage_factor": (1., shrinkage),
+    "kernel_gp_factor_processes": (cor, 1., 1.),
+    "kernel_tgp_factor_processes": (cor, 0.5, 1.),
+    "kernel_gp_loading_processes": (cor, 0.1, 1.),
+    "kernel_tgp_loading_processes": (cor, 0.5, 1.),
+    "kernel_gp_factor": (cor, 1., 1.)
+}
+
+model = BFFModel(
+    sequences=observations,
+    stimulus_order=order,
+    target_stimulus=target,
+    **settings,
+    **prior_parameters
+)
+# -----------------------------------------------------------------------------
+
 
 
 # =============================================================================
 # LOAD RESULTS
-file = f"K{subject}_dim{K}.chain"
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + file],
+    [dir_chains + file_chain],
     warmup=0,
     thin=1
 )
@@ -84,25 +125,28 @@ self = results.to_predict(n_samples=n_samples)
 
 # =============================================================================
 # GET PREDICTIVE PROBABILITIES
-llk_long = np.load(dir_results + f"K{subject}_dim{K}_mllk.npy")
+llk_long = np.load(dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}_mllk.npy")
+llk_long = torch.Tensor(llk_long)
 # -----------------------------------------------------------------------------
+
 
 
 
 # =============================================================================
-# TRANSFORM TO BCE
+# SELECT TARGET
+nchars = 19
+nreps = 5
 # llk_long is ncahrs x nreps x 36 x nsamples
 # reshape to (nchars x nreps) x 36 x nsamples
 llk_long2 = llk_long.reshape(nchars * nreps, 36, n_samples)
-# standardize to log probabilities
-llk_long2 = torch.log_softmax(llk_long2, dim=1)
+# need to pick out the target character among the 36
 target_ = target.unsqueeze(1).repeat(1, n_samples, 1)
 target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 36)
-# swap last two dimensions
 target36 = target36.permute(0, 2, 1)
-bce = (target36 * llk_long2).sum(1) # (nchars x nreps) x 36
-mllk_long = bce
+mllk_long = (target36 * llk_long2).sum(1)
 # -----------------------------------------------------------------------------
+
+
 
 
 
@@ -155,6 +199,6 @@ print(out)
 
 # =============================================================================
 # SAVE RESULTS
-pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_dim{K}_llk_y.csv")
+pd.DataFrame(out).T.to_csv(dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.icx")
 # -----------------------------------------------------------------------------
 
