@@ -20,7 +20,7 @@ n_channels = 16
 n_characters = 19
 n_repetitions = 5
 n_stimulus = (12, 2)
-stimulus_window = 26
+stimulus_window = 25
 stimulus_to_stimulus_interval = 5
 n_sequences = n_repetitions * n_characters
 
@@ -124,11 +124,13 @@ for seed, Kx, Ky in combinations:
             if dim != Ky-1:
                 variables[k][dim, ...] = 0.
     # reduce signal, otherwise it is too easy
-    for k in [
-        "smgp_scaling.mixing_process",
-        "smgp_factors.mixing_process",
-    ]:
-        variables[k] *= 0.2
+    # for k in [
+    #     "smgp_scaling.mixing_process",
+    #     "smgp_factors.mixing_process",
+    # ]:
+    #     variables[k] *= 0.0
+    # add noise
+    variables["observation_variance"] = variables["observation_variance"] + 5.
     # put in model
     model.set(**variables)
     # generate data

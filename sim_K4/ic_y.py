@@ -48,7 +48,7 @@ sparse = False
 n_characters = 19
 n_repetitions = 5
 n_channels = 16
-stimulus_window = 26
+stimulus_window = 25
 stimulus_to_stimulus_interval = 5
 
 # prediction settings
