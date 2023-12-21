@@ -1,19 +1,15 @@
 import sys
-import os
 import torch
-import time
 import pickle
 import itertools as it
+import numpy as np
 sys.path.insert(1, '/home/simon/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import BFFModel
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simon/Documents/BCI/experiments/sim_K4/data/"
-
-# file
-file_post = f"K114_dim10.postmean"
+dir_data = "/home/simon/Documents/BCI/experiments/sim/data/"
 
 # dimensions
 n_channels = 16
@@ -23,6 +19,7 @@ n_stimulus = (12, 2)
 stimulus_window = 25
 stimulus_to_stimulus_interval = 5
 n_sequences = n_repetitions * n_characters
+n_timepoints = 11 * stimulus_to_stimulus_interval + stimulus_window
 
 # experiments
 seeds = range(3)
@@ -70,7 +67,7 @@ for seed, Kx, Ky in combinations:
         "shrinkage_factor": (1., shrinkage),
         "kernel_gp_factor_processes": (cor, 1., 1.),
         "kernel_tgp_factor_processes": (cor, 0.5, 1.),
-        "kernel_gp_loading_processes": (cor, 0.1, 1.),
+        "kernel_gp_loading_processes": (cor, xi_var, 1.),
         "kernel_tgp_loading_processes": (cor, 0.5, 1.),
         "kernel_gp_factor": (cor, 1., 1.)
     }
@@ -82,55 +79,80 @@ for seed, Kx, Ky in combinations:
     # -----------------------------------------------------------------------------
 
 
+
     # =============================================================================
-    # PUT POST MEAN VALUES THEN REGENERATE DATA
-    variables = pickle.load(open(dir_data + file_post, "rb"))
-    # to torch
-    variables = {
-        k: torch.tensor(v, dtype=torch.float32)
-        for k, v in variables.items()
-    }
-    # subset to correct latent dimension
-    for k in ["heterogeneities", "shrinkage_factor", "loadings"]:
-        variables[k] = variables[k][..., :Kx]
-    for k in [
-        "smgp_scaling.nontarget_process",
-        "smgp_scaling.target_process",
-        "smgp_scaling.mixing_process",
-        "smgp_factors.nontarget_process",
-        "smgp_factors.target_process",
-        "smgp_factors.mixing_process"
-    ]:
-        variables[k] = variables[k][:Kx, ...]
-    # sort dimensions
-    order = variables["loadings"].pow(2.).sum(0).argsort(descending=True)
-    for k in [
-        "smgp_scaling.nontarget_process",
-        "smgp_scaling.target_process",
-        "smgp_scaling.mixing_process",
-        "smgp_factors.nontarget_process",
-        "smgp_factors.target_process",
-        "smgp_factors.mixing_process"
-    ]:
-        variables[k] = variables[k][order, :]
-    for k in ["heterogeneities", "shrinkage_factor", "loadings"]:
-        variables[k] = variables[k][..., order]
+    # DEFINE TRUE GENERATING VALUES
+    variables = dict()
+    torch.manual_seed(seed)
+
+    variables["observation_variance"] = 5. + 5. * torch.rand(n_channels)
+
+    L = torch.randint(-1, 2, (n_channels, Kx)) *1.
+    Lcolnorm = L.pow(2.).sum(0)
+    Lorder = Lcolnorm.sort(descending=True)[1]
+    L = L[:, Lorder]
+    Lcolnorm = L.pow(2.).sum(0).sqrt()
+    L /= Lcolnorm
+    colnorm = torch.linspace(20., 3., Kx)
+    L *= colnorm
+    variables["loadings"] = L
+
+    t = torch.arange(stimulus_window)
+    damp = torch.sigmoid(3 * t - 5) * (1. - torch.sigmoid(t - stimulus_window + 8))
+
+    def sine(t, period=8, tshift=3, yshift=0.):
+        return yshift + torch.sin((t-tshift)*(2.*torch.pi)/period)
+
+    def bump(t, center=8, width=3):
+        p = torch.sigmoid(5.*(t-center)/width)
+        return 4. * p * (1-p)
+
+    periods = torch.randint(8, 20, (Kx, ))
+    tshifts = torch.randint(0, 20, (Kx, ))
+    centers = torch.randint(5, 15, (Kx, ))
+    widths = torch.randint(5, 12, (Kx, ))
+
+    nontarget = torch.vstack([
+        damp * sine(
+            t,
+            period,
+            tshift,
+            0.5 * torch.randn((1,)).item()
+        )
+        for period, tshift in zip(periods, tshifts)
+    ])
+
+    target = torch.vstack([
+        damp * sine(
+            t,
+            period,
+            tshift,
+            0.5 * torch.randn((1,)).item()
+        )
+        for period, tshift in zip(periods, tshifts)
+    ])
+
+    mixing = torch.vstack([
+        bump(t, center, width)
+        for center, width in zip(centers, widths)
+    ])
+
+    variables["smgp_scaling.nontarget_process"] = nontarget * 0.
+    variables["smgp_scaling.target_process"] = target * 0.1
+    variables["smgp_scaling.mixing_process"] = mixing
+    variables["smgp_factors.nontarget_process"] = nontarget
+    variables["smgp_factors.target_process"] = target
+    variables["smgp_factors.mixing_process"] = mixing
+
     # set predictive components to first Ky
     for k in [
         "smgp_scaling.mixing_process",
         "smgp_factors.mixing_process",
     ]:
         for dim in range(Kx):
-            if dim > Ky:
+            if dim >= Ky:
                 variables[k][dim, ...] = 0.
-    # reduce signal, otherwise it is too easy
-    for k in [
-        "smgp_scaling.mixing_process",
-        "smgp_factors.mixing_process",
-    ]:
-        variables[k] *= 0.5
-    # add noise
-    variables["observation_variance"] = variables["observation_variance"] + 5.
+
     # put in model
     model.set(**variables)
     # generate data
