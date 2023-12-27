@@ -39,6 +39,17 @@ shrinkage = 3.
 heterogeneity = 3.
 xi_var = 0.1
 sparse = False
+
+prior_parameters = {
+    "observation_variance": (1., 10.),
+    "heterogeneities": heterogeneity,
+    "shrinkage_factor": (1., shrinkage),
+    "kernel_gp_factor_processes": (cor, 1., 1.),
+    "kernel_tgp_factor_processes": (cor, 0.5, 1.),
+    "kernel_gp_loading_processes": (cor, 0.1, 1.),
+    "kernel_tgp_loading_processes": (cor, 0.5, 1.),
+    "kernel_gp_factor": (cor, 1., 1.)
+}
 # -----------------------------------------------------------------------------
 
 
@@ -62,17 +73,6 @@ for seed, Kx, Ky in combinations:
         "n_characters": n_characters,
         "n_repetitions": n_repetitions,
         "latent_dim": Kx,
-    }
-
-    prior_parameters = {
-        "observation_variance": (1., 10.),
-        "heterogeneities": heterogeneity,
-        "shrinkage_factor": (1., shrinkage),
-        "kernel_gp_factor_processes": (cor, 1., 1.),
-        "kernel_tgp_factor_processes": (cor, 0.5, 1.),
-        "kernel_gp_loading_processes": (cor, 0.1, 1.),
-        "kernel_tgp_loading_processes": (cor, 0.5, 1.),
-        "kernel_gp_factor": (cor, 1., 1.)
     }
 
     model = BFFModel.generate_from_dimensions(

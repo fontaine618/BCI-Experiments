@@ -33,7 +33,7 @@ file = f"Kx{Kx}_Ky{Ky}_seed{seed}"
 
 # model
 n_iter = 10_000
-cor = 0.8
+cor = 0.95
 shrinkage = 3.
 heterogeneity = 3.
 xi_var = 0.1

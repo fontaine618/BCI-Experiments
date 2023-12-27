@@ -17,7 +17,7 @@ dir_figures = "/home/simon/Documents/BCI/experiments/sim/figures/"
 os.makedirs(dir_figures, exist_ok=True)
 
 # experiments
-seeds = [2]# range(3)
+seeds = range(3)
 Kxs = [5, 8]
 Kys = [3, 5]
 Ks = range(1, 11)
@@ -103,7 +103,7 @@ plt.cla()
 fig, axs = plt.subplots(nrows, ncols, figsize=(ncols*3+1, nrows*2+1), sharey=False, sharex="all")
 for i, metric in enumerate(metrics):
     for j, experiment in enumerate(experiments):
-        ax = axs[i, j]
+        ax = axs[i] #[i, j]
         if i == 0:
             ax.set_title(experiment)
         if j == 0:

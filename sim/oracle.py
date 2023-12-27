@@ -52,7 +52,7 @@ n_samples = 1
 factor_samples = 10
 
 # model
-cor = 0.8
+cor = 0.95
 shrinkage = 3.
 heterogeneity = 3.
 xi_var = 0.1

@@ -31,11 +31,22 @@ Kys = [3, 5]
 combinations = it.product(seeds, Kxs, Kys)
 
 # model
-cor = 0.8
+cor = 0.95
 shrinkage = 3.
 heterogeneity = 3.
 xi_var = 0.1
 sparse = False
+
+prior_parameters = {
+    "observation_variance": (1., 10.),
+    "heterogeneities": heterogeneity,
+    "shrinkage_factor": (1., shrinkage),
+    "kernel_gp_factor_processes": (cor, 1., 1.),
+    "kernel_tgp_factor_processes": (cor, 0.5, 1.),
+    "kernel_gp_loading_processes": (cor, xi_var, 1.),
+    "kernel_tgp_loading_processes": (cor, 0.5, 1.),
+    "kernel_gp_factor": (cor, 1., 1.)
+}
 # -----------------------------------------------------------------------------
 
 
@@ -61,17 +72,6 @@ for seed, Kx, Ky in combinations:
         "latent_dim": Kx,
     }
 
-    prior_parameters = {
-        "observation_variance": (1., 10.),
-        "heterogeneities": heterogeneity,
-        "shrinkage_factor": (1., shrinkage),
-        "kernel_gp_factor_processes": (cor, 1., 1.),
-        "kernel_tgp_factor_processes": (cor, 0.5, 1.),
-        "kernel_gp_loading_processes": (cor, xi_var, 1.),
-        "kernel_tgp_loading_processes": (cor, 0.5, 1.),
-        "kernel_gp_factor": (cor, 1., 1.)
-    }
-
     model = BFFModel.generate_from_dimensions(
         **settings,
         **prior_parameters
@@ -87,7 +87,7 @@ for seed, Kx, Ky in combinations:
 
     variables["observation_variance"] = 5. + 5. * torch.rand(n_channels)
 
-    L = torch.randint(-1, 2, (n_channels, Kx)) *1.
+    L = torch.randint(-1, 2, (n_channels, Kx)) * 1.
     Lcolnorm = L.pow(2.).sum(0)
     Lorder = Lcolnorm.sort(descending=True)[1]
     L = L[:, Lorder]
