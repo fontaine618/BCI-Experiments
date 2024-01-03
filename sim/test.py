@@ -71,20 +71,25 @@ character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 
 # =============================================================================
 # GET PREDICTIVE PROBABILITIES
-llk_long, chars = self.predict(
-    order=order,
-    sequence=observations,
-    factor_samples=1,
-    character_idx=character_idx,
-    factor_processes_method=factor_processes_method,
-    drop_component=None,
-    batchsize=10
-)
-# save
-np.save(
-    dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}_mllk_test.npy",
-    llk_long.cpu().numpy()
-)
+filename = dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}_mllk_test.npy"
+# check if exists
+if not os.path.isfile(filename):
+    llk_long, chars = self.predict(
+        order=order,
+        sequence=observations,
+        factor_samples=1,
+        character_idx=character_idx,
+        factor_processes_method=factor_processes_method,
+        drop_component=None,
+        batchsize=10
+    )
+    # save
+    np.save(
+        filename,
+        llk_long.cpu().numpy()
+    )
+else:
+    llk_long = torch.Tensor(np.load(filename))
 # -----------------------------------------------------------------------------
 
 
@@ -115,12 +120,15 @@ acc = (wide_pred_one_hot == target_).all(2).double().mean(0)
 
 target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 36)
 bce = (target36 * log_prob).sum(-1).sum(0)
+N = target36.shape[0]
+bce_se = (target36 * log_prob).sum(-1).pow(2).sum(0).sub(bce.pow(2)).sqrt().mul(np.sqrt(N))
 
 df = pd.DataFrame({
     "hamming": hamming.cpu(),
     "acc": acc.cpu(),
     "entropy": entropy.sum(0).cpu(),
     "bce": bce.cpu(),
+    "bce_se": bce_se.cpu(),
     "repetition": range(1, nreps + 1),
     "sample_mean": sample_mean,
     "which_first": which_first,
