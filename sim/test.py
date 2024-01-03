@@ -121,7 +121,7 @@ acc = (wide_pred_one_hot == target_).all(2).double().mean(0)
 target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 36)
 bce = (target36 * log_prob).sum(-1).sum(0)
 N = target36.shape[0]
-bce_se = (target36 * log_prob).sum(-1).pow(2).sum(0).sub(bce.pow(2)).sqrt().mul(np.sqrt(N))
+bce_se = (target36 * log_prob).sum(-1).pow(2).sum(0).div(N).sub(bce.div(N).pow(2)).sqrt().mul(np.sqrt(N))
 
 df = pd.DataFrame({
     "hamming": hamming.cpu(),
