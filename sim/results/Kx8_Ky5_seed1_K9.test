@@ -1,2 +1,2 @@
-,hamming,acc,entropy,bce,repetition,sample_mean,which_first,method,seed,Kx,Ky,K,dataset
-1,0.6421052631578947,0.47368421052631576,104.37993,-171.75806,1,harmonic,sample,BFFM,1,8,5,9,test
+,hamming,acc,entropy,bce,bce_se,repetition,sample_mean,which_first,method,seed,Kx,Ky,K,dataset
+1,0.6421052631578947,0.47368421052631576,104.37993,-171.75806,18.694305,1,harmonic,sample,BFFM,1,8,5,9,test
