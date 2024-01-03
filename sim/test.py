@@ -91,8 +91,10 @@ np.save(
 
 # =============================================================================
 # PREDICTIONS
+llk_long2 = llk_long.reshape((-1, 36, n_samples)).unsqueeze(1)
+
 log_prob = self.aggregate(
-    llk_long,
+    llk_long2,
     sample_mean=sample_mean,
     which_first=which_first
 )
@@ -104,12 +106,12 @@ wide_pred_one_hot = self.get_predictions(log_prob, True)
 
 # =============================================================================
 # METRICS
-nreps = n_repetitions
+nreps = 1
 entropy = Categorical(logits=log_prob).entropy()
 
-target_ = target[::nreps, :].unsqueeze(1).repeat(1, nreps, 1)
+target_ = target.unsqueeze(1)
 hamming = (wide_pred_one_hot != target_).double().sum(2).mean(0) / 2
-acc = (wide_pred_one_hot == target_).all(2).double().sum(0)
+acc = (wide_pred_one_hot == target_).all(2).double().mean(0)
 
 target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 36)
 bce = (target36 * log_prob).sum(-1).sum(0)
