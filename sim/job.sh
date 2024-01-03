@@ -4,8 +4,8 @@
 #SBATCH --job-name=bci_sim
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=0:20:00
-#SBATCH --array=10-119
+#SBATCH --time=0:10:00
+#SBATCH --array=0-119
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
