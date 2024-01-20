@@ -5,16 +5,16 @@ import sys
 import torch
 import arviz as az
 import itertools as it
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 from source.bffmbci import BFFMResults, importance_statistic
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simon/Documents/BCI/experiments/sim_importance/results/"
-dir_chains = "/home/simon/Documents/BCI/experiments/sim_importance/chains/"
-dir_data = "/home/simon/Documents/BCI/experiments/sim_importance/data/"
+dir_results = "/home/simfont/Documents/BCI/experiments/sim_importance/results/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/sim_importance/chains/"
+dir_data = "/home/simfont/Documents/BCI/experiments/sim_importance/data/"
 os.makedirs(dir_results, exist_ok=True)
 
 # experiments

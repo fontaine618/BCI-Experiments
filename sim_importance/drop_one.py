@@ -2,7 +2,7 @@ import numpy as np
 import os
 import sys
 import math
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
 import pandas as pd
 import itertools as it
@@ -12,9 +12,9 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simon/Documents/BCI/experiments/sim_importance/results/"
-dir_chains = "/home/simon/Documents/BCI/experiments/sim_importance/chains/"
-dir_data = "/home/simon/Documents/BCI/experiments/sim_importance/data/"
+dir_results = "/home/simfont/Documents/BCI/experiments/sim_importance/results/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/sim_importance/chains/"
+dir_data = "/home/simfont/Documents/BCI/experiments/sim_importance/data/"
 os.makedirs(dir_results, exist_ok=True)
 
 # experiments
