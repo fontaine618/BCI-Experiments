@@ -9,7 +9,7 @@ from source.bffmbci.bffm import BFFModel
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simon/Documents/BCI/experiments/sim/data/"
+dir_data = "/home/simon/Documents/BCI/experiments/sim_importance/data/"
 
 # dimensions
 n_channels = 16
@@ -22,10 +22,10 @@ n_sequences = n_repetitions * n_characters
 n_timepoints = 11 * stimulus_to_stimulus_interval + stimulus_window
 
 # experiments
-seeds = range(3)
-Kxs = [5, 8]
-Kys = [3, 5]
-# Ks = range(1, 11)
+seeds = [0]
+Kxs = [8]
+Kys = [5]
+Ks = [8]
 
 # combinations
 combinations = it.product(seeds, Kxs, Kys)
@@ -150,7 +150,7 @@ for seed, Kx, Ky in combinations:
         "smgp_factors.mixing_process",
     ]:
         for dim in range(Kx):
-            if dim >= Ky:
+            if dim >= Ky or (dim % 2 == 1):
                 variables[k][dim, ...] = 0.
 
     # put in model

@@ -17,7 +17,7 @@ dir_figures = "/home/simon/Documents/BCI/experiments/sim/figures/"
 os.makedirs(dir_figures, exist_ok=True)
 
 # experiments
-seeds = range(3)
+seeds = [1]
 Kxs = [5, 8]
 Kys = [3, 5]
 Ks = range(1, 11)
@@ -31,6 +31,7 @@ combinations = it.product(seeds, Kxs, Kys, Ks)
 # =============================================================================
 # LOAD RESULTS
 out = []
+out_test = []
 for i, (seed, Kx, Ky, K) in enumerate(list(combinations)):
     try:
         df = pd.read_csv(dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.icx", index_col=0).T
@@ -47,9 +48,13 @@ for i, (seed, Kx, Ky, K) in enumerate(list(combinations)):
         df["K"] = K
         df["Target"] = "p(y|x)"
         out.append(df)
+        df = pd.read_csv(dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.test", index_col=0)
+        df["Target"] = "p(y|x)"
+        out_test.append(df)
     except FileNotFoundError:
         print(i, seed, Kx, Ky, K)
 out = pd.concat(out)
+out_test = pd.concat(out_test)
 # -----------------------------------------------------------------------------
 
 
@@ -81,8 +86,24 @@ se = out.melt(
     value_name="se",
 )
 
-metrics = ["lppd", "elpd_loo", "elpd_waic", "log_bf"]
-metrics_display = ["LPPD", "PSIS-LOO", "WAIC", "BF"]
+# add in test metrics
+value_test = out_test.melt(
+    id_vars=["seed", "Kx", "Ky", "K", "Target"],
+    value_vars=["bce", "acc"],
+    var_name="metric",
+    value_name="value",
+)
+se_test = out_test.melt(
+    id_vars=["seed", "Kx", "Ky", "K", "Target"],
+    value_vars=["bce_se"],
+    var_name="metric",
+    value_name="se",
+)
+value = pd.concat([value, value_test])
+se = pd.concat([se, se_test])
+
+metrics = ["lppd", "elpd_loo", "elpd_waic", "log_bf", "bce", "acc"]
+metrics_display = ["LPPD", "PSIS-LOO", "WAIC", "BF", "Test BCE", "Accuracy"]
 
 value["metric"] = value["metric"].replace({k: v for k, v in zip(metrics, metrics_display)})
 value["Experiment"] = "Kx=" + value["Kx"].astype(str) + " | Ky=" + value["Ky"].astype(str)
@@ -103,7 +124,7 @@ plt.cla()
 fig, axs = plt.subplots(nrows, ncols, figsize=(ncols*3+1, nrows*2+1), sharey=False, sharex="all")
 for i, metric in enumerate(metrics):
     for j, experiment in enumerate(experiments):
-        ax = axs[i] #[i, j]
+        ax = axs[i, j]
         if i == 0:
             ax.set_title(experiment)
         if j == 0:
