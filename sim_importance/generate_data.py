@@ -22,7 +22,7 @@ n_sequences = n_repetitions * n_characters
 n_timepoints = 11 * stimulus_to_stimulus_interval + stimulus_window
 
 # experiments
-seeds = [0]
+seeds = range(3)
 Kxs = [8]
 Kys = [5]
 Ks = [8]

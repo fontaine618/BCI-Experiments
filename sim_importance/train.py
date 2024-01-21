@@ -16,7 +16,7 @@ dir_chains = "/home/simfont/Documents/BCI/experiments/sim_importance/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # experiments
-seeds = [0]
+seeds = range(3)
 Kxs = [8]
 Kys = [5]
 Ks = [8]

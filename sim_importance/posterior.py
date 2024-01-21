@@ -4,6 +4,7 @@ import os
 import sys
 import torch
 import arviz as az
+import pickle
 import itertools as it
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 from source.bffmbci import BFFMResults, importance_statistic
@@ -32,6 +33,7 @@ seed, Kx, Ky, K = list(combinations)[i]
 
 # file
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
+file_out = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.posterior"
 # -----------------------------------------------------------------------------
 
 
@@ -49,20 +51,11 @@ results = BFFMResults.from_files(
 
 
 # =============================================================================
-# COMPUTE STATISTIC
-stat = importance_statistic(results.chains)
-
-df = pd.DataFrame(stat.cpu()).reset_index().rename(
-    columns={
-        "index": "component",
-        0: "importance"
-    }
-)
-df["Kx"] = Kx
-df["Ky"] = Ky
-df["seed"] = seed
-df["K"] = K
-df.to_csv(
-    dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}_importance.csv"
-)
+# COMPUTE PORTERIOR MEAN
+results.add_transformed_variables()
+posterior_mean = results.posterior_mean()
+with open(dir_results + file_out, "wb") as f:
+	pickle.dump(posterior_mean, f)
 # -----------------------------------------------------------------------------
+
+

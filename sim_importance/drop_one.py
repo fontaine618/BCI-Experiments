@@ -18,7 +18,7 @@ dir_data = "/home/simfont/Documents/BCI/experiments/sim_importance/data/"
 os.makedirs(dir_results, exist_ok=True)
 
 # experiments
-seeds = [0]
+seeds = range(3)
 Kxs = [8]
 Kys = [5]
 Ks = [8]
@@ -38,7 +38,7 @@ file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
 factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
-n_samples = 20
+n_samples = 100
 
 # dimensions
 n_characters = 19
