@@ -6,16 +6,16 @@ import torch
 import arviz as az
 import pickle
 import itertools as it
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/home/simon/Documents/BCI/src')
 from source.bffmbci import BFFMResults, importance_statistic
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simfont/Documents/BCI/experiments/sim_importance/results/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/sim_importance/chains/"
-dir_data = "/home/simfont/Documents/BCI/experiments/sim_importance/data/"
+dir_results = "/home/simon/Documents/BCI/experiments/sim_importance/results/"
+dir_chains = "/home/simon/Documents/BCI/experiments/sim_importance/chains/"
+dir_data = "/home/simon/Documents/BCI/experiments/sim_importance/data/"
 os.makedirs(dir_results, exist_ok=True)
 
 # experiments
@@ -53,8 +53,33 @@ results = BFFMResults.from_files(
     warmup=0,
     thin=1
 )
-results.procrutres_align(Ltrue)
+# results.procrutres_align(Ltrue)
 # -----------------------------------------------------------------------------
+
+
+
+# # =============================================================================
+# # FIND BEST ROTATION
+# chains = results.chains
+# add_transformed_variables(chains)
+#
+# L = chains["loadings"]  # nc x ns x E x K
+# beta_z1 = chains["smgp_factors.target_signal"]  # nc x ns x K x T
+# beta_z0 = chains["smgp_factors.nontarget_process"]
+# beta_xi1 = chains["smgp_scaling.target_signal"]
+# beta_xi0 = chains["smgp_scaling.nontarget_process"]
+# diff = beta_z1 * beta_xi1.exp() - beta_z0 * beta_xi0.exp()
+# product = torch.einsum(
+#     "cbek, cbkt -> cbket",
+#     L,
+#     diff
+# )
+# M = product.pow(2.).sum(-2).mean((0, 1))
+# U, S, V = torch.linalg.svd(M)
+#
+# Ltrue = Ltrue @ U.mT
+# results.procrutres_align(Ltrue)
+# # -----------------------------------------------------------------------------
 
 
 

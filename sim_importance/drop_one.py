@@ -67,7 +67,7 @@ results = BFFMResults.from_files(
     warmup=0,
     thin=1
 )
-results.procrutres_align()
+# results.procrutres_align()
 self = results.to_predict(n_samples=n_samples)
 character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 # -----------------------------------------------------------------------------

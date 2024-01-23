@@ -55,7 +55,7 @@ results = BFFMResults.from_files(
     warmup=0,
     thin=1
 )
-results.procrutres_align()
+# results.procrutres_align()
 results.add_transformed_variables()
 # -----------------------------------------------------------------------------
 
