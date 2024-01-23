@@ -51,6 +51,7 @@ stimulus_to_stimulus_interval = 5
 observations = torch.load(dir_data + file + ".observations")
 order = torch.load(dir_data + file + ".order")
 target = torch.load(dir_data + file + ".target")
+variables = pickle.load(open(dir_data + file + ".variables", "rb"))
 # -----------------------------------------------------------------------------
 
 

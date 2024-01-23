@@ -4,6 +4,7 @@ import sys
 import math
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
+import pickle
 import pandas as pd
 import itertools as it
 from source.bffmbci import BFFMResults
@@ -31,6 +32,7 @@ i = int(sys.argv[1])
 seed, Kx, Ky, K = list(combinations)[i]
 
 # file
+file_true = f"Kx{Kx}_Ky{Ky}_seed{seed}"
 file_data = f"Kx{Kx}_Ky{Ky}_seed{seed}"
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
 
@@ -51,6 +53,8 @@ n_repetitions = 5
 observations = torch.load(dir_data + file_data + ".observations")
 order = torch.load(dir_data + file_data + ".order")
 target = torch.load(dir_data + file_data + ".target")
+variables = pickle.load(open(dir_data + file_true + ".variables", "rb"))
+Ltrue = variables["loadings"]
 # -----------------------------------------------------------------------------
 
 
@@ -63,6 +67,7 @@ results = BFFMResults.from_files(
     warmup=0,
     thin=1
 )
+results.procrutres_align()
 self = results.to_predict(n_samples=n_samples)
 character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 # -----------------------------------------------------------------------------

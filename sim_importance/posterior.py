@@ -32,8 +32,17 @@ i = int(sys.argv[1])
 seed, Kx, Ky, K = list(combinations)[i]
 
 # file
+file_true = f"Kx{Kx}_Ky{Ky}_seed{seed}"
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
 file_out = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.posterior"
+# -----------------------------------------------------------------------------
+
+
+
+# =============================================================================
+# LOAD DATA
+variables = pickle.load(open(dir_data + file_true + ".variables", "rb"))
+Ltrue = variables["loadings"]
 # -----------------------------------------------------------------------------
 
 
@@ -46,13 +55,16 @@ results = BFFMResults.from_files(
     warmup=0,
     thin=1
 )
+results.procrutres_align()
+results.add_transformed_variables()
 # -----------------------------------------------------------------------------
+
+
 
 
 
 # =============================================================================
 # COMPUTE PORTERIOR MEAN
-results.add_transformed_variables()
 posterior_mean = results.posterior_mean()
 with open(dir_results + file_out, "wb") as f:
 	pickle.dump(posterior_mean, f)

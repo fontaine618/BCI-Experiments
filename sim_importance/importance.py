@@ -4,6 +4,7 @@ import os
 import sys
 import torch
 import arviz as az
+import pickle
 import itertools as it
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 from source.bffmbci import BFFMResults, importance_statistic
@@ -32,6 +33,14 @@ seed, Kx, Ky, K = list(combinations)[i]
 
 # file
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
+file_true = f"Kx{Kx}_Ky{Ky}_seed{seed}"
+# -----------------------------------------------------------------------------
+
+
+# =============================================================================
+# LOAD DATA
+variables = pickle.load(open(dir_data + file_true + ".variables", "rb"))
+Ltrue = variables["loadings"]
 # -----------------------------------------------------------------------------
 
 
@@ -44,6 +53,7 @@ results = BFFMResults.from_files(
     warmup=0,
     thin=1
 )
+results.procrutres_align(Ltrue)
 # -----------------------------------------------------------------------------
 
 
