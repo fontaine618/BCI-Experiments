@@ -77,8 +77,11 @@ for k in range(-1, K):
     print(k)
     # =============================================================================
     # GET PREDICTIVE PROBABILITIES
-    drop_components = list(range(K))
-    drop_components.remove(k)
+    if k == -1:
+        drop_components = None
+    else:
+        drop_components = list(range(K))
+        drop_components.remove(k)
     llk_long, chars = self.predict(
         order=order,
         sequence=observations,
