@@ -90,7 +90,7 @@ for k in range(-1, K):
     )
     # save
     np.save(
-        dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}_mllk_drop{k}.npy",
+        dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}_mllk_just{k}.npy",
         llk_long.cpu().numpy()
     )
     # -----------------------------------------------------------------------------
