@@ -44,7 +44,7 @@ n_samples = 100
 
 # dimensions
 n_characters = 19
-n_repetitions = 5
+n_repetitions = 15
 # -----------------------------------------------------------------------------
 
 

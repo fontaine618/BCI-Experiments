@@ -14,7 +14,7 @@ dir_data = "/home/simon/Documents/BCI/experiments/sim_importance/data/"
 # dimensions
 n_channels = 16
 n_characters = 19
-n_repetitions = 5
+n_repetitions = 15
 n_stimulus = (12, 2)
 stimulus_window = 25
 stimulus_to_stimulus_interval = 5
@@ -83,7 +83,7 @@ for seed, Kx, Ky in combinations:
     # =============================================================================
     # DEFINE TRUE GENERATING VALUES
     variables = dict()
-    torch.manual_seed(seed)
+    torch.manual_seed(3) # seed for true signal generation
 
     variables["observation_variance"] = 5. + 5. * torch.rand(n_channels)
 
@@ -98,7 +98,7 @@ for seed, Kx, Ky in combinations:
     variables["loadings"] = L
 
     t = torch.arange(stimulus_window)
-    damp = torch.sigmoid(3 * t - 5) * (1. - torch.sigmoid(t - stimulus_window + 8))
+    damp = torch.sigmoid(3 * t - 8) * (1. - torch.sigmoid(t - stimulus_window + 8))
 
     def sine(t, period=8, tshift=3, yshift=0.):
         return yshift + torch.sin((t-tshift)*(2.*torch.pi)/period)
@@ -107,6 +107,7 @@ for seed, Kx, Ky in combinations:
         p = torch.sigmoid(5.*(t-center)/width)
         return 4. * p * (1-p)
 
+    torch.manual_seed(1)
     periods = torch.randint(8, 20, (Kx, ))
     tshifts = torch.randint(0, 20, (Kx, ))
     centers = torch.randint(5, 15, (Kx, ))
