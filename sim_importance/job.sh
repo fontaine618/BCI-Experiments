@@ -4,8 +4,8 @@
 #SBATCH --job-name=bci_sim_importance
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=7:00:00
-#SBATCH --array=0
+#SBATCH --time=10:00:00
+#SBATCH --array=1
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
@@ -17,9 +17,9 @@
 # The application(s) to execute along with its input arguments and options:
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
-#python -O train.py $SLURM_ARRAY_TASK_ID
-#python -O importance.py $SLURM_ARRAY_TASK_ID
+python -O train.py $SLURM_ARRAY_TASK_ID
+python -O importance.py $SLURM_ARRAY_TASK_ID
+python -O posterior.py $SLURM_ARRAY_TASK_ID
 python -O drop_one.py $SLURM_ARRAY_TASK_ID
 python -O just_one.py $SLURM_ARRAY_TASK_ID
-#python -O posterior.py $SLURM_ARRAY_TASK_ID
 
