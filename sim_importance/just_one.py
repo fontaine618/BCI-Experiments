@@ -78,7 +78,7 @@ for k in range(-1, K):
     # =============================================================================
     # GET PREDICTIVE PROBABILITIES
     if k == -1:
-        drop_components = None
+        drop_components = list(range(K))
     else:
         drop_components = list(range(K))
         drop_components.remove(k)
