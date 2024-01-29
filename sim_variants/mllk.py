@@ -31,7 +31,7 @@ seed, Kx, Ky, mtrue, mfitted = list(combinations)[i]
 
 # file
 file_data = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}"
-file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mfitted}"
+file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
 file_out = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}_mllk"
 
 # prediction settings
@@ -57,7 +57,7 @@ target = torch.load(dir_data + file_data + ".target")
 # LOAD RESULTS
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + file_chain],
+    [dir_chains + file_chain + ".chain"],
     warmup=0,
     thin=1
 )

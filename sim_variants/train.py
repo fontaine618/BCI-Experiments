@@ -32,7 +32,7 @@ seed, Kx, Ky, mtrue, mfitted = list(combinations)[i]
 
 # file
 file = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}"
-file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mfitted}"
+file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
 
 # model
 n_iter = 10_000
