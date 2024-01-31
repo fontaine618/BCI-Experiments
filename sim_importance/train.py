@@ -128,7 +128,7 @@ out = model.results(
     start=5_000,
     thin=10
 )
-with open(dir_chains + file + f"seed{seed}_K{K}.chain", "wb") as f:
+with open(dir_chains + file + f"_seed{seed}_K{K}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 
