@@ -19,7 +19,7 @@ dir_data = "/home/simfont/Documents/BCI/experiments/sim_importance/data/"
 os.makedirs(dir_results, exist_ok=True)
 
 # experiments
-seeds = range(3)
+seeds = range(5)
 Kxs = [8]
 Kys = [5]
 Ks = [8]
@@ -33,7 +33,7 @@ seed, Kx, Ky, K = list(combinations)[i]
 
 # file
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
-file_true = f"Kx{Kx}_Ky{Ky}_seed{seed}"
+file_true = f"Kx{Kx}_Ky{Ky}"
 # -----------------------------------------------------------------------------
 
 

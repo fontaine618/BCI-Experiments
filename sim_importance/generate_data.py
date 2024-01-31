@@ -22,13 +22,14 @@ n_sequences = n_repetitions * n_characters
 n_timepoints = 11 * stimulus_to_stimulus_interval + stimulus_window
 
 # experiments
-seeds = range(3)
+# seeds = range(3)
 Kxs = [8]
 Kys = [5]
 Ks = [8]
+seed = 0
 
 # combinations
-combinations = it.product(seeds, Kxs, Kys)
+combinations = it.product(Kxs, Kys)
 
 # model
 cor = 0.95
@@ -53,7 +54,7 @@ prior_parameters = {
 
 # =============================================================================
 # GENERATE DATA
-for seed, Kx, Ky in combinations:
+for Kx, Ky in combinations:
 
 
     # =============================================================================
@@ -83,16 +84,22 @@ for seed, Kx, Ky in combinations:
     # =============================================================================
     # DEFINE TRUE GENERATING VALUES
     variables = dict()
-    torch.manual_seed(3) # seed for true signal generation
+    torch.manual_seed(7) # seed for true signal generation
 
     variables["observation_variance"] = 5. + 5. * torch.rand(n_channels)
 
     L = torch.randint(-1, 2, (n_channels, Kx)) * 1.
     Lcolnorm = L.pow(2.).sum(0)
-    Lorder = Lcolnorm.sort(descending=True)[1]
+    Lorder = Lcolnorm.sort(descending=True)[1]  # sort dens to sparse
     L = L[:, Lorder]
     Lcolnorm = L.pow(2.).sum(0).sqrt()
     L /= Lcolnorm
+
+    # plt.cla()
+    # plt.imshow((L.mT@L).cpu(), vmin=-1, vmax=1, cmap="rainbow")
+    # plt.colorbar()
+    # plt.show()
+
     colnorm = torch.linspace(20., 3., Kx)
     L *= colnorm
     variables["loadings"] = L
@@ -107,7 +114,8 @@ for seed, Kx, Ky in combinations:
         p = torch.sigmoid(5.*(t-center)/width)
         return 4. * p * (1-p)
 
-    torch.manual_seed(1)
+    # seed 0 uses 1, seed 1 uses 4, seed 2 is 25
+    torch.manual_seed(25)
     periods = torch.randint(8, 20, (Kx, ))
     tshifts = torch.randint(0, 20, (Kx, ))
     centers = torch.randint(5, 15, (Kx, ))
@@ -138,10 +146,14 @@ for seed, Kx, Ky in combinations:
         for center, width in zip(centers, widths)
     ])
 
-    variables["smgp_scaling.nontarget_process"] = nontarget * 0.
-    variables["smgp_scaling.target_process"] = target * 0.1
+    # readjust signal strength
+    mixing[0, :] *= 0.65
+    target[2, :] *= -1
+
+    variables["smgp_scaling.nontarget_process"] = nontarget * -0.1
+    variables["smgp_scaling.target_process"] = target * 0.4
     variables["smgp_scaling.mixing_process"] = mixing
-    variables["smgp_factors.nontarget_process"] = nontarget
+    variables["smgp_factors.nontarget_process"] = nontarget * 0.3
     variables["smgp_factors.target_process"] = target
     variables["smgp_factors.mixing_process"] = mixing
 
@@ -154,6 +166,12 @@ for seed, Kx, Ky in combinations:
             if dim >= Ky or (dim % 2 == 1):
                 variables[k][dim, ...] = 0.
 
+
+    # plt.plot((mixing*(target-nontarget)).mT.cpu())
+    # plt.legend(range(K))
+    # plt.title(f"seed={seed}")
+    # plt.show()
+
     # put in model
     model.set(**variables)
     # generate data
@@ -165,7 +183,7 @@ for seed, Kx, Ky in combinations:
 
     # =============================================================================
     # SAVE
-    name = f"Kx{Kx}_Ky{Ky}_seed{seed}"
+    name = f"Kx{Kx}_Ky{Ky}"
     torch.save(model.variables["observations"].data, dir_data + name + ".observations")
     torch.save(model.variables["sequence_data"].order.data, dir_data + name + ".order")
     torch.save(model.variables["sequence_data"].target.data, dir_data + name + ".target")
@@ -185,7 +203,7 @@ for seed, Kx, Ky in combinations:
 
     # =============================================================================
     # SAVE
-    name = f"Kx{Kx}_Ky{Ky}_seed{seed}"
+    name = f"Kx{Kx}_Ky{Ky}"
     torch.save(model.variables["observations"].data, dir_data + name + ".observations")
     torch.save(model.variables["sequence_data"].order.data, dir_data + name + ".order")
     torch.save(model.variables["sequence_data"].target.data, dir_data + name + ".target")

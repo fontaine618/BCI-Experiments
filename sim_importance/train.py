@@ -16,7 +16,7 @@ dir_chains = "/home/simfont/Documents/BCI/experiments/sim_importance/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # experiments
-seeds = range(3)
+seeds = range(5)
 Kxs = [8]
 Kys = [5]
 Ks = [8]
@@ -29,7 +29,7 @@ i = int(sys.argv[1])
 seed, Kx, Ky, K = list(combinations)[i]
 
 # file
-file = f"Kx{Kx}_Ky{Ky}_seed{seed}"
+file = f"Kx{Kx}_Ky{Ky}"
 
 # model
 n_iter = 10_000
