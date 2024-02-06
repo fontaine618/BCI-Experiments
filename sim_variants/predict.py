@@ -96,14 +96,52 @@ else:
 
 
 # =============================================================================
+# COMPUTE LLK
+nreps = n_repetitions
+log_prob = -torch.logsumexp(-llk_long, dim=3) + math.log(llk_long.shape[3])
+target_ = target[::nreps, :].unsqueeze(1).repeat(1, nreps, 1)
+target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 36)
+N = n_repetitions * n_characters
+llk = (target36 * log_prob).sum(-1).mean() * N
+llk_se = (target36 * log_prob).sum(-1).std() * np.sqrt(N)
+
+df = pd.DataFrame({
+    "llk": llk.item(),
+    "llk_se": llk_se.item(),
+    "sample_mean": sample_mean,
+    "which_first": which_first,
+    "method": "BFFM",
+    "seed": seed,
+    "Kx": Kx,
+    "Ky": Ky,
+    "K": K,
+    "dataset": "test",
+    "model_true": mtrue,
+    "model_fitted": mfitted
+}, index=[1])
+df.to_csv(dir_results + file_out + ".test")
+# -----------------------------------------------------------------------------
+
+
+
+
+# =============================================================================
 # COMPUTE BCE
 nreps = n_repetitions
 log_prob = -torch.logsumexp(-llk_long, dim=3) + math.log(llk_long.shape[3])
 log_prob = log_prob - torch.logsumexp(log_prob, dim=2, keepdim=True)
+
+# log_prob = llk_long.mean(3)
+# log_prob = log_prob - torch.logsumexp(log_prob, dim=2, keepdim=True)
+
+# log_prob = torch.logsumexp(llk_long, dim=3) - math.log(llk_long.shape[3])
+# log_prob = log_prob - torch.logsumexp(log_prob, dim=2, keepdim=True)
+
 target_ = target[::nreps, :].unsqueeze(1).repeat(1, nreps, 1)
 target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 36)
-bce = (target36 * log_prob).sum(-1).sum(-1).mean(0)
-bce_se = (target36 * log_prob).sum(-1).sum(-1).std(0) / np.sqrt(nreps)
+N = n_repetitions * n_characters
+bce = (target36 * log_prob).sum(-1).sum(-1).mean() * N
+bce_se = (target36 * log_prob).sum(-1).sum(-1).std() * np.sqrt(N)
 
 df = pd.DataFrame({
     "bce": bce.item(),
