@@ -18,8 +18,8 @@
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
 #python -O train.py $SLURM_ARRAY_TASK_ID
-python -O importance.py $SLURM_ARRAY_TASK_ID
-python -O posterior.py $SLURM_ARRAY_TASK_ID
-python -O drop_one.py $SLURM_ARRAY_TASK_ID
+#python -O importance.py $SLURM_ARRAY_TASK_ID
+#python -O posterior.py $SLURM_ARRAY_TASK_ID
+#python -O drop_one.py $SLURM_ARRAY_TASK_ID
 python -O just_one.py $SLURM_ARRAY_TASK_ID
 
