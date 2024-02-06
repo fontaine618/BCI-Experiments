@@ -119,7 +119,7 @@ df = pd.DataFrame({
     "model_true": mtrue,
     "model_fitted": mfitted
 }, index=[1])
-df.to_csv(dir_results + file_out + ".test")
+df.to_csv(dir_results + file_out + ".testllk")
 # -----------------------------------------------------------------------------
 
 
