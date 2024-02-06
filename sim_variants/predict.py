@@ -40,7 +40,7 @@ file_out = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
 factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
-n_samples = 3
+n_samples = 100
 
 # dimensions
 n_characters = 19
