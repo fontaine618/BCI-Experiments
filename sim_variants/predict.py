@@ -5,6 +5,7 @@ sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
 import itertools as it
 import pandas as pd
+import math
 from source.bffmbci import BFFMResults
 from torch.distributions import Categorical
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
@@ -73,21 +74,55 @@ character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 
 # =============================================================================
 # GET PREDICTIVE PROBABILITIES
-llk_long, chars = self.predict(
-    order=order,
-    sequence=observations,
-    factor_samples=1,
-    character_idx=character_idx,
-    factor_processes_method=factor_processes_method,
-    drop_component=None,
-    batchsize=20
-)
-# save
-np.save(
-    dir_results + file_out + ".npy",
-    llk_long.cpu().numpy()
-)
+filename = dir_results + file_out + ".npy"
+if not os.path.isfile(filename):
+    llk_long, chars = self.predict(
+        order=order,
+        sequence=observations,
+        factor_samples=1,
+        character_idx=character_idx,
+        factor_processes_method=factor_processes_method,
+        drop_component=None,
+        batchsize=20
+    )
+    # save
+    np.save(
+        filename,
+        llk_long.cpu().numpy()
+    )
+else:
+    llk_long = torch.Tensor(np.load(filename))
 # -----------------------------------------------------------------------------
+
+
+# =============================================================================
+# COMPUTE BCE
+nreps = n_repetitions
+log_prob = -torch.logsumexp(-llk_long, dim=3) + math.log(llk_long.shape[3])
+log_prob = log_prob - torch.logsumexp(log_prob, dim=2, keepdim=True)
+target_ = target[::nreps, :].unsqueeze(1).repeat(1, nreps, 1)
+target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 36)
+bce = (target36 * log_prob).sum(-1).sum(-1).mean(0)
+bce_se = (target36 * log_prob).sum(-1).sum(-1).std(0) / np.sqrt(nreps)
+
+df = pd.DataFrame({
+    "bce": bce.item(),
+    "bce_se": bce_se.item(),
+    "sample_mean": sample_mean,
+    "which_first": which_first,
+    "method": "BFFM",
+    "seed": seed,
+    "Kx": Kx,
+    "Ky": Ky,
+    "K": K,
+    "dataset": "test",
+    "model_true": mtrue,
+    "model_fitted": mfitted
+})
+df.to_csv(dir_results + file_out + ".test")
+# -----------------------------------------------------------------------------
+
+
 
 
 
@@ -140,7 +175,7 @@ df = pd.DataFrame({
 }, index=range(1, nreps + 1))
 print(df)
 
-df.to_csv(dir_results + file_out + ".test")
+df.to_csv(dir_results + file_out + ".testagg")
 # -----------------------------------------------------------------------------
 
 
