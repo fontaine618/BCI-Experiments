@@ -103,7 +103,7 @@ for seed, Kx, Ky, mname in combinations:
 
     colnorm = torch.linspace(20., 3., Kx)
     L *= colnorm
-    variables["loadings"] = L
+    variables["loadings"] = L.detach().clone()
 
     t = torch.arange(stimulus_window)
     damp = torch.sigmoid(3 * t - 8) * (1. - torch.sigmoid(t - stimulus_window + 8))
@@ -149,13 +149,14 @@ for seed, Kx, Ky, mname in combinations:
 
     # readjust signal strength
     mixing[0, :] *= 0.65
+    target[2, :] *= -1
 
-    variables["smgp_scaling.nontarget_process"] = nontarget * 0.
-    variables["smgp_scaling.target_process"] = target * 0.1
-    variables["smgp_scaling.mixing_process"] = mixing
-    variables["smgp_factors.nontarget_process"] = nontarget
-    variables["smgp_factors.target_process"] = target
-    variables["smgp_factors.mixing_process"] = mixing
+    variables["smgp_scaling.nontarget_process"] = nontarget.detach().clone() * -0.1
+    variables["smgp_scaling.target_process"] = target.detach().clone() * 0.4
+    variables["smgp_scaling.mixing_process"] = mixing.detach().clone()
+    variables["smgp_factors.nontarget_process"] = nontarget.detach().clone() * 0.3
+    variables["smgp_factors.target_process"] = target.detach().clone()
+    variables["smgp_factors.mixing_process"] = mixing.detach().clone()
 
     # set predictive components to first Ky
     for k in [
@@ -167,14 +168,14 @@ for seed, Kx, Ky, mname in combinations:
                 variables[k][dim, ...] = 0.
 
     # choose between models
-    if mname == "LR-CDR":
+    if mname == "LR-DCR":
         pass
     if mname == "LR-DC":
         variables["smgp_scaling.mixing_process"] *= 0.
     if mname == "LR-SC":
-        variables["smgp_factors.mixing_process"] *= 0.
-        variables["smgp_factors.target_process"] *= 0.
-        variables["smgp_factors.nontarget_process"] *= 0.
+        variables["smgp_scaling.mixing_process"] *= 0.
+        variables["smgp_scaling.target_process"] *= 0.
+        variables["smgp_scaling.nontarget_process"] *= 0.
 
 
 
