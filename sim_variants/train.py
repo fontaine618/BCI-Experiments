@@ -14,7 +14,7 @@ from source.bffmbci.bffm import DynamicRegressionCovarianceStaticMean
 # =============================================================================
 # SETUP
 dir_data = "/home/simfont/Documents/BCI/experiments/sim_variants/data/"
-dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/sim_variants/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # experiments
