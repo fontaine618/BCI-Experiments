@@ -1,2 +1,2 @@
 ,bce,bce_se,sample_mean,which_first,method,seed,Kx,Ky,K,dataset,model_true,model_fitted
-1,-17270.705078125,58.52659225463867,harmonic,sample,BFFM,0,8,5,8,test,LR-SC,LR-DC
+1,-381.0498046875,35.503353118896484,harmonic,sample,BFFM,0,8,5,8,test,LR-SC,LR-DC

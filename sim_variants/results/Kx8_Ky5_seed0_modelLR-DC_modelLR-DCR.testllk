@@ -1,2 +1,2 @@
 ,llk,llk_se,sample_mean,which_first,method,seed,Kx,Ky,K,dataset,model_true,model_fitted
-1,-1012373.9375,438.3602294921875,harmonic,sample,BFFM,0,8,5,8,test,LR-DC,LR-DCR
+1,-1012425.5,437.1918640136719,harmonic,sample,BFFM,0,8,5,8,test,LR-DC,LR-DCR
