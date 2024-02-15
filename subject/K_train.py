@@ -31,7 +31,6 @@ downsample = 8
 seed = 0
 K = int(sys.argv[2])
 n_iter = 20_000
-sparse = False
 # -----------------------------------------------------------------------------
 
 
@@ -61,8 +60,9 @@ settings = {
     "n_sequences": eeg.sequence.shape[0],
     "nonnegative_smgp": False,
     "scaling_activation": "exp",
-    "sparse": sparse,
-    "seed": seed
+    "sparse": False,
+    "seed": seed,
+    "shrinkage": "none"
 }
 
 cor = 0.8
