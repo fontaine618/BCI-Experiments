@@ -86,7 +86,7 @@ Model = {
     "LR-SC": StaticCovarianceRegressionMean,
 }[V]
 
-model = DynamicRegressionCovarianceRegressionMean(
+model = Model(
     sequences=eeg.sequence,
     stimulus_order=eeg.stimulus_order,
     target_stimulus=eeg.target,
