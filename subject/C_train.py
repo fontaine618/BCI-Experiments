@@ -73,11 +73,11 @@ prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
     "shrinkage_factor": (2., 3.),
-    "kernel_gp_factor_processes": (cor, 1., 1.),
-    "kernel_tgp_factor_processes": (cor, 0.5, 1.),
-    "kernel_gp_loading_processes": (cor, 0.1, 1.),
-    "kernel_tgp_loading_processes": (cor, 0.5, 1.),
-    "kernel_gp_factor": (cor, 1., 1.)
+    "kernel_gp_factor_processes": (cor, 1., 2.),
+    "kernel_tgp_factor_processes": (cor, 0.5, 2.),
+    "kernel_gp_loading_processes": (cor, 0.1, 2.),
+    "kernel_tgp_loading_processes": (cor, 0.5, 2.),
+    "kernel_gp_factor": (cor, 1., 2.)
 }
 
 Model = {
@@ -127,7 +127,7 @@ out = model.results(
     start=10_000,
     thin=10
 )
-with open(dir_chains + f"K{subject}_allreps_C{cor}.chain", "wb") as f:
+with open(dir_chains + f"K{subject}_allreps_2C{cor}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 

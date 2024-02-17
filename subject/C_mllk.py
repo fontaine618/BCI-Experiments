@@ -73,7 +73,7 @@ character_idx = eeg.character_idx
 # LOAD RESULTS
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + f"K{subject}_allreps_C{cor}.chain"],
+    [dir_chains + f"K{subject}_allreps_2C{cor}.chain"],
     warmup=0,
     thin=1
 )
@@ -96,7 +96,7 @@ llk_long, chars = self.predict(
 )
 # save
 np.save(
-    dir_results + f"K{subject}_allreps_C{cor}_mllk.npy",
+    dir_results + f"K{subject}_allreps_2C{cor}_mllk.npy",
     llk_long.cpu().numpy()
 )
 # -----------------------------------------------------------------------------
