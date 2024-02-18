@@ -35,7 +35,7 @@ downsample = 8
 seed = 0
 K = 8
 V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99][int(sys.argv[2])]
+cor = [0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.95][int(sys.argv[2])]
 n_iter = 20_000
 sparse = False
 
@@ -77,7 +77,7 @@ character_idx = eeg.character_idx
 # LOAD RESULTS
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + f"K{subject}_allreps_2C{cor}.chain"],
+    [dir_chains + f"K{subject}_allreps_3C{cor}.chain"],
     warmup=0,
     thin=1
 )
@@ -89,7 +89,7 @@ character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 
 # =============================================================================
 # GET PREDICTIVE PROBABILITIES
-llk_long = np.load(dir_results + f"K{subject}_allreps_2C{cor}_mllk.npy")
+llk_long = np.load(dir_results + f"K{subject}_allreps_3C{cor}_mllk.npy")
 llk_long = torch.Tensor(llk_long)
 log_prob = self.aggregate(
     llk_long,
@@ -155,7 +155,7 @@ out = {
 }
 print(out)
 
-pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_allreps_2C{cor}.icx")
+pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_allreps_3C{cor}.icx")
 # -----------------------------------------------------------------------------
 
 
@@ -219,5 +219,5 @@ out = {
     "elpd_waic": [waic_sum], "elpd_waic_se": [waic_se], "p_waic": [waic_p],
 }
 
-pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_allreps_2C{cor}.icy")
+pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_allreps_3C{cor}.icy")
 # -----------------------------------------------------------------------------

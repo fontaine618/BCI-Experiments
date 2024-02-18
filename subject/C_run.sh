@@ -4,10 +4,10 @@
 #SBATCH --job-name=bci_subject_C
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=12:00:00
+#SBATCH --time=9:00:00
 #SBATCH --array=0-9
 #SBATCH --account=stats_dept1
-#SBATCH --partition=gpu
+#SBATCH --partition=gpu,gpu_mig40
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1

@@ -33,7 +33,7 @@ downsample = 8
 seed = 0
 K = 8
 V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99][int(sys.argv[2])]
+cor = [0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.95][int(sys.argv[2])]
 n_iter = 20_000
 # -----------------------------------------------------------------------------
 
@@ -127,7 +127,7 @@ out = model.results(
     start=10_000,
     thin=10
 )
-with open(dir_chains + f"K{subject}_allreps_2C{cor}.chain", "wb") as f:
+with open(dir_chains + f"K{subject}_allreps_3C{cor}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 
