@@ -65,16 +65,16 @@ settings = {
     "shrinkage": "none"
 }
 
-cor = 0.8
+cor = 0.5
 prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
     "shrinkage_factor": (2., 3.),
-    "kernel_gp_factor_processes": (cor, 1., 1.),
-    "kernel_tgp_factor_processes": (cor, 0.5, 1.),
-    "kernel_gp_loading_processes": (cor, 0.1, 1.),
-    "kernel_tgp_loading_processes": (cor, 0.5, 1.),
-    "kernel_gp_factor": (cor, 1., 1.)
+    "kernel_gp_factor_processes": (cor, 1., 2.),
+    "kernel_tgp_factor_processes": (cor, 0.5, 2.),
+    "kernel_gp_loading_processes": (cor, 0.1, 2.),
+    "kernel_tgp_loading_processes": (cor, 0.5, 2.),
+    "kernel_gp_factor": (cor, 1., 2.)
 }
 
 model = DynamicRegressionCovarianceRegressionMean(
