@@ -82,7 +82,6 @@ results = BFFMResults.from_files(
     thin=1
 )
 self = results.to_predict(n_samples=n_samples)
-character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 # -----------------------------------------------------------------------------
 
 
