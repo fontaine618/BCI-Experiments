@@ -4,7 +4,7 @@
 #SBATCH --job-name=bci_subject_R
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=3:00:00
+#SBATCH --time=0:05:00
 #SBATCH --array=3-9
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
@@ -18,5 +18,6 @@
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
 #python -O R_train.py 114 $SLURM_ARRAY_TASK_ID
-python -O R_testmllk.py 114 $SLURM_ARRAY_TASK_ID
+#python -O R_testmllk.py 114 $SLURM_ARRAY_TASK_ID
+python -O R_test.py 114 $SLURM_ARRAY_TASK_ID
 
