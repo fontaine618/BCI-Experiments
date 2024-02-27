@@ -61,7 +61,7 @@ eeg = KProtocol(
     downsample=downsample,
 )
 # subset training reps
-eeg.repetitions(list(range(1, train_reps+1)), reverse=True)
+eeg = eeg.repetitions(list(range(train_reps+1, 16)), True)
 
 nchars = eeg.stimulus_data["character"].nunique()
 nreps = eeg.stimulus_data["repetition"].nunique()
