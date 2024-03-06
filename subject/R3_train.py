@@ -4,15 +4,15 @@ import torch
 import time
 import pickle
 import itertools as it
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simon/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
+dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # file
