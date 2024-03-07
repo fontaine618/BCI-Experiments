@@ -59,8 +59,9 @@ eeg = KProtocol(
 )
 # subset training reps
 torch.manual_seed(seed)
-training_reps = torch.randperm(15)[:train_reps] + 1
-testing_reps = torch.tensor([i for i in range(1, 16) if i not in training_reps])
+reps = torch.randperm(15) + 1
+training_reps = reps[:train_reps].cpu().tolist()
+testing_reps = reps[train_reps:].cpu().tolist()
 eeg = eeg.repetitions(training_reps)
 # -----------------------------------------------------------------------------
 
