@@ -5,6 +5,7 @@ sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
 import pandas as pd
 import itertools as it
+import torchmetrics
 from source.bffmbci import BFFMResults
 from source.data.k_protocol import KProtocol
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
@@ -140,12 +141,24 @@ hamming = (wide_pred_one_hot != target_wide).double().sum(2).mean(0) / 2
 target_char = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_wide), 36)
 bce = - (target_char * log_prob).sum(2).mean(0)
 
+# auc
+target_char_int = torch.argmax(target_char, -1)
+auc = torch.Tensor([
+    torchmetrics.functional.classification.multiclass_auroc(
+        preds=log_prob[:, c, :],
+        target=target_char_int[:, c],
+        num_classes=36,
+        average="weighted"
+    ) for c in range(nreps)
+])
+
 # save
 df = pd.DataFrame({
     "hamming": hamming.cpu(),
     "acc": accuracy.cpu(),
     "mean_entropy": entropy.mean(0).abs().cpu(),
     "bce": bce.cpu(),
+    "auroc": auc.cpu(),
     "dataset": name + "_test",
     "repetition": range(1, nreps + 1),
     "aggregation": factor_processes_method,
