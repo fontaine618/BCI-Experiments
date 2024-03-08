@@ -36,7 +36,7 @@ V = ["LR-DCR", "LR-DC", "LR-SC"][0]
 cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
 n_iter = 20_000
 
-train_reps = 9#int(sys.argv[2])
+train_reps = 3#int(sys.argv[2])
 
 # prediction settings
 factor_processes_method = "analytical"
@@ -63,7 +63,7 @@ eeg = KProtocol(
     downsample=downsample,
 )
 # subset training reps
-eeg.repetitions(list(range(1, train_reps+1)), reverse=True)
+eeg = eeg.repetitions(list(range(train_reps+1, 16)), True)
 
 nchars = eeg.stimulus_data["character"].nunique()
 nreps = eeg.stimulus_data["repetition"].nunique()
