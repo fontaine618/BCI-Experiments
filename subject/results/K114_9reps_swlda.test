@@ -1,0 +1,7 @@
+,hamming,acc,dataset,repetition,training_reps,method
+1,0.21052631578947367,0.7894736842105263,K114_001_BCI_TRN_test,1,9,swLDA
+2,0.0,1.0,K114_001_BCI_TRN_test,2,9,swLDA
+3,0.0,1.0,K114_001_BCI_TRN_test,3,9,swLDA
+4,0.0,1.0,K114_001_BCI_TRN_test,4,9,swLDA
+5,0.0,1.0,K114_001_BCI_TRN_test,5,9,swLDA
+6,0.0,1.0,K114_001_BCI_TRN_test,6,9,swLDA

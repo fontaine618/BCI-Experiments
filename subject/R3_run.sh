@@ -17,7 +17,7 @@
 # The application(s) to execute along with its input arguments and options:
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
-#python -O R3_train.py 114 $SLURM_ARRAY_TASK_ID
-#python -O R3_testmllk.py 114 $SLURM_ARRAY_TASK_ID
+python -O R3_train.py 114 $SLURM_ARRAY_TASK_ID
+python -O R3_testmllk.py 114 $SLURM_ARRAY_TASK_ID
 python -O R3_test.py 114 $SLURM_ARRAY_TASK_ID
 

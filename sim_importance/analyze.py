@@ -27,7 +27,7 @@ os.makedirs(dir_results, exist_ok=True)
 os.makedirs(dir_figures, exist_ok=True)
 
 # experiments
-seeds = range(3)
+seeds = range(5)
 Kxs = [8]
 Kys = [5]
 Ks = [8]
@@ -39,7 +39,7 @@ combinations = it.product(seeds, Kxs, Kys, Ks)
 out = list()
 corr = list()
 for seed, Kx, Ky, K in combinations:
-    file_true = f"Kx{Kx}_Ky{Ky}_seed{seed}"
+    file_true = f"Kx{Kx}_Ky{Ky}"
     file = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}"
     file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
     # truth
@@ -49,6 +49,7 @@ for seed, Kx, Ky, K in combinations:
     # posterior
     posterior = pickle.load(open(dir_results + file + ".posterior", "rb"))
     Lpost = posterior["loadings"]
+    # print(k, torch.norm(Lpost, dim=0))
     Lpoststd = Lpost / torch.norm(Lpost, dim=0)
     # importance
     importance = pd.read_csv(dir_results + file + "_importance.csv", index_col=0)
@@ -79,44 +80,57 @@ df = pd.concat(out)
 df["component"] += 1
 df["best_match"] += 1
 
-fig, axs = plt.subplots(4, 3, figsize=(8, 8), sharex="row",
+fig, axs = plt.subplots(4, 5, figsize=(12, 8), sharex="all", sharey="row",
                         gridspec_kw={'height_ratios': [4, 4, 4, 6]})
 for seed in seeds:
     df_seed = df[df["seed"] == seed]
+    df_seed = df_seed.sort_values("best_match", ascending=True)
+    df_seed["x"] = range(1, 9)
     # importance
-    sns.barplot(
-        data=df_seed,
-        x="component",
-        y="importance",
-        ax=axs[0, seed]
+    # sns.barplot(
+    #     data=df_seed,
+    #     x="component",
+    #     y="importance",
+    #     ax=axs[0, seed]
+    # )
+    axs[0, seed].bar(
+        x=df_seed["x"]-0.5,
+        height=df_seed["importance"],
+        color=[f"C{i}" for i in range(8)],
+        width=1.
     )
-    axs[0, seed].set_title(f"Seed {seed}")
+    axs[0, seed].set_title(f"Chain {seed+1}")
     axs[0, seed].set_xlabel("")
     axs[0, seed].set_ylabel("Importance" if seed == 0 else "")
+    axs[0, seed].grid(axis="x")
+    axs[0, seed].autoscale(tight=True, axis="x")
     # bce diff
     ref = df_seed[df_seed["component"] == 1]["reference_drop"].values[0]
     axs[1, seed].bar(
-        x=df_seed["component"],
+        x=df_seed["x"]-0.5,
         height=df_seed["diff_bce_drop"],
         bottom=df_seed["reference_drop"],
-        color=[f"C{i}" for i in range(8)]
+        color=[f"C{i}" for i in range(8)],
+        width=1.
     )
     axs[1, seed].set_xlabel("")
     axs[1, seed].set_ylabel("BCE change (drop one)" if seed == 0 else "")
     axs[1, seed].set_xticks(range(1, 9))
     axs[1, seed].grid(axis="x")
     axs[1, seed].axhline(ref, color="black", linestyle="--")
-    axs[1, seed].set_ylim(
-        axs[1, seed].get_ylim()[0],
-        axs[1, seed].get_ylim()[1] + 0.5
-    )
+    axs[1, seed].autoscale(tight=True, axis="x", enable=True, )
+    # axs[1, seed].set_ylim(
+    #     axs[1, seed].get_ylim()[0],
+    #     axs[1, seed].get_ylim()[1] + 0.5
+    # )
     # bce diff
     ref = df_seed[df_seed["component"] == 1]["reference_add"].values[0]
     axs[2, seed].bar(
-        x=df_seed["component"],
+        x=df_seed["x"]-0.5,
         height=df_seed["diff_bce_add"],
         bottom=df_seed["reference_add"],
-        color=[f"C{i}" for i in range(8)]
+        color=[f"C{i}" for i in range(8)],
+        width=1.
     )
     axs[2, seed].set_xlabel("")
     axs[2, seed].set_ylabel("BCE change (add one)" if seed == 0 else "")
@@ -127,21 +141,28 @@ for seed in seeds:
         axs[2, seed].get_ylim()[0] - 0.5,
         axs[2, seed].get_ylim()[1]
     )
+    axs[2, seed].autoscale(tight=True, axis="x")
     # corr mat
     sns.heatmap(
-        corr[seed].cpu(),
+        corr[seed].cpu()[:, df_seed["component"].values-1],
         ax=axs[3, seed],
         xticklabels=range(1, 9),
         yticklabels=range(1, 9),
         vmin=0,
         vmax=1,
         cmap="coolwarm",
-        cbar=seed == 2
+        cbar=False
     )
-    axs[3, seed].set_xlabel("Component")
+    axs[3, seed].set_xlabel("Estimated component")
     axs[3, seed].set_ylabel("Cosine similarity with \nTrue Component" if seed == 0 else "")
-    for x, y in zip(df_seed["component"], df_seed["best_match"]):
-        axs[3, seed].text(x - 0.5, y - 0.5, "x", ha="center", va="center", color="white")
+    for x, y in zip(df_seed["x"], df_seed["best_match"]):
+        axs[3, seed].text(x - 0.5, y - 0.5, "O", ha="center", va="center", color="white")
+    for k in [1, 3, 5]:
+        axs[3, seed].axhline(k - 0.5, color="white", linestyle="--")
+    top3 = df_seed.sort_values("diff_bce_drop", ascending=True).head(3)["x"].values
+    for k in top3:
+        # top three components
+        axs[3, seed].axvline(k - 0.5, color="white", linestyle="--")
 
 plt.tight_layout()
 plt.savefig(dir_figures + "importance.pdf")
@@ -273,3 +294,35 @@ B = torch.linalg.inv(Ltruestd.mT @ Ltruestd) @ Ltruestd.mT @ Lpoststd
 Proj = Ltruestd @ B
 Error = (Lpoststd - Proj).pow(2.).mean(0)
 # -----------------------------------------------------------------------------
+
+
+# =============================================================================
+# PLOT LLK ACROSS SEEDS
+
+file_true = f"Kx{Kx}_Ky{Ky}"
+variables = pickle.load(open(dir_data + file_true + ".variables", "rb"))
+combinations = it.product(seeds, Kxs, Kys, Ks)
+llks = dict()
+for seed, Kx, Ky, K in combinations:
+    file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.chain"
+    results = BFFMResults.from_files(
+        [dir_chains + file_chain],
+        warmup=0,
+        thin=1
+    )
+    llks[seed] = results.chains["log_likelihood.observations"]
+
+fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+for seed, llk in llks.items():
+    ax.plot(llk.squeeze(0).cpu(), alpha=0.5, color=f"C{seed}", linewidth=0.5)
+    # plot smooth
+    ax.plot(pd.Series(llk.squeeze(0).cpu()).rolling(25, center=True).mean(),
+            label=f"Chain {seed}", color=f"C{seed}")
+ax.axhline(variables["log_likelihood.observations"], color="black", linestyle="--")
+ax.legend(title="", loc="lower center", ncol=5)
+ax.set_xticks([0, 100, 200, 300, 400, 500])
+ax.set_xticklabels([5000, 6000, 7000, 8000, 9000, 10000])
+ax.set_xlabel("MCMC Iteration")
+ax.set_ylabel("Log-likelihood")
+plt.tight_layout()
+plt.savefig(dir_figures + "llk.pdf")

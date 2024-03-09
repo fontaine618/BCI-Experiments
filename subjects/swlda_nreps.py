@@ -134,6 +134,7 @@ eeg = KProtocol(
     bandpass_order=bandpass_order,
     downsample=downsample,
 )
+
 eeg = eeg.repetitions(list(range(trn_reps+1, 16)), True)
 nchars = eeg.stimulus_data["character"].nunique()
 nreps = eeg.stimulus_data["repetition"].nunique()

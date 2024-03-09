@@ -30,10 +30,11 @@ bandpass_order = 2
 downsample = 8
 
 # model
+lite = True
 seed = 0
-K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
+K = 3 if lite else 8
+V = "LR-SC" if lite else "LR-DCR"
+cor = 0.50
 n_iter = 20_000
 
 # experiment
@@ -85,7 +86,7 @@ character_idx = eeg.character_idx
 # LOAD RESULTS
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + f"K{subject}_trn{train_reps}_seed{seed}.chain"],
+    [dir_chains + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}.chain"],
     warmup=0,
     thin=1
 )
@@ -107,7 +108,7 @@ llk_long, chars = self.predict(
 )
 # save
 np.save(
-    dir_results + f"K{subject}_trn{train_reps}_seed{seed}_testmllk.npy",
+    dir_results + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}_testmllk.npy",
     llk_long.cpu().numpy()
 )
 # -----------------------------------------------------------------------------

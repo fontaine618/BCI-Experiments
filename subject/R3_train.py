@@ -29,10 +29,11 @@ bandpass_order = 2
 downsample = 8
 
 # model
+lite = True
 seed = 0
-K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
+K = 3 if lite else 8
+V = "LR-SC" if lite else "LR-DCR"
+cor = 0.50
 n_iter = 20_000
 
 
@@ -135,7 +136,7 @@ out = model.results(
     start=10_000,
     thin=10
 )
-with open(dir_chains + f"K{subject}_trn{train_reps}_seed{seed}.chain", "wb") as f:
+with open(dir_chains + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 

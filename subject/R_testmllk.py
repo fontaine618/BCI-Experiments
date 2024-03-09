@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import sys
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/home/simon/Documents/BCI/')
 import torch
 import itertools as it
 from source.bffmbci import BFFMResults
@@ -11,15 +11,15 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simfont/Documents/BCI/experiments/subject/results/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
+dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
+dir_data = "/home/simon/Documents/BCI/K_Protocol/"
 os.makedirs(dir_results, exist_ok=True)
 
 
 # file
 type = "TRN"
-subject = str(sys.argv[1])
+subject = "114" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 
@@ -36,7 +36,7 @@ V = ["LR-DCR", "LR-DC", "LR-SC"][0]
 cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
 n_iter = 20_000
 
-train_reps = int(sys.argv[2])
+train_reps = 7 #int(sys.argv[2])
 
 # prediction settings
 factor_processes_method = "analytical"

@@ -32,10 +32,11 @@ bandpass_order = 2
 downsample = 8
 
 # model
+lite = True
 seed = 0
-K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
+K = 3 if lite else 8
+V = "LR-SC" if lite else "LR-DCR"
+cor = 0.50
 n_iter = 20_000
 
 # experiment
@@ -47,8 +48,8 @@ seed, train_reps = experiment[int(sys.argv[2])]
 # prediction settings
 factor_processes_method = "analytical"
 n_samples = 100
-sample_mean = "harmonic"
-which_first = "sample"
+sample_mean = "arithmetic"
+which_first = "sequence"
 
 # dimensions
 n_characters = 19
@@ -90,7 +91,7 @@ character_idx = eeg.character_idx
 # LOAD RESULTS
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + f"K{subject}_trn{train_reps}_seed{seed}.chain"],
+    [dir_chains + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}.chain"],
     warmup=0,
     thin=1
 )
@@ -103,7 +104,7 @@ self = results.to_predict(n_samples=n_samples)
 
 # =============================================================================
 # GET PREDICTIVE PROBABILITIES
-filename = dir_results + f"K{subject}_trn{train_reps}_seed{seed}_testmllk.npy"
+filename = dir_results + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}_testmllk.npy"
 llk_long = torch.Tensor(np.load(filename)) # n_chars x n_reps x 36 x n_samples
 # -----------------------------------------------------------------------------
 
@@ -169,7 +170,7 @@ df = pd.DataFrame({
     "K": K,
     "cor": cor
 }, index=range(1, nreps + 1))
-df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}.test")
+df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}.test")
 # -----------------------------------------------------------------------------
 
 

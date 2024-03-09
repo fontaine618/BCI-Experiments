@@ -178,6 +178,9 @@ for Kx, Ky in combinations:
     torch.manual_seed(seed)
     model.generate_local_variables()
     model.variables["observations"].generate()
+    # store log likelihood
+    model.store_log_density()
+    variables["log_likelihood.observations"] = model.variables["observations"]._log_density_history[-1]
     # -----------------------------------------------------------------------------
 
 

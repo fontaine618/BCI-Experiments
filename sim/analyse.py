@@ -32,6 +32,7 @@ combinations = it.product(seeds, Kxs, Kys, Ks)
 # LOAD RESULTS
 out = []
 out_test = []
+out_test_oracle = []
 for i, (seed, Kx, Ky, K) in enumerate(list(combinations)):
     try:
         df = pd.read_csv(dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.icx", index_col=0).T
@@ -51,10 +52,15 @@ for i, (seed, Kx, Ky, K) in enumerate(list(combinations)):
         df = pd.read_csv(dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.test", index_col=0)
         df["Target"] = "p(y|x)"
         out_test.append(df)
+        df = pd.read_csv(dir_results + f"Kx{Kx}_Ky{Ky}_seed{seed}_K{K}.testoracle", index_col=0)
+        df["Target"] = "p(y|x)"
+        out_test_oracle.append(df)
+
     except FileNotFoundError:
         print(i, seed, Kx, Ky, K)
 out = pd.concat(out)
 out_test = pd.concat(out_test)
+out_test_oracle = pd.concat(out_test_oracle)
 # -----------------------------------------------------------------------------
 
 
@@ -102,15 +108,20 @@ se_test = out_test.melt(
 value = pd.concat([value, value_test])
 se = pd.concat([se, se_test])
 
-metrics = ["lppd", "elpd_loo", "elpd_waic", "log_bf", "bce", "acc"]
-metrics_display = ["LPPD", "PSIS-LOO", "WAIC", "BF", "Test BCE", "Accuracy"]
+# metrics = ["lppd", "elpd_loo", "elpd_waic", "log_bf", "bce", "acc"]
+# metrics_display = ["LPPD", "PSIS-LOO", "WAIC", "BF", "Test BCE", "Accuracy"]
 
+metrics = ["elpd_loo", "bce"]
+metrics_display = ["PSIS-LOO-CV", "Test BCE"]
+
+value = value[value["metric"].isin(metrics)]
 value["metric"] = value["metric"].replace({k: v for k, v in zip(metrics, metrics_display)})
 value["Experiment"] = "Kx=" + value["Kx"].astype(str) + " | Ky=" + value["Ky"].astype(str)
 value["Metric"] = value["Target"].astype(str) + ": " + value["metric"].astype(str)
 
 # remove trailing _se from metric
 se["metric"] = se["metric"].str.replace("_se", "")
+se = se[se["metric"].isin(metrics)]
 se["metric"] = se["metric"].replace({k: v for k, v in zip(metrics, metrics_display)})
 se["Experiment"] = "Kx=" + se["Kx"].astype(str) + " | Ky=" + se["Ky"].astype(str)
 se["Metric"] = se["Target"].astype(str) + ": " + se["metric"].astype(str)
@@ -150,7 +161,30 @@ for i, metric in enumerate(metrics):
                     alpha=0.1,
                     color="blue" if values["Target"].unique()[0] == "p(x|y)" else "red",
                 )
+            # add oracle
+            if metric == "p(y|x): Accuracy":
+                df = out_test_oracle[
+                    (out_test_oracle["seed"] == s) &
+                    (out_test_oracle["Kx"] == values["Kx"].unique()[0]) &
+                    (out_test_oracle["Ky"] == values["Ky"].unique()[0])
+                ]
+                ax.plot(df["K"], df["acc"], linestyle=":", color="black", alpha=0.5)
+            if metric == "p(y|x): Test BCE":
+                df = out_test_oracle[
+                    (out_test_oracle["seed"] == s) &
+                    (out_test_oracle["Kx"] == values["Kx"].unique()[0]) &
+                    (out_test_oracle["Ky"] == values["Ky"].unique()[0])
+                ]
+                ax.plot(df["K"], df["bce"], linestyle=":", color="black", alpha=0.5)
+                ax.fill_between(
+                    df["K"],
+                    df["bce"] - df["bce_se"],
+                    df["bce"] + df["bce_se"],
+                    alpha=0.1,
+                    color="black",
+                )
+
 plt.tight_layout()
-plt.savefig(dir_figures + "ic.pdf")
+plt.savefig(dir_figures + "main.pdf")
 
 # -----------------------------------------------------------------------------

@@ -40,7 +40,7 @@ experiment = list(it.product(seeds, train_reps))
 
 
 for seed, treps in experiment:
-    for method in ["_swlda", "_eegnet", "_rf", "_gb", "_svm", ""]:
+    for method in ["", "_swlda", "_eegnet", "_rf", "_gb", "_svm",]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
         try:
             df = pd.read_csv(dir_results + file, index_col=0)
@@ -86,9 +86,13 @@ for row, (metric, metric_name) in enumerate(metrics.items()):
             x="repetition",
             y=metric,
             hue="method",
+            style="method",
             ax=ax,
             errorbar=("pi", 100),
-            estimator="median"
+            estimator="median",
+            # errorbar=("ci", 95),
+            # estimator="mean",
+            err_kws={"alpha": 0.1}
         )
         ax.set_title(f"{treps} Training repetitions" if row == 0 else "")
         ax.set_ylabel(metric_name)

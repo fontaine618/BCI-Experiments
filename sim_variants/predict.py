@@ -35,7 +35,7 @@ seed, Kx, Ky, mtrue, mfitted = list(combinations)[i]
 # file
 file_data = f"Kx{Kx}_Ky{Ky}_seed{1000+seed}_model{mtrue}"
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
-file_out = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
+file_out = f"Kx{Kx}_Ky{Ky}_seed{1000+seed}_model{mtrue}_model{mfitted}"
 
 # prediction settings
 factor_processes_method = "analytical"
@@ -74,7 +74,7 @@ character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 
 # =============================================================================
 # GET PREDICTIVE PROBABILITIES
-filename = dir_results + file_out + ".npy"
+filename = dir_results + file_out + "_mllk.npy"
 if not os.path.isfile(filename):
     llk_long, chars = self.predict(
         order=order,

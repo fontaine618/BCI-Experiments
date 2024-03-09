@@ -118,8 +118,12 @@ for seed, Kx, Ky, mtrue, mfitted in combinations:
 
     # error
     error = (mu0_t - mu0_e).pow(2).mean(1).sqrt()
+    size = mu0_t.pow(2).mean(1).sqrt() + 1.
+    error = error / size.reshape(1, -1)
     e_mu0[file_chain] = error.mean(0), error.std(0)
     error = (mu1_t - mu1_e).pow(2).mean(1).sqrt()
+    size = mu1_t.pow(2).mean(1).sqrt() + 1.
+    error = error / size.reshape(1, -1)
     e_mu1[file_chain] = error.mean(0), error.std(0)
     # -----------------------------------------------------------------------------
 
@@ -168,8 +172,12 @@ for seed, Kx, Ky, mtrue, mfitted in combinations:
 
     # error
     error = (S0_t - S0_e).pow(2).mean((1, 2)).sqrt()
+    size = S0_t.pow(2).mean((1, 2)).sqrt()
+    error = error / size
     e_S0[file_chain] = error.mean(0), error.std(0)
     error = (S1_t - S1_e).pow(2).mean((1, 2)).sqrt()
+    size = S1_t.pow(2).mean((1, 2)).sqrt()
+    error = error / size
     e_S1[file_chain] = error.mean(0), error.std(0)
     print(file_chain, S0_t.max(), S1_t.max())
 
@@ -186,7 +194,7 @@ Kx = 8
 Ky = 5
 K = 8
 
-fig, ax = plt.subplots(2, 3, figsize=(10, 6), sharex=True, sharey=True)
+fig, ax = plt.subplots(2, 3, figsize=(10, 4), sharex=True, sharey="row")
 for col, mtrue in enumerate(models):
     for mfitted in models:
         file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
@@ -204,15 +212,17 @@ for col, mtrue in enumerate(models):
             e_mu1[file_chain][0].cpu().numpy() + e_mu1[file_chain][1].cpu().numpy(),
             alpha=0.2
         )
+    ax[1, col].set_xticks([0, 6, 12, 18, 24])
+    ax[1, col].set_xticklabels([0, 200, 400, 600, 800])
     ax[0, col].set_title("True model: " + mtrue)
-ax[0, 0].set_ylabel("Error Mean (nontarget)")
-ax[1, 0].set_ylabel("Error Mean (target)")
+ax[0, 0].set_ylabel("Rel. error (mean, nontarget)")
+ax[1, 0].set_ylabel("Rel. error (mean, target)")
 plt.legend(title="Fitted model")
 plt.tight_layout()
 plt.savefig(dir_figures + f"error_mean.pdf")
 
 # plot covariance error
-fig, ax = plt.subplots(2, 3, figsize=(10, 6), sharex=True, sharey=True)
+fig, ax = plt.subplots(2, 3, figsize=(10, 4), sharex=True, sharey="row")
 for col, mtrue in enumerate(models):
     for mfitted in models:
         file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
@@ -230,9 +240,11 @@ for col, mtrue in enumerate(models):
             e_S1[file_chain][0].cpu().numpy() + e_S1[file_chain][1].cpu().numpy(),
             alpha=0.2
         )
+    ax[1, col].set_xticks([0, 6, 12, 18, 24])
+    ax[1, col].set_xticklabels([0, 200, 400, 600, 800])
     ax[0, col].set_title("True model: " + mtrue)
-ax[0, 0].set_ylabel("Error Covariance (nontarget)")
-ax[1, 0].set_ylabel("Error Covariance (target)")
+ax[0, 0].set_ylabel("Rel. error (cov., nontarget)")
+ax[1, 0].set_ylabel("Rel. error (cov., target)")
 plt.legend(title="Fitted model")
 plt.tight_layout()
 plt.savefig(dir_figures + f"error_covariance.pdf")

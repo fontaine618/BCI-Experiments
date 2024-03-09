@@ -26,8 +26,6 @@ Kys = [5]
 models = ["LR-DCR", "LR-DC", "LR-SC"]
 K = 8
 
-# combinations
-combinations = it.product(seeds, Kxs, Kys, models, models)
 # -----------------------------------------------------------------------------
 
 
@@ -35,6 +33,7 @@ combinations = it.product(seeds, Kxs, Kys, models, models)
 # =============================================================================
 # GATHER RESULTS
 results = []
+combinations = it.product(seeds, Kxs, Kys, models, models)
 for seed, Kx, Ky, mtrue, mfitted in combinations:
     file = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
     try:
@@ -57,34 +56,9 @@ for seed, Kx, Ky, mtrue, mfitted in combinations:
         results.append(icy)
     except:
         pass
-results = pd.concat(results)
+ic = pd.concat(results)
 
-results[results["IC"] == "y|x"].loc[:, ["true", "fitted", metric, metric + "_se"]]
 # -----------------------------------------------------------------------------
-
-
-
-# =============================================================================
-# PLOT RESULTS
-metric = "elpd_loo"
-fig, axes = plt.subplots(1, 3, figsize=(8, 2), sharex="all")
-for i, mtrue in enumerate(models):
-    for k, ic in enumerate(["x|y", ]):
-        ax.set_xlim(-0.5, 2.5)
-        ax = axes[i]
-        data = results[(results["true"] == mtrue) & (results["IC"] == ic)]
-        ax.scatter(data["fitted"], data[metric])
-        ax.errorbar(data["fitted"], data[metric], yerr=data[metric + "_se"], fmt='o')
-        ax.set_title(f"True: {mtrue}" if k == 0 else "")
-        ax.set_xlabel("Fitted")
-        ax.set_ylabel("PSIS-LOO-CV " + ("(x|y)" if k==0 else "(y|x)") if i == 0 else "")
-        ax.set_xticklabels(models)
-        ax.grid(axis="x", visible=False)
-plt.tight_layout()
-plt.savefig(dir_figures + "psis-loo-cv.pdf")
-# -----------------------------------------------------------------------------
-
-
 
 
 
@@ -100,8 +74,50 @@ for seed, Kx, Ky, mtrue, mfitted in combinations:
         results.append(icx)
     except:
         pass
-results = pd.concat(results)
+test = pd.concat(results)
 # -----------------------------------------------------------------------------
+
+
+
+
+# =============================================================================
+# PLOT RESULTS
+fig, axes = plt.subplots(2, 3, figsize=(8, 4), sharex="all", sharey="col")
+for i, mtrue in enumerate(models):
+    # IC
+    k = 0
+    metric = "elpd_loo"
+    ax = axes[k, i]
+    ax.set_xlim(-0.5, 2.5)
+    data = ic[(ic["true"] == mtrue) & (ic["IC"] == "x|y")]
+    ax.scatter(data["fitted"], data[metric])
+    ax.errorbar(data["fitted"], data[metric], yerr=data[metric + "_se"], fmt='o')
+    ax.set_title(f"True: {mtrue}" if k == 0 else "")
+    ax.set_xlabel("Fitted" if k==1 else "")
+    ax.set_ylabel("PSIS-LOO-CV " + ("(x|y)" if k==0 else "(y|x)") if i == 0 else "")
+    ax.set_xticklabels(models)
+    ax.grid(axis="x", visible=False)
+    # Test
+    k = 1
+    metric = "llk"
+    ax = axes[k, i]
+    ax.set_xlim(-0.5, 2.5)
+    data = test[(test["model_true"] == mtrue)]
+    ax.scatter(data["model_fitted"], data[metric])
+    ax.errorbar(data["model_fitted"], data[metric], yerr=data[metric + "_se"], fmt='o')
+    ax.set_title(f"True: {mtrue}" if k == 0 else "")
+    ax.set_xlabel("Fitted" if k==1 else "")
+    ax.set_ylabel("Test log-likelihood" if i == 0 else "")
+    ax.set_xticklabels(models)
+    ax.grid(axis="x", visible=False)
+
+plt.tight_layout()
+plt.savefig(dir_figures + "main.pdf")
+# -----------------------------------------------------------------------------
+
+
+
+
 
 
 

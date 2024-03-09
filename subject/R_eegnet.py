@@ -46,7 +46,7 @@ bandpass_window = (0.1, 15.0)
 bandpass_order = 2
 downsample = 1
 
-train_reps = 8 #int(sys.argv[2])
+train_reps = 3 #int(sys.argv[2])
 # -----------------------------------------------------------------------------
 
 
@@ -196,6 +196,7 @@ for c in trnstim["character"].unique():
         log_prob[c-1, j, :] = cum_log_proba.flatten().copy()
 
 log_prob = torch.Tensor(log_prob)
+log_prob -= torch.logsumexp(log_prob, dim=-1, keepdim=True)
 
 Js = (6, 6)
 combinations = torch.cartesian_prod(*[torch.arange(J) for J in Js])

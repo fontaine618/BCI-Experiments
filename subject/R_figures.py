@@ -32,12 +32,14 @@ subject = "114"
 # =============================================================================
 # GATHER RESULTS (K)
 results = []
-for train_reps in range(3, 10):
+
+which_train_reps = [3, 5, 7, 9]
+for train_reps in which_train_reps:
     for method in ["_swlda", "_eegnet", ""]:
         file = f"K{subject}_{train_reps}reps{method}.test"
         df = pd.read_csv(dir_results + file, index_col=0)
         results.append(df)
-df = pd.concat(results)
+df = pd.concat(results, ignore_index=True)
 # -----------------------------------------------------------------------------
 
 
@@ -49,7 +51,6 @@ df = pd.concat(results)
 # PLOT RESULTS
 
 
-which_train_reps = [3, 5, 7, 9]
 ncol = len(which_train_reps)
 metrics = {
     "acc": "Accuracy",
@@ -74,6 +75,8 @@ for row, (metric, metric_name) in enumerate(metrics.items()):
         ax.set_xlabel("Testing repetitions")
         if row != nrow - 1 or col != ncol - 1:
             ax.legend().remove()
+        else:
+            ax.legend(title="Method")
         ax.set_xticks(range(2, 13, 2))
 
 plt.tight_layout()
