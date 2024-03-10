@@ -1,27 +1,26 @@
 import numpy as np
 import os
 import sys
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
-import itertools as it
+
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
+
 from source.bffmbci import BFFMResults
 from source.data.k_protocol import KProtocol
-torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simfont/Documents/BCI/experiments/subject/results/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-os.makedirs(dir_results, exist_ok=True)
-
-
-# file
 type = "TRN"
 subject = str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
+
+dir_results = f"/home/simfont/Documents/BCI/experiments/subject/results/K{subject}/"
+dir_chains = f"/home/simfont/Documents/BCI/experiments/subject/chains/K{subject}/"
+dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+os.makedirs(dir_results, exist_ok=True)
 
 # preprocessing
 window = 800.0
@@ -32,10 +31,9 @@ downsample = 8
 # model
 seed = 0
 K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
+V = "LR-DCR"
+cor = 0.5
 n_iter = 20_000
-sparse = False
 
 # prediction settings
 factor_processes_method = "analytical"
@@ -51,8 +49,9 @@ n_repetitions = 15
 
 # =============================================================================
 # LOAD DATA
+filename = dir_data + name + ".mat"
 eeg = KProtocol(
-    filename=dir_data + name + ".mat",
+    filename=filename,
     type=type,
     subject=subject,
     session=session,
@@ -83,7 +82,7 @@ character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 # -----------------------------------------------------------------------------
 
 # =============================================================================
-# GET DROP ONE PREDICTIVE PROBABILITIES
+# GET PREDICTIVE PROBABILITIES (FULL)
 self = results.to_predict(n_samples=n_samples)
 llk_long, _ = self.predict(
     order=order,
@@ -96,7 +95,27 @@ llk_long, _ = self.predict(
 )
 # save
 np.save(
-    dir_results + f"K{subject}_mllk.npy",
+    dir_results + f"K{subject}_mllk_full.npy",
+    llk_long.cpu().numpy()
+)
+# -----------------------------------------------------------------------------
+
+# =============================================================================
+# GET PREDICTIVE PROBABILITIES
+drop_components = list(range(K))
+self = results.to_predict(n_samples=n_samples)
+llk_long, _ = self.predict(
+    order=order,
+    sequence=sequence,
+    factor_samples=1,
+    character_idx=character_idx,
+    factor_processes_method=factor_processes_method,
+    drop_component=drop_components,
+    batchsize=20
+)
+# save
+np.save(
+    dir_results + f"K{subject}_mllk_null.npy",
     llk_long.cpu().numpy()
 )
 # -----------------------------------------------------------------------------

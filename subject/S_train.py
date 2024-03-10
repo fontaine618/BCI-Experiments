@@ -3,8 +3,10 @@ import os
 import torch
 import time
 import pickle
+
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
+
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
@@ -12,16 +14,14 @@ from source.bffmbci.bffm import StaticCovarianceRegressionMean
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
-os.makedirs(dir_chains, exist_ok=True)
-
-# file
 type = "TRN"
 subject = str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
-filename = dir_data + name + ".mat"
+
+dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir_chains = f"/home/simfont/Documents/BCI/experiments/subject/chains/K{subject}/"
+os.makedirs(dir_chains, exist_ok=True)
 
 # preprocessing
 window = 800.0
@@ -32,14 +32,25 @@ downsample = 8
 # model
 seed = 0
 K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
+V = "LR-DCR"
+cor = 0.5
 n_iter = 20_000
+
+# prediction settings
+factor_processes_method = "analytical"
+n_samples = 100
+sample_mean = "arithmetic"
+which_first = "sequence"
+
+# dimensions
+n_characters = 19
+n_repetitions = 15
 # -----------------------------------------------------------------------------
 
 
 # =============================================================================
 # LOAD DATA
+filename = dir_data + name + ".mat"
 eeg = KProtocol(
     filename=filename,
     type=type,
