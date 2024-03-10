@@ -18,6 +18,6 @@
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
 #python -O S_train.py $SLURM_ARRAY_TASK_ID
-python -O S_mllk.py $SLURM_ARRAY_TASK_ID
-#python -O S_importance.py $SLURM_ARRAY_TASK_ID
+#python -O S_mllk.py $SLURM_ARRAY_TASK_ID
+python -O S_importance.py $SLURM_ARRAY_TASK_ID
 # Potential subjects: 111, 114, 115, 117, 118
