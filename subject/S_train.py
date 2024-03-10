@@ -3,11 +3,12 @@ import os
 import torch
 import time
 import pickle
-import itertools as it
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
+from source.bffmbci.bffm import DynamicCovarianceRegressionMean
+from source.bffmbci.bffm import StaticCovarianceRegressionMean
 
 # =============================================================================
 # SETUP
@@ -29,20 +30,11 @@ bandpass_order = 2
 downsample = 8
 
 # model
-lite = True
 seed = 0
-K = 3 if lite else 8
-V = "LR-SC" if lite else "LR-DCR"
-cor = 0.50
+K = 8
+V = ["LR-DCR", "LR-DC", "LR-SC"][0]
+cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
 n_iter = 20_000
-
-
-# experiment
-seeds = range(10)
-train_reps = [3, 5, 8]
-experiment = list(it.product(seeds, train_reps))
-seed, train_reps = experiment[int(sys.argv[2])]
-
 # -----------------------------------------------------------------------------
 
 
@@ -58,12 +50,6 @@ eeg = KProtocol(
     bandpass_order=bandpass_order,
     downsample=downsample,
 )
-# subset training reps
-torch.manual_seed(seed)
-reps = torch.randperm(15) + 1
-training_reps = reps[:train_reps].cpu().tolist()
-testing_reps = reps[train_reps:].cpu().tolist()
-eeg = eeg.repetitions(training_reps)
 # -----------------------------------------------------------------------------
 
 
@@ -83,7 +69,6 @@ settings = {
     "shrinkage": "none"
 }
 
-cor = 0.5
 prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
@@ -95,7 +80,13 @@ prior_parameters = {
     "kernel_gp_factor": (cor, 1., 2.)
 }
 
-model = DynamicRegressionCovarianceRegressionMean(
+Model = {
+    "LR-DCR": DynamicRegressionCovarianceRegressionMean,
+    "LR-DC": DynamicCovarianceRegressionMean,
+    "LR-SC": StaticCovarianceRegressionMean,
+}[V]
+
+model = Model(
     sequences=eeg.sequence,
     stimulus_order=eeg.stimulus_order,
     target_stimulus=eeg.target,
@@ -136,7 +127,7 @@ out = model.results(
     start=10_000,
     thin=10
 )
-with open(dir_chains + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}.chain", "wb") as f:
+with open(dir_chains + f"K{subject}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 

@@ -1,9 +1,11 @@
 import numpy as np
 import os
 import sys
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
+sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 import torch
 import pandas as pd
+import itertools as it
+import torchmetrics
 from source.bffmbci import BFFMResults
 from source.data.k_protocol import KProtocol
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
@@ -11,15 +13,15 @@ from torch.distributions import Categorical
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
-dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
-dir_data = "/home/simon/Documents/BCI/K_Protocol/"
+dir_results = "/home/simfont/Documents/BCI/experiments/subject/results/"
+dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
+dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 os.makedirs(dir_results, exist_ok=True)
 
 
 # file
 type = "TRN"
-subject = "114" #str(sys.argv[1])
+subject = str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 
@@ -30,19 +32,24 @@ bandpass_order = 2
 downsample = 8
 
 # model
+lite = True
 seed = 0
-K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
+K = 3 if lite else 8
+V = "LR-SC" if lite else "LR-DCR"
+cor = 0.50
 n_iter = 20_000
 
-train_reps = 3#int(sys.argv[2])
+# experiment
+seeds = range(10)
+train_reps = [3, 5, 8]
+experiment = list(it.product(seeds, train_reps))
+seed, train_reps = experiment[int(sys.argv[2])]
 
 # prediction settings
 factor_processes_method = "analytical"
 n_samples = 100
-sample_mean = "harmonic"
-which_first = "sample"
+sample_mean = "arithmetic"
+which_first = "sequence"
 
 # dimensions
 n_characters = 19
@@ -63,7 +70,11 @@ eeg = KProtocol(
     downsample=downsample,
 )
 # subset training reps
-eeg = eeg.repetitions(list(range(train_reps+1, 16)), True)
+torch.manual_seed(seed)
+reps = torch.randperm(15) + 1
+training_reps = reps[:train_reps].cpu().tolist()
+testing_reps = reps[train_reps:].cpu().tolist()
+eeg = eeg.repetitions(testing_reps)
 
 nchars = eeg.stimulus_data["character"].nunique()
 nreps = eeg.stimulus_data["repetition"].nunique()
@@ -80,7 +91,7 @@ character_idx = eeg.character_idx
 # LOAD RESULTS
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + f"K{subject}_{train_reps}reps.chain"],
+    [dir_chains + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}.chain"],
     warmup=0,
     thin=1
 )
@@ -93,7 +104,7 @@ self = results.to_predict(n_samples=n_samples)
 
 # =============================================================================
 # GET PREDICTIVE PROBABILITIES
-filename = dir_results + f"K{subject}_{train_reps}reps_testmllk.npy"
+filename = dir_results + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}_testmllk.npy"
 llk_long = torch.Tensor(np.load(filename)) # n_chars x n_reps x 36 x n_samples
 # -----------------------------------------------------------------------------
 
@@ -123,7 +134,7 @@ entropy = Categorical(logits=log_prob).entropy()
 mean_entropy = entropy.mean(0)
 
 # accuracy & hamming
-target_wide = target.view(nchars, nreps, -1).flip(0)  #NB: flip because testing
+target_wide = target.view(nchars, nreps, -1)
 accuracy = (wide_pred_one_hot == target_wide).all(2).double().mean(0)
 hamming = (wide_pred_one_hot != target_wide).double().sum(2).mean(0) / 2
 
@@ -131,12 +142,24 @@ hamming = (wide_pred_one_hot != target_wide).double().sum(2).mean(0) / 2
 target_char = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_wide), 36)
 bce = - (target_char * log_prob).sum(2).mean(0)
 
+# auc
+target_char_int = torch.argmax(target_char, -1)
+auc = torch.Tensor([
+    torchmetrics.functional.classification.multiclass_auroc(
+        preds=log_prob[:, c, :],
+        target=target_char_int[:, c],
+        num_classes=36,
+        average="weighted"
+    ) for c in range(nreps)
+])
+
 # save
 df = pd.DataFrame({
     "hamming": hamming.cpu(),
     "acc": accuracy.cpu(),
     "mean_entropy": entropy.mean(0).abs().cpu(),
     "bce": bce.cpu(),
+    "auroc": auc.cpu(),
     "dataset": name + "_test",
     "repetition": range(1, nreps + 1),
     "aggregation": factor_processes_method,
@@ -147,7 +170,7 @@ df = pd.DataFrame({
     "K": K,
     "cor": cor
 }, index=range(1, nreps + 1))
-df.to_csv(dir_results + f"K{subject}_{train_reps}reps.test")
+df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}.test")
 # -----------------------------------------------------------------------------
 
 

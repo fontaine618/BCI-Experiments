@@ -3,6 +3,7 @@ import os
 import torch
 import time
 import pickle
+import itertools as it
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
@@ -28,13 +29,20 @@ bandpass_order = 2
 downsample = 8
 
 # model
+lite = True
 seed = 0
-K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][0]
-cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
+K = 3 if lite else 8
+V = "LR-SC" if lite else "LR-DCR"
+cor = 0.50
 n_iter = 20_000
 
-train_reps = int(sys.argv[2])
+
+# experiment
+seeds = range(10)
+train_reps = [3, 5, 8]
+experiment = list(it.product(seeds, train_reps))
+seed, train_reps = experiment[int(sys.argv[2])]
+
 # -----------------------------------------------------------------------------
 
 
@@ -51,7 +59,11 @@ eeg = KProtocol(
     downsample=downsample,
 )
 # subset training reps
-eeg.repetitions(list(range(1, train_reps+1)))
+torch.manual_seed(seed)
+reps = torch.randperm(15) + 1
+training_reps = reps[:train_reps].cpu().tolist()
+testing_reps = reps[train_reps:].cpu().tolist()
+eeg = eeg.repetitions(training_reps)
 # -----------------------------------------------------------------------------
 
 
@@ -124,7 +136,7 @@ out = model.results(
     start=10_000,
     thin=10
 )
-with open(dir_chains + f"K{subject}_{train_reps}reps.chain", "wb") as f:
+with open(dir_chains + f"K{subject}_trn{train_reps}_seed{seed}{'_lite' if lite else ''}.chain", "wb") as f:
     pickle.dump(out, f)
 # -----------------------------------------------------------------------------
 

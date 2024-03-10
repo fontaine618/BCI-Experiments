@@ -35,13 +35,13 @@ K = 8
 V = ["LR-DCR", "LR-DC", "LR-SC"][0]
 cor = [0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8][3]
 n_iter = 20_000
-
-train_reps = 15
-every = int(sys.argv[2])
+sparse = False
 
 # prediction settings
 factor_processes_method = "analytical"
 n_samples = 100
+sample_mean = "arithmetic"
+which_first = "sequence"
 
 # dimensions
 n_characters = 19
@@ -61,12 +61,6 @@ eeg = KProtocol(
     bandpass_order=bandpass_order,
     downsample=downsample,
 )
-# subset training reps
-training_reps = list(range(1, train_reps+1, every))
-testing_reps = list(range(1, train_reps+1))
-testing_reps = [x for x in testing_reps if x not in training_reps]
-eeg = eeg.repetitions(testing_reps)
-
 nchars = eeg.stimulus_data["character"].nunique()
 nreps = eeg.stimulus_data["repetition"].nunique()
 order = eeg.stimulus_order
@@ -81,18 +75,17 @@ character_idx = eeg.character_idx
 # LOAD RESULTS
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + f"K{subject}_every{every}.chain"],
+    [dir_chains + f"K{subject}.chain"],
     warmup=0,
     thin=1
 )
-self = results.to_predict(n_samples=n_samples)
+character_idx = torch.arange(n_characters).repeat_interleave(n_repetitions)
 # -----------------------------------------------------------------------------
 
-
-
 # =============================================================================
-# GET PREDICTIVE PROBABILITIES
-llk_long, chars = self.predict(
+# GET DROP ONE PREDICTIVE PROBABILITIES
+self = results.to_predict(n_samples=n_samples)
+llk_long, _ = self.predict(
     order=order,
     sequence=sequence,
     factor_samples=1,
@@ -103,9 +96,52 @@ llk_long, chars = self.predict(
 )
 # save
 np.save(
-    dir_results + f"K{subject}_every{every}_testmllk.npy",
+    dir_results + f"K{subject}_mllk.npy",
     llk_long.cpu().numpy()
 )
 # -----------------------------------------------------------------------------
+
+for k in range(K):
+    self = results.to_predict(n_samples=n_samples)
+    # =============================================================================
+    # GET DROP ONE PREDICTIVE PROBABILITIES
+    drop_components = [k]
+    llk_long, _ = self.predict(
+        order=order,
+        sequence=sequence,
+        factor_samples=1,
+        character_idx=character_idx,
+        factor_processes_method=factor_processes_method,
+        drop_component=drop_components,
+        batchsize=20
+    )
+    # save
+    np.save(
+        dir_results + f"K{subject}_mllk_drop{k}.npy",
+        llk_long.cpu().numpy()
+    )
+    # -----------------------------------------------------------------------------
+
+
+    self = results.to_predict(n_samples=n_samples)
+    # =============================================================================
+    # GET DROP ONE PREDICTIVE PROBABILITIES
+    drop_components = list(range(K))
+    drop_components.remove(k)
+    llk_long, _ = self.predict(
+        order=order,
+        sequence=sequence,
+        factor_samples=1,
+        character_idx=character_idx,
+        factor_processes_method=factor_processes_method,
+        drop_component=drop_components,
+        batchsize=20
+    )
+    # save
+    np.save(
+        dir_results + f"K{subject}_mllk_just{k}.npy",
+        llk_long.cpu().numpy()
+    )
+    # -----------------------------------------------------------------------------
 
 

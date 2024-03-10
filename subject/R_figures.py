@@ -33,12 +33,25 @@ subject = "114"
 # GATHER RESULTS (K)
 results = []
 
-which_train_reps = [3, 5, 7, 9]
-for train_reps in which_train_reps:
-    for method in ["_swlda", "_eegnet", ""]:
-        file = f"K{subject}_{train_reps}reps{method}.test"
-        df = pd.read_csv(dir_results + file, index_col=0)
-        results.append(df)
+# experiment
+seeds = range(10)
+train_reps = [3, 5, 8]
+experiment = list(it.product(seeds, train_reps))
+
+
+for seed, treps in experiment:
+    for method in ["", "_swlda", "_eegnet", "_rf", "_gb", "_svm",]:
+        file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
+        try:
+            df = pd.read_csv(dir_results + file, index_col=0)
+            df["train_reps"] = treps
+            df["seed"] = seed
+            if method == "_swlda":
+                df["bce"] = float("nan")
+                df["mean_entropy"] = float("nan")
+            results.append(df)
+        except FileNotFoundError:
+            pass
 df = pd.concat(results, ignore_index=True)
 # -----------------------------------------------------------------------------
 
@@ -50,27 +63,38 @@ df = pd.concat(results, ignore_index=True)
 # =============================================================================
 # PLOT RESULTS
 
+train_reps = [3, 5, 8]
 
-ncol = len(which_train_reps)
+ncol = len(train_reps)
 metrics = {
     "acc": "Accuracy",
     "bce": "Binary cross-entropy",
-    "mean_entropy": "Mean entropy"
+    # "mean_entropy": "Mean entropy",
+    "auroc": "AuROC"
 }
 nrow = len(metrics)
 
 fig, axes = plt.subplots(nrow, ncol, figsize=(ncol*3, nrow*2), sharey="row", sharex="all")
 for row, (metric, metric_name) in enumerate(metrics.items()):
-    for col, train_reps in enumerate(which_train_reps):
+    for col, treps in enumerate(train_reps):
+        # ax = axes[col]
         ax = axes[row, col]
+        crdf = df[df["train_reps"] == treps]
+
         sns.lineplot(
-            data=df[df["training_reps"] == train_reps],
+            data=crdf,
             x="repetition",
             y=metric,
             hue="method",
-            ax=ax
+            style="method",
+            ax=ax,
+            errorbar=("pi", 100),
+            estimator="median",
+            # errorbar=("ci", 95),
+            # estimator="mean",
+            err_kws={"alpha": 0.1}
         )
-        ax.set_title(f"{train_reps} Training repetitions" if row == 0 else "")
+        ax.set_title(f"{treps} Training repetitions" if row == 0 else "")
         ax.set_ylabel(metric_name)
         ax.set_xlabel("Testing repetitions")
         if row != nrow - 1 or col != ncol - 1:
@@ -80,5 +104,5 @@ for row, (metric, metric_name) in enumerate(metrics.items()):
         ax.set_xticks(range(2, 13, 2))
 
 plt.tight_layout()
-plt.savefig(dir_figures + f"{subject}_test.pdf")
+plt.savefig(dir_figures + f"{subject}_random_test.pdf")
 # -----------------------------------------------------------------------------
