@@ -1,7 +1,7 @@
 #!/bin/bash
 # The interpreter used to execute the script
 #“#SBATCH” directives that convey submission options:
-#SBATCH --job-name=bci_subject_R3
+#SBATCH --job-name=bci_subject_S
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
 #SBATCH --time=10:00:00
@@ -17,7 +17,7 @@
 # The application(s) to execute along with its input arguments and options:
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
-python -O S_train.py $SLURM_ARRAY_TASK_ID
+#python -O S_train.py $SLURM_ARRAY_TASK_ID
 python -O S_mllk.py $SLURM_ARRAY_TASK_ID
 python -O S_importance.py $SLURM_ARRAY_TASK_ID
 # Potential subjects: 111, 114, 115, 117, 118

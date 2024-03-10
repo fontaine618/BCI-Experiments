@@ -91,7 +91,7 @@ post = importance_statistic(results.chains)
 
 
 
-components = ["full", "null"] + [f"_drop{k}" for k in range(K)] + [f"_just{k}" for k in range(K)]
+components = ["full"] + [f"_drop{k}" for k in range(K)]
 out = {}
 for c in components:
 
@@ -149,10 +149,6 @@ drop_hamming = [out[f"_drop{k}"]["hamming"] - out[f"_full"]["hamming"] for k in 
 drop_acc = [-out[f"_drop{k}"]["acc"] + out[f"_full"]["acc"] for k in range(K)]
 drop_bce = [out[f"_drop{k}"]["bce"] - out[f"_full"]["bce"] for k in range(K)]
 drop_auroc = [-out[f"_drop{k}"]["auroc"] + out[f"_full"]["auroc"] for k in range(K)]
-just_hamming = [-out[f"_just{k}"]["hamming"] + out[f"_null"]["hamming"] for k in range(K)]
-just_acc = [out[f"_just{k}"]["acc"] - out[f"_null"]["acc"] for k in range(K)]
-just_bce = [-out[f"_just{k}"]["bce"] + out[f"_null"]["bce"] for k in range(K)]
-just_auroc = [out[f"_just{k}"]["auroc"] - out[f"_null"]["auroc"] for k in range(K)]
 
 df = pd.DataFrame({
     "component": range(K),
@@ -160,10 +156,6 @@ df = pd.DataFrame({
     "drop_acc": drop_acc,
     "drop_bce": drop_bce,
     "drop_auroc": drop_auroc,
-    "just_hamming": just_hamming,
-    "just_acc": just_acc,
-    "just_bce": just_bce,
-    "just_auroc": just_auroc,
     "posterior": post
 }, index=range(K))
 df.to_csv(
