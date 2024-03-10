@@ -86,7 +86,7 @@ self = results.to_predict(n_samples=n_samples)
 
 # =============================================================================
 # COMPUTE STATISTIC FROM POSTERIOR
-post = importance_statistic(results.chains)
+post = importance_statistic(results.chains).cpu()
 # -----------------------------------------------------------------------------
 
 
