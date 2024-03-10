@@ -21,11 +21,11 @@ dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
 os.makedirs(dir_figures, exist_ok=True)
 
 # experiments
-subject = "114"
+subject = "111"
 K = 8
 
 # file
-file_chain = f"K{subject}_allreps_K{K}.chain"
+file_chain = f"K{subject}/K{subject}.chain"
 
 # channels
 channels = ['F3', 'Fz', 'F4', 'T7', 'C3', 'Cz', 'C4', 'T8',
@@ -79,7 +79,7 @@ yrange = (0, 5)
 # LOAD POSTERIOR
 torch.cuda.empty_cache()
 results = BFFMResults.from_files(
-    [dir_chains + f"K{subject}_allreps_K{K}.chain"],
+    [dir_chains + file_chain],
     warmup=0,
     thin=1
 )
@@ -178,7 +178,7 @@ for k in range(K):
     diffkmean = diff[:, :, k, :].mean((0, 1)).cpu().numpy()
     diffkstd = diff[:, :, k, :].std((0, 1)).cpu().numpy()
     ax.axhline(0, color="k", linestyle="--")
-    ax.set_title(f"Component {k+1}")
+    ax.set_title(f"Component {k+1}\nEffect size: {importance[k]:.1f}")
     ax.fill_between(
         t,
         diffkmean - diffkstd,

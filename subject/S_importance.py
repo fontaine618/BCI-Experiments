@@ -91,7 +91,7 @@ post = importance_statistic(results.chains)
 
 
 
-components = ["full"] + [f"_drop{k}" for k in range(K)]
+components = ["_full"] + [f"_drop{k}" for k in range(K)]
 out = {}
 for c in components:
 

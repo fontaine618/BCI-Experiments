@@ -100,25 +100,6 @@ np.save(
 )
 # -----------------------------------------------------------------------------
 
-# =============================================================================
-# GET PREDICTIVE PROBABILITIES
-drop_components = list(range(K))
-self = results.to_predict(n_samples=n_samples)
-llk_long, _ = self.predict(
-    order=order,
-    sequence=sequence,
-    factor_samples=1,
-    character_idx=character_idx,
-    factor_processes_method=factor_processes_method,
-    drop_component=drop_components,
-    batchsize=20
-)
-# save
-np.save(
-    dir_results + f"K{subject}_mllk_null.npy",
-    llk_long.cpu().numpy()
-)
-# -----------------------------------------------------------------------------
 
 for k in range(K):
     self = results.to_predict(n_samples=n_samples)
