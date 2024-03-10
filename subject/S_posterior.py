@@ -84,7 +84,10 @@ results = BFFMResults.from_files(
     thin=1
 )
 results.add_transformed_variables()
-importance = importance_statistic(results.chains)
+importance = pd.read_csv(
+    dir_results + f"K{subject}/K{subject}_importance.csv",
+    index_col=0
+)
 
 beta_z1 = results.chains["smgp_factors.target_signal"]
 beta_z0 = results.chains["smgp_factors.nontarget_process"]
@@ -178,7 +181,9 @@ for k in range(K):
     diffkmean = diff[:, :, k, :].mean((0, 1)).cpu().numpy()
     diffkstd = diff[:, :, k, :].std((0, 1)).cpu().numpy()
     ax.axhline(0, color="k", linestyle="--")
-    ax.set_title(f"Component {k+1}\nEffect size: {importance[k]:.1f}")
+    ax.set_title(f"Component {k+1}\n"
+                 f"Effect size: {importance['posterior'][k]:.1f}\n"
+                 f"BCE Change: {importance['drop_bce'][k]:.1f}")
     ax.fill_between(
         t,
         diffkmean - diffkstd,
