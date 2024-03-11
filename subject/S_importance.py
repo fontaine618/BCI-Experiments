@@ -4,6 +4,7 @@ import os
 import sys
 import torchmetrics
 import torch
+import math
 
 sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
@@ -99,48 +100,41 @@ for c in components:
     # GET DROP ONE PREDICTIVE PROBABILITIES
     filename = dir_results + f"K{subject}_mllk{c}.npy"
     llk_long = torch.Tensor(np.load(filename))
+    llk_long = llk_long.reshape(-1, 36, n_samples)
+    # IS estimate of log probabilities
+    log_prob = -torch.logsumexp(-llk_long, dim=-1) + math.log(llk_long.shape[-1])
+    wide_pred = log_prob.argmax(1)
+    wide_pred_one_hot = self.combinations[wide_pred, :] # n_sequences x 36
+    nseqs = wide_pred_one_hot.shape[0]
     # -----------------------------------------------------------------------------
 
-
-    # =============================================================================
-    # PREDICTIONS
-    log_prob = self.aggregate(
-        llk_long,
-        sample_mean=sample_mean,
-        which_first=which_first
-    ) # n_chars x n_reps x 36
-    wide_pred_one_hot = self.get_predictions(log_prob, True) # n_chars x n_reps x 12
-    # -----------------------------------------------------------------------------
 
     # =============================================================================
     # METRICS
 
     # accuracy & hamming
-    target_wide = target.view(nchars, nreps, -1)
-    accuracy = (wide_pred_one_hot == target_wide).all(2).double().mean(0)
-    hamming = (wide_pred_one_hot != target_wide).double().sum(2).mean(0) / 2
+    accuracy = (wide_pred_one_hot == target).all(1).double().mean(0)
+    hamming = (wide_pred_one_hot != target).double().sum(1).mean(0) / 2
 
     # binary cross-entropy
-    target_char = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_wide), 36)
-    bce = - (target_char * log_prob).sum(2).mean(0)
+    target_char = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target), 36)
+    bce = - (target_char * log_prob).sum(1).mean(0)
 
     # auc
     target_char_int = torch.argmax(target_char, -1)
-    auc = torch.Tensor([
-        torchmetrics.functional.classification.multiclass_auroc(
-            preds=log_prob[:, c, :],
-            target=target_char_int[:, c],
-            num_classes=36,
-            average="weighted"
-        ) for c in range(nreps)
-    ])
+    auc = torchmetrics.functional.classification.multiclass_auroc(
+        preds=log_prob[:, :],
+        target=target_char_int,
+        num_classes=36,
+        average="weighted"
+    )
 
     # save
     out[c] = {
-        "hamming": hamming[-1].item(),
-        "acc": accuracy[-1].item(),
-        "bce": bce[-1].item(),
-        "auroc": auc[-1].item(),
+        "hamming": hamming.item(),
+        "acc": accuracy.item(),
+        "bce": bce.item(),
+        "auroc": auc.item(),
     }
     # -----------------------------------------------------------------------------
 
