@@ -11,15 +11,13 @@ from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
-os.makedirs(dir_chains, exist_ok=True)
-
-# file
 type = "TRN"
 subject = str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
+dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir_chains = f"/home/simfont/Documents/BCI/experiments/subject/chains/K{subject}/"
+os.makedirs(dir_chains, exist_ok=True)
 filename = dir_data + name + ".mat"
 
 # preprocessing
@@ -29,7 +27,7 @@ bandpass_order = 2
 downsample = 8
 
 # model
-lite = True
+lite = False
 seed = 0
 K = 3 if lite else 8
 V = "LR-SC" if lite else "LR-DCR"

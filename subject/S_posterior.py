@@ -16,12 +16,12 @@ import networkx as nx
 # SETUP
 dir_data = "/home/simon/Documents/BCI/K_Protocol/"
 dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
-dir_figures = "/home/simon/Documents/BCI/experiments/subject/figures/"
 dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
-os.makedirs(dir_figures, exist_ok=True)
 
 # experiments
-subject = "111"
+subject = "143"
+dir_figures = f"/home/simon/Documents/BCI/experiments/subject/figures/K{subject}/"
+os.makedirs(dir_figures, exist_ok=True)
 K = 8
 
 # file
@@ -30,25 +30,6 @@ file_chain = f"K{subject}/K{subject}.chain"
 # channels
 channels = ['F3', 'Fz', 'F4', 'T7', 'C3', 'Cz', 'C4', 'T8',
                        'CP3', 'CP4', 'P3', 'Pz', 'P4', 'PO7', 'PO8', 'Oz']
-
-# channel_positions = {
-#     'F3': (1, 4),
-#     'Fz': (2, 4),
-#     'F4': (3, 4),
-#     'T7': (0, 3),
-#     'C3': (1, 3),
-#     'Cz': (2, 3),
-#     'C4': (3, 3),
-#     'T8': (4, 3),
-#     'CP3': (1, 2),
-#     'CP4': (3, 2),
-#     'P3': (1, 1),
-#     'Pz': (2, 1),
-#     'P4': (3, 1),
-#     'PO7': (1, 0),
-#     'Oz': (2, 0),
-#     'PO8': (3, 0),
-# }
 
 channel_positions = {
     'F3': (1.25, 4),
@@ -88,6 +69,16 @@ importance = pd.read_csv(
     dir_results + f"K{subject}/K{subject}_importance.csv",
     index_col=0
 )
+# the order was reverese when computed
+importance["drop_bce"] *= -1
+importance["drop_acc"] *= -1
+importance["drop_auroc"] *= -1
+
+# channel order
+order = importance.sort_values("posterior", ascending=False)["component"].values
+# order = importance.sort_values("drop_auroc", ascending=True)["component"].values
+order = importance.sort_values("drop_acc", ascending=True)["component"].values
+# order = importance.sort_values("drop_bce", ascending=True)["component"].values
 
 beta_z1 = results.chains["smgp_factors.target_signal"]
 beta_z0 = results.chains["smgp_factors.nontarget_process"]
@@ -146,9 +137,10 @@ fig, axes = plt.subplots(
     sharey="row"
 )
 plt.tight_layout()
-for k in range(K):
-    col = k % 4
-    row = 3 * (k // 4)
+for j in range(K):
+    k = order[j]
+    col = j % 4
+    row = 3 * (j // 4)
 
     # network plot
     ax = axes[row, col]
@@ -183,7 +175,8 @@ for k in range(K):
     ax.axhline(0, color="k", linestyle="--")
     ax.set_title(f"Component {k+1}\n"
                  f"Effect size: {importance['posterior'][k]:.1f}\n"
-                 f"BCE Change: {importance['drop_bce'][k]:.1f}")
+                 f"BCE Change: {importance['drop_bce'][k]:.2f}\n"
+                 f"Accuracy Change: {importance['drop_acc'][k]*100:.1f}%")
     ax.fill_between(
         t,
         diffkmean - diffkstd,
@@ -192,7 +185,8 @@ for k in range(K):
     )
     ax.plot(t, diffkmean)
     ax.set_xlim(0, 24)
-    ax.set_ylim(-1.5, 1.5)
+    # ax.set_ylim(-1.5, 1.5)
+    ax.set_ylim(-0.5, 0.5)
     ax.set_xticks([0, 6, 12, 18, 24])
     ax.set_xticklabels([])
 
@@ -211,7 +205,8 @@ for k in range(K):
     )
     ax.plot(t, diffkmean)
     ax.set_xlim(0, 24)
-    ax.set_ylim(0.8, 1.2)
+    # ax.set_ylim(0.8, 1.2)
+    ax.set_ylim(0.5, 1.5)
     ax.set_xticks([0, 6, 12, 18, 24])
     ax.set_xticklabels([0, 200, 400, 600, 800])
     ax.set_xlabel("Time (ms)")

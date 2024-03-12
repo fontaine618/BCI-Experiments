@@ -139,10 +139,10 @@ for c in components:
     # -----------------------------------------------------------------------------
 
 
-drop_hamming = [out[f"_drop{k}"]["hamming"] - out[f"_full"]["hamming"] for k in range(K)]
-drop_acc = [-out[f"_drop{k}"]["acc"] + out[f"_full"]["acc"] for k in range(K)]
+drop_hamming = [-out[f"_drop{k}"]["hamming"] + out[f"_full"]["hamming"] for k in range(K)]
+drop_acc = [out[f"_drop{k}"]["acc"] - out[f"_full"]["acc"] for k in range(K)]
 drop_bce = [out[f"_drop{k}"]["bce"] - out[f"_full"]["bce"] for k in range(K)]
-drop_auroc = [-out[f"_drop{k}"]["auroc"] + out[f"_full"]["auroc"] for k in range(K)]
+drop_auroc = [out[f"_drop{k}"]["auroc"] - out[f"_full"]["auroc"] for k in range(K)]
 
 df = pd.DataFrame({
     "component": range(K),

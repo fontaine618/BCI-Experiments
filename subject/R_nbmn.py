@@ -12,9 +12,7 @@ sys.path.insert(1, '/home/simon/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
 from torch.distributions import Categorical
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
+from source.nb_mn import NaiveBayesMatrixNormal
 
 # =============================================================================
 # SETUP
@@ -68,16 +66,10 @@ for seed, train_reps in experiment:
 
     # =============================================================================
     # TRAIN RF
-    X = eeg.stimulus.cpu().numpy()
-    y = eeg.stimulus_data["type"].values
-    # rf = RandomForestClassifier(n_estimators=100, max_depth=2, random_state=0)
-    # rf.fit(X.reshape(X.shape[0], -1), y)
-    # rf.feature_importances_.reshape(25, 16).sum(0)
-    # gb = GradientBoostingClassifier(n_estimators=100, max_depth=2, random_state=0)
-    # gb.fit(X.reshape(X.shape[0], -1), y)
-    # gb.feature_importances_.reshape(25, 16).sum(1)
-    svc = SVC(kernel="linear", probability=True)
-    svc.fit(X.reshape(X.shape[0], -1), y)
+    X = eeg.stimulus
+    y = torch.Tensor(eeg.stimulus_data["type"].values)
+    nbmn = NaiveBayesMatrixNormal(25, 16)
+    nbmn.fit(X, y)
     # -----------------------------------------------------------------------------
 
 
@@ -95,8 +87,8 @@ for seed, train_reps in experiment:
     )
     # subset training reps
     eeg = eeg.repetitions(testing_reps)
-    X = eeg.stimulus.cpu().numpy()
-    y = eeg.stimulus_data["type"].values
+    X = eeg.stimulus
+    y = torch.Tensor(eeg.stimulus_data["type"].values)
     trnstim = eeg.stimulus_data
 
     nchars = eeg.stimulus_data["character"].nunique()
@@ -105,8 +97,8 @@ for seed, train_reps in experiment:
 
     # get prediction
     # log_proba = rf.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
-    # log_proba = gb.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
-    log_proba = svc.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
+    log_proba = nbmn.predict(X).cpu()
+    # log_proba = svc.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
     trnstim["log_proba"] = log_proba
 
     # to key probabilities
@@ -186,13 +178,9 @@ for seed, train_reps in experiment:
         "dataset": name + "_test",
         "repetition": range(1, nreps + 1),
         "training_reps": train_reps,
-        # "method": "RF",
-        # "method": "GB",
-        "method": "SVM",
+        "method": "NB-MN",
     }, index=range(1, nreps + 1))
-    # df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_rf.test")
-    # df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_gb.test")
-    df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_svm.test")
+    df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_nbmn.test")
     # -----------------------------------------------------------------------------
 
     del eeg
