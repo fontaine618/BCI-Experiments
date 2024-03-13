@@ -39,7 +39,7 @@ n_iter = 20_000
 seeds = range(10)
 train_reps = [3, 5, 8]
 experiment = list(it.product(train_reps, seeds))
-seed, train_reps = experiment[int(sys.argv[2])]
+train_reps, seed = experiment[int(sys.argv[2])]
 
 # -----------------------------------------------------------------------------
 
