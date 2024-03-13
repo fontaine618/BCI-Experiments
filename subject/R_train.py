@@ -27,9 +27,9 @@ bandpass_order = 2
 downsample = 8
 
 # model
-lite = False
+lite = True
 seed = 0
-K = 3 if lite else 8
+K = 5 if lite else 8
 V = "LR-SC" if lite else "LR-DCR"
 cor = 0.50
 n_iter = 20_000
@@ -38,7 +38,7 @@ n_iter = 20_000
 # experiment
 seeds = range(10)
 train_reps = [3, 5, 8]
-experiment = list(it.product(seeds, train_reps))
+experiment = list(it.product(train_reps, seeds))
 seed, train_reps = experiment[int(sys.argv[2])]
 
 # -----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ model = DynamicRegressionCovarianceRegressionMean(
 # =============================================================================
 # INITIALIZE CHAIN
 torch.manual_seed(seed)
-model.initialize_chain()
+model.initialize_chain(weighted=True)
 # -----------------------------------------------------------------------------
 
 

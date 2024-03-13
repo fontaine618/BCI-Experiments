@@ -29,17 +29,13 @@ from tensorflow.keras import utils as np_utils
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simon/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
-dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
-os.makedirs(dir_chains, exist_ok=True)
-os.makedirs(dir_results, exist_ok=True)
-
-# file
 type = "TRN"
-subject = "114" #str(sys.argv[1])
+subject = "122" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
+dir_data = "/home/simon/Documents/BCI/K_Protocol/"
+dir_results = f"/home/simon/Documents/BCI/experiments/subject/results/K{subject}/"
+os.makedirs(dir_results, exist_ok=True)
 filename = dir_data + name + ".mat"
 
 # preprocessing

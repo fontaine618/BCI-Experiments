@@ -1,8 +1,7 @@
 import sys
 import os
 import torch
-import time
-import pickle
+import torchmetrics
 import pandas as pd
 import numpy as np
 import scipy.special
@@ -10,23 +9,18 @@ import itertools as it
 sys.path.insert(1, '/home/simon/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
-from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.swlda.swlda import swlda, swlda_predict
 from torch.distributions import Categorical
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simon/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
-dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
-os.makedirs(dir_chains, exist_ok=True)
-os.makedirs(dir_results, exist_ok=True)
-
-# file
 type = "TRN"
-subject = "114" #str(sys.argv[1])
+subject = "122" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
+dir_data = "/home/simon/Documents/BCI/K_Protocol/"
+dir_results = f"/home/simon/Documents/BCI/experiments/subject/results/K{subject}/"
+os.makedirs(dir_results, exist_ok=True)
 filename = dir_data + name + ".mat"
 
 # preprocessing
@@ -176,12 +170,24 @@ for seed, train_reps in experiment:
     target_char = torch.nn.functional.one_hot(idx, 36)
     bce = - (target_char * log_prob).sum(2).mean(0)
 
+    # auc
+    target_char_int = torch.argmax(target_char, -1)
+    auc = torch.Tensor([
+        torchmetrics.functional.classification.multiclass_auroc(
+            preds=log_prob[:, c, :],
+            target=target_char_int[:, c],
+            num_classes=36,
+            average="weighted"
+        ) for c in range(nreps)
+    ])
+
     # save
     df = pd.DataFrame({
         "hamming": hamming.cpu(),
         "acc": accuracy.cpu(),
         "mean_entropy": entropy.mean(0).abs().cpu(),
         "bce": bce.cpu(),
+        "auroc": auc.cpu(),
         "dataset": name + "_test",
         "repetition": range(1, nreps + 1),
         "training_reps": train_reps,

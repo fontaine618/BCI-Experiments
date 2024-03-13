@@ -12,11 +12,11 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-subject = "122"
+subject = "114"
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
-dir_figures = f"/home/simon/Documents/BCI/experiments/subject/figures/K{subject}/"
-dir_results = f"/home/simon/Documents/BCI/experiments/subject/results/K{subject}/"
+dir_figures = f"/home/simon/Documents/BCI/experiments/subject/figures/"#/K{subject}/"
+dir_results = f"/home/simon/Documents/BCI/experiments/subject/results/"# K{subject}/"
 os.makedirs(dir_figures, exist_ok=True)
 # -----------------------------------------------------------------------------
 
@@ -38,15 +38,16 @@ experiment = list(it.product(seeds, train_reps))
 
 
 for seed, treps in experiment:
-    for method in ["", "_swlda", "_eegnet", "_rf", "_gb", "_svm", "_nbmn"]:
+    # for method in ["", "_swlda", "_eegnet", "_rf", "_gb", "_svm", "_nbmn"]:
+    for method in ["", "_svm", "_nbmn"]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
         try:
             df = pd.read_csv(dir_results + file, index_col=0)
             df["train_reps"] = treps
             df["seed"] = seed
-            if method == "_swlda":
-                df["bce"] = float("nan")
-                df["mean_entropy"] = float("nan")
+            # if method == "_swlda" or method == "_nbmn":
+                # df["bce"] = float("nan")
+                # df["mean_entropy"] = float("nan")
             results.append(df)
         except FileNotFoundError:
             pass
@@ -67,7 +68,7 @@ ncol = len(train_reps)
 metrics = {
     "acc": "Accuracy",
     "bce": "Binary cross-entropy",
-    # "mean_entropy": "Mean entropy",
+    "mean_entropy": "Mean entropy",
     "auroc": "AuROC"
 }
 nrow = len(metrics)
