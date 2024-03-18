@@ -39,7 +39,7 @@ experiment = list(it.product(seeds, train_reps))
 
 for seed, treps in experiment:
     # for method in ["", "_swlda", "_eegnet", "_rf", "_gb", "_svm", "_nbmn", "_lite"]:
-    for method in ["", "_svm", "_nbmn", "_lite"]:
+    for method in ["", "_svm", "_nbmn", "_map"]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
         try:
             df = pd.read_csv(dir_results + file, index_col=0)

@@ -8,6 +8,8 @@ sys.path.insert(1, '/home/simfont/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
+from source.bffmbci.bffm import DynamicCovarianceRegressionMean
+from source.bffmbci.bffm import StaticCovarianceRegressionMean
 
 # =============================================================================
 # SETUP
@@ -93,7 +95,13 @@ prior_parameters = {
     "kernel_gp_factor": (cor, 1., 2.)
 }
 
-model = DynamicRegressionCovarianceRegressionMean(
+Model = {
+    "LR-DCR": DynamicRegressionCovarianceRegressionMean,
+    "LR-DC": DynamicCovarianceRegressionMean,
+    "LR-SC": StaticCovarianceRegressionMean,
+}[V]
+
+model = Model(
     sequences=eeg.sequence,
     stimulus_order=eeg.stimulus_order,
     target_stimulus=eeg.target,
