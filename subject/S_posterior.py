@@ -19,7 +19,7 @@ dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
 dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
 
 # experiments
-subject = "143"
+subject = "114"
 dir_figures = f"/home/simon/Documents/BCI/experiments/subject/figures/K{subject}/"
 os.makedirs(dir_figures, exist_ok=True)
 K = 8
@@ -75,20 +75,20 @@ importance["drop_acc"] *= -1
 importance["drop_auroc"] *= -1
 
 # channel order
-order = importance.sort_values("posterior", ascending=False)["component"].values
+# order = importance.sort_values("posterior", ascending=False)["component"].values
 # order = importance.sort_values("drop_auroc", ascending=True)["component"].values
-order = importance.sort_values("drop_acc", ascending=True)["component"].values
-# order = importance.sort_values("drop_bce", ascending=True)["component"].values
+# order = importance.sort_values("drop_acc", ascending=True)["component"].values
+order = importance.sort_values("drop_bce", ascending=True)["component"].values
 
-beta_z1 = results.chains["smgp_factors.target_signal"]
-beta_z0 = results.chains["smgp_factors.nontarget_process"]
+beta_z1 = results.chains["smgp_factors.target_signal.rescaled"]
+beta_z0 = results.chains["smgp_factors.nontarget_process.rescaled"]
 beta_xi1 = results.chains["smgp_scaling.target_signal"]
 beta_xi0 = results.chains["smgp_scaling.nontarget_process"]
 diff = beta_z1 * beta_xi1.exp() - beta_z0 * beta_xi0.exp()
 diff_xi = results.chains["smgp_scaling.difference_process"]
 
 # fitted mean
-L = results.chains["loadings"]  # nc x ns x E x K
+L = results.chains["loadings.norm_one"]  # nc x ns x E x K
 channel_wise_mean_diff = torch.einsum(
     "cbek, cbkt -> cbket",
     L,
@@ -126,12 +126,12 @@ channel_wise_cor_diff = cor1 - cor0
 # PLOT COMPONENTS
 file = f"K{subject}_components"
 fig, axes = plt.subplots(
-    nrows=6,
+    nrows=6+1,
     ncols=4,
     figsize=(12, 10),
     gridspec_kw={
         "width_ratios": [1, 1, 1, 1],
-        "height_ratios": [1.5, 1, 1, 1.5, 1, 1]
+        "height_ratios": [1.5, 1, 1, 1.5, 1, 1, 0.5]
     },
     sharex="row",
     sharey="row"
@@ -149,7 +149,7 @@ for j in range(K):
     excludes = component.abs() / component_sd < 1.96
     colors = ["b" if c > 0 else "r" for c in component]
     # colors = [c if not e else "w" for c, e in zip(colors, excludes)]
-    sizes = component.abs().pow(1.).cpu().numpy() * 25
+    sizes = component.abs().pow(1.).cpu().numpy() * 250
     x = [channel_positions[c][0] for c in channels]
     y = [channel_positions[c][1] for c in channels]
     ax.scatter(x, y, c=colors, s=sizes)
@@ -174,9 +174,9 @@ for j in range(K):
     diffkstd = diff[:, :, k, :].std((0, 1)).cpu().numpy()
     ax.axhline(0, color="k", linestyle="--")
     ax.set_title(f"Component {k+1}\n"
-                 f"Effect size: {importance['posterior'][k]:.1f}\n"
-                 f"BCE Change: {importance['drop_bce'][k]:.2f}\n"
-                 f"Accuracy Change: {importance['drop_acc'][k]*100:.1f}%")
+                 # f"Effect size: {importance['posterior'][k]:.1f}\n"
+                 f"BCE Change: {importance['drop_bce'][k]:.2f}")
+                 # f"Accuracy Change: {importance['drop_acc'][k]*100:.1f}%")
     ax.fill_between(
         t,
         diffkmean - diffkstd,
@@ -185,8 +185,8 @@ for j in range(K):
     )
     ax.plot(t, diffkmean)
     ax.set_xlim(0, 24)
-    # ax.set_ylim(-1.5, 1.5)
-    ax.set_ylim(-0.5, 0.5)
+    # ax.set_ylim(-20, 20)
+    # ax.set_ylim(-0.5, 0.5)
     ax.set_xticks([0, 6, 12, 18, 24])
     ax.set_xticklabels([])
 
@@ -206,7 +206,7 @@ for j in range(K):
     ax.plot(t, diffkmean)
     ax.set_xlim(0, 24)
     # ax.set_ylim(0.8, 1.2)
-    ax.set_ylim(0.5, 1.5)
+    # ax.set_ylim(0.5, 1.5)
     ax.set_xticks([0, 6, 12, 18, 24])
     ax.set_xticklabels([0, 200, 400, 600, 800])
     ax.set_xlabel("Time (ms)")
@@ -214,6 +214,36 @@ axes[1, 0].set_ylabel("Difference in mean")
 axes[4, 0].set_ylabel("Difference in mean")
 axes[2, 0].set_ylabel("Scaling difference")
 axes[5, 0].set_ylabel("Scaling difference")
+
+# legend
+gs = axes[6, 0].get_gridspec()
+for ax in axes[6, :]:
+    ax.remove()
+axlegend = fig.add_subplot(gs[6, :], frameon=False)
+axlegend.axis("off")
+
+values = torch.Tensor([-1., -0.5, -0.25, -0.1, -0.05, 0.0, 0.05, 0.1, 0.25, 0.5, 1.]).cpu()
+xs = torch.arange(-5, 6, 1).cpu()
+colors = ["b" if c > 0 else "r" for c in values]
+# colors = [c if not e else "w" for c, e in zip(colors, excludes)]
+sizes = values.abs().pow(1.).cpu().numpy() * 250
+y = [0 for c in values]
+axlegend.scatter(xs, y, c=colors, s=sizes)
+for i, v in enumerate(values):
+    axlegend.text(xs[i], -0.8, f"{v:.1f}", ha="center", va="center")
+# remove box around
+axlegend.spines['top'].set_visible(False)
+axlegend.spines['right'].set_visible(False)
+axlegend.spines['left'].set_visible(False)
+axlegend.spines['bottom'].set_visible(False)
+# remove grid
+axlegend.grid(False)
+axlegend.set_xticks([])
+axlegend.set_yticks([])
+axlegend.set_xlim(-10, 10)
+axlegend.set_ylim(-1, 1)
+
+
 
 plt.savefig(dir_figures + file + ".pdf")
 # -----------------------------------------------------------------------------

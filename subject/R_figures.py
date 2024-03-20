@@ -38,16 +38,21 @@ experiment = list(it.product(seeds, train_reps))
 
 
 for seed, treps in experiment:
-    # for method in ["", "_swlda", "_eegnet", "_rf", "_gb", "_svm", "_nbmn", "_lite"]:
-    for method in ["", "_svm", "_nbmn", "_map"]:
+    # for method in ["", "_swlda", "_eegnet", "_rf", "_gb", "_svm", "_nbmn", "_lite", "_mapinit", "_map"]:
+    # for method in ["_mapinit"]:
+    for method in ["", "_svm", "_nbmn", "_mapinit", "_lite", "_map"]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
         try:
             df = pd.read_csv(dir_results + file, index_col=0)
             df["train_reps"] = treps
             df["seed"] = seed
-            if method == "_swlda" or method == "_nbmn":
+            if method == "_swlda" or method == "_nbmn" or method == "_map":
                 df["bce"] = float("nan")
                 df["mean_entropy"] = float("nan")
+            if method == "_mapinit":
+                df["method"] += " (MAP init.)"
+            if method == "_nbmn":
+                df["method"] = "MN-LDA"
             results.append(df)
         except FileNotFoundError:
             pass
@@ -69,7 +74,7 @@ metrics = {
     "hamming": "Hamming distance",
     "acc": "Accuracy",
     "bce": "Binary cross-entropy",
-    "mean_entropy": "Mean entropy",
+    # "mean_entropy": "Mean entropy",
     "auroc": "AuROC"
 }
 nrow = len(metrics)
@@ -88,7 +93,7 @@ for row, (metric, metric_name) in enumerate(metrics.items()):
             hue="method",
             style="method",
             ax=ax,
-            errorbar=("pi", 100),
+            errorbar=("pi", 80),
             estimator="median",
             # errorbar=("ci", 95),
             # estimator="mean",
@@ -97,7 +102,8 @@ for row, (metric, metric_name) in enumerate(metrics.items()):
         ax.set_title(f"{treps} Training repetitions" if row == 0 else "")
         ax.set_ylabel(metric_name)
         ax.set_xlabel("Testing repetitions")
-        if row != nrow - 1 or col != ncol - 1:
+        if row != nrow - 1:
+        # if row != nrow - 1 or col != ncol - 1:
             ax.legend().remove()
         else:
             ax.legend(title="Method")
