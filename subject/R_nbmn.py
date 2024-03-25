@@ -17,7 +17,7 @@ from source.nb_mn import NaiveBayesMatrixNormal
 # =============================================================================
 # SETUP
 type = "TRN"
-subject = "122" #str(sys.argv[1])
+subject = "155" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 dir_data = "/home/simon/Documents/BCI/K_Protocol/"
@@ -34,7 +34,7 @@ downsample = 8
 
 # experiment
 seeds = range(10)
-train_reps = [3, 5, 8]
+train_reps = [3] #, 5, 8]
 experiment = list(it.product(seeds, train_reps))
 # -----------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ for seed, train_reps in experiment:
 
 
     # =============================================================================
-    # TRAIN RF
+    # TRAIN MN
     X = eeg.stimulus
     y = torch.Tensor(eeg.stimulus_data["type"].values)
     nbmn = NaiveBayesMatrixNormal(25, 16)

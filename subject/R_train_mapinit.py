@@ -15,6 +15,7 @@ from source.bffmbci.bffm_map import BFFModelMAP
 from source.bffmbci.bffm_map import DynamicRegressionCovarianceRegressionMeanMAP
 from source.bffmbci.bffm_map import DynamicCovarianceRegressionMeanMAP
 from source.bffmbci.bffm_map import StaticCovarianceRegressionMeanMAP
+from source.nb_mn import NaiveBayesMatrixNormal
 
 # =============================================================================
 # SETUP

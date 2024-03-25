@@ -9,14 +9,17 @@ import torchmetrics
 sys.path.insert(1, '/home/simon/Documents/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
-from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
-from source.bffmbci.bffm_map import BFFModelMAP, StaticCovarianceRegressionMeanMAP
+from source.bffmbci.bffm_map import BFFModelMAP
+from source.bffmbci.bffm_map import DynamicRegressionCovarianceRegressionMeanMAP
+from source.bffmbci.bffm_map import DynamicCovarianceRegressionMeanMAP
+from source.bffmbci.bffm_map import StaticCovarianceRegressionMeanMAP
 from torch.distributions import Categorical
+from source.nb_mn import NaiveBayesMatrixNormal
 
 # =============================================================================
 # SETUP
 type = "TRN"
-subject = "114" #str(sys.argv[1])
+subject = "154" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 dir_data = "/home/simon/Documents/BCI/K_Protocol/"
@@ -42,7 +45,7 @@ cor = 0.50
 seeds = range(10)
 train_reps = [3] #, 5, 8]
 experiment = list(it.product(seeds, train_reps))
-# train_reps, seed = 5, 0 #experiment[int(sys.argv[2])]
+train_reps, seed = 3, 0 #experiment[int(sys.argv[2])]
 
 # -----------------------------------------------------------------------------
 
@@ -69,6 +72,7 @@ for seed, train_reps in experiment:
     nchars = eeg.stimulus_data["character"].nunique()
     nreps = eeg.stimulus_data["repetition"].nunique()
     # -----------------------------------------------------------------------------
+
 
 
     # =============================================================================
@@ -99,7 +103,13 @@ for seed, train_reps in experiment:
         "kernel_gp_factor": (cor, 1., 2.)
     }
 
-    model = BFFModelMAP(
+    ModelMAP = {
+        "LR-DCR": DynamicRegressionCovarianceRegressionMeanMAP,
+        "LR-DC": DynamicCovarianceRegressionMeanMAP,
+        "LR-SC": StaticCovarianceRegressionMeanMAP,
+    }["LR-SC"]
+
+    model: BFFModelMAP = ModelMAP(
         sequences=eeg.sequence,
         stimulus_order=eeg.stimulus_order,
         target_stimulus=eeg.target,
@@ -111,8 +121,21 @@ for seed, train_reps in experiment:
 
 
     # =============================================================================
+    # GET LOADING INITIALIZATION
+    K0 = -(K // -2) # ceiling division
+    K1 = K - K0
+    X = eeg.stimulus
+    y = torch.Tensor(eeg.stimulus_data["type"].values)
+    nbmn = NaiveBayesMatrixNormal(25, 16)
+    nbmn.fit(X, y)
+    loadings = nbmn.construct_loadings(K0, K1)
+    # -----------------------------------------------------------------------------
+
+
+
+    # =============================================================================
     # FIT MODEL
-    model.initialize()
+    model.initialize(loadings=None)
     model.fit(lr=0.1, max_iter=2000, tol=1e-8)
     # -----------------------------------------------------------------------------
 
@@ -142,7 +165,7 @@ for seed, train_reps in experiment:
     )
 
 
-    log_proba = model.predict(n_samples=1000).detach()
+    log_proba = model.predict(method="maximize").detach()
 
     # aggregate
     log_proba_wide = log_proba.reshape(nchars, nreps, -1)
@@ -150,7 +173,7 @@ for seed, train_reps in experiment:
     cum_log_proba -= torch.logsumexp(cum_log_proba, 2, keepdim=True)
 
     wide_pred = cum_log_proba.argmax(2)
-    eeg.keyboard.flatten()[wide_pred.cpu()]
+    print(eeg.keyboard.flatten()[wide_pred.cpu()])
     wide_pred_one_hot = model.combinations[wide_pred, :]
     # -----------------------------------------------------------------------------
 
