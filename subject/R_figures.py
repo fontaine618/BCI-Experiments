@@ -12,7 +12,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-subject = "154"
+subject = "155"
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
 dir_figures = f"/home/simon/Documents/BCI/experiments/subject/figures/K{subject}/"

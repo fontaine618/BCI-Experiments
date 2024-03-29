@@ -19,7 +19,7 @@ from source.nb_mn import NaiveBayesMatrixNormal
 # =============================================================================
 # SETUP
 type = "TRN"
-subject = "154" #str(sys.argv[1])
+subject = "114" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 dir_data = "/home/simon/Documents/BCI/K_Protocol/"
