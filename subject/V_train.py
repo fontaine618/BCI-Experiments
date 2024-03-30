@@ -9,6 +9,7 @@ from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
 from source.bffmbci.bffm import StaticCovarianceRegressionMean
+from source.bffmbci.bffm import CompoundSymmetryCovarianceRegressionMean
 
 # =============================================================================
 # SETUP
@@ -31,8 +32,8 @@ downsample = 8
 
 # model
 seed = 0
-K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][int(sys.argv[2])]
+V = ["LR-DCR", "LR-DC", "LR-SC", "CS"][int(sys.argv[2])]
+K = 17 if V == "CS" else 8
 n_iter = 20_000
 # -----------------------------------------------------------------------------
 
@@ -69,14 +70,15 @@ settings = {
 }
 
 cor = 0.5
+cor2 = 0.999
 prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
     "shrinkage_factor": (2., 3.),
     "kernel_gp_factor_processes": (cor, 1., 2.),
     "kernel_tgp_factor_processes": (cor, 0.5, 2.),
-    "kernel_gp_loading_processes": (cor, 0.1, 2.),
-    "kernel_tgp_loading_processes": (cor, 0.5, 2.),
+    "kernel_gp_loading_processes": (cor2, 0.1, 1. if V == "CS" else 2.),
+    "kernel_tgp_loading_processes": (cor2, 0.5, 1. if V == "CS" else 2.),
     "kernel_gp_factor": (cor, 1., 2.)
 }
 
@@ -84,6 +86,7 @@ Model = {
     "LR-DCR": DynamicRegressionCovarianceRegressionMean,
     "LR-DC": DynamicCovarianceRegressionMean,
     "LR-SC": StaticCovarianceRegressionMean,
+    "CS": CompoundSymmetryCovarianceRegressionMean
 }[V]
 
 model = Model(
@@ -100,7 +103,10 @@ model = Model(
 # =============================================================================
 # INITIALIZE CHAIN
 torch.manual_seed(seed)
-model.initialize_chain()
+if V == "CS":
+    model.clear_history()
+else:
+    model.initialize_chain()
 # -----------------------------------------------------------------------------
 
 

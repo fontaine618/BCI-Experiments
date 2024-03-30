@@ -124,7 +124,7 @@ t0 = time.time()
 t00 = t0
 for i in range(n_iter):
     model.sample()
-    if i % 1 == 0:
+    if i % 100 == 0:
         print(f"{i:>10} "
               f"{model.variables['observations']._log_density_history[-1]:>20.4f}"
               f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")

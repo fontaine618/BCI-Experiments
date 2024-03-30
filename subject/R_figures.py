@@ -12,7 +12,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-subject = "155"
+subject = "114"
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
 dir_figures = f"/home/simon/Documents/BCI/experiments/subject/figures/K{subject}/"
@@ -38,9 +38,10 @@ experiment = list(it.product(seeds, train_reps))
 
 
 for seed, treps in experiment:
-    for method in ["", "_swlda", "_eegnet", "_rf", "_gb", "_svm", "_nbmn", "_lite", "_mapinit", "_map"]:
+    # for method in ["", "_swlda", "_eegnet", "_rf", "_gb",
+    #                "_svm", "_nbmn", "_lite", "_mapinit", "_map", "_cs"]:
     # for method in ["_mapinit"]:
-    # for method in ["", "_svm", "_nbmn", "_mapinit", "_lite", "_map"]:
+    for method in ["", "_svm", "_nbmn", "_mapinit", "_lite", "_cs"]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
         try:
             df = pd.read_csv(dir_results + file, index_col=0)

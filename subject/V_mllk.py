@@ -31,8 +31,8 @@ downsample = 8
 
 # model
 seed = 0
-K = 8
-V = ["LR-DCR", "LR-DC", "LR-SC"][int(sys.argv[2])]
+V = ["LR-DCR", "LR-DC", "LR-SC", "CS"][int(sys.argv[2])]
+K = 17 if V == "CS" else 8
 n_iter = 20_000
 sparse = False
 
