@@ -28,9 +28,9 @@ bandpass_order = 2
 downsample = 8
 
 # model
-lite = False
+lite = True
 seed = 0
-K = 5 if lite else 8
+K = 8
 V = "LR-SC" if lite else "LR-DCR"
 cor = 0.50
 n_iter = 20_000
