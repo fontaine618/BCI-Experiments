@@ -19,7 +19,7 @@ from sklearn.svm import SVC
 # =============================================================================
 # SETUP
 type = "TRN"
-subject = "155" #str(sys.argv[1])
+subject = "114" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 dir_data = "/home/simon/Documents/BCI/K_Protocol/"
@@ -36,7 +36,7 @@ downsample = 8
 
 # experiment
 seeds = range(10)
-train_reps = [3] #, 5, 8]
+train_reps = [7] #, 5, 8]
 experiment = list(it.product(seeds, train_reps))
 # -----------------------------------------------------------------------------
 
@@ -73,11 +73,11 @@ for seed, train_reps in experiment:
     # rf = RandomForestClassifier(n_estimators=100, max_depth=2, random_state=0)
     # rf.fit(X.reshape(X.shape[0], -1), y)
     # rf.feature_importances_.reshape(25, 16).sum(0)
-    gb = GradientBoostingClassifier(n_estimators=100, max_depth=2, random_state=0)
-    gb.fit(X.reshape(X.shape[0], -1), y)
+    # gb = GradientBoostingClassifier(n_estimators=100, max_depth=2, random_state=0)
+    # gb.fit(X.reshape(X.shape[0], -1), y)
     # gb.feature_importances_.reshape(25, 16).sum(1)
-    # svc = SVC(kernel="linear", probability=True)
-    # svc.fit(X.reshape(X.shape[0], -1), y)
+    svc = SVC(kernel="linear", probability=True)
+    svc.fit(X.reshape(X.shape[0], -1), y)
     # -----------------------------------------------------------------------------
 
 
@@ -105,8 +105,8 @@ for seed, train_reps in experiment:
 
     # get prediction
     # log_proba = rf.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
-    log_proba = gb.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
-    # log_proba = svc.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
+    # log_proba = gb.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
+    log_proba = svc.predict_log_proba(X.reshape(X.shape[0], -1))[:, 1]
     trnstim["log_proba"] = log_proba
 
     # to key probabilities
@@ -187,12 +187,12 @@ for seed, train_reps in experiment:
         "repetition": range(1, nreps + 1),
         "training_reps": train_reps,
         # "method": "RF",
-        "method": "GB",
-        # "method": "SVM",
+        # "method": "GB",
+        "method": "SVM",
     }, index=range(1, nreps + 1))
     # df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_rf.test")
-    df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_gb.test")
-    # df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_svm.test")
+    # df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_gb.test")
+    df.to_csv(dir_results + f"K{subject}_trn{train_reps}_seed{seed}_svm.test")
     # -----------------------------------------------------------------------------
 
     del eeg
