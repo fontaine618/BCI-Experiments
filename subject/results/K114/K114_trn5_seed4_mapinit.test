@@ -1,0 +1,11 @@
+,hamming,acc,mean_entropy,bce,auroc,dataset,repetition,aggregation,sample_mean,which_first,training_reps,method,K,cor
+1,0.47368421052631576,0.5789473684210527,0.8740112,1.6754497,0.9572369,K114_001_BCI_TRN_test,1,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+2,0.2631578947368421,0.7894736842105263,0.7059935,0.915275,0.9908626,K114_001_BCI_TRN_test,2,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+3,0.15789473684210525,0.8421052631578947,0.3051163,0.45298055,0.99415207,K114_001_BCI_TRN_test,3,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+4,0.15789473684210525,0.8421052631578947,0.25120386,0.44829434,0.99671054,K114_001_BCI_TRN_test,4,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+5,0.05263157894736842,0.9473684210526315,0.16535191,0.0826665,1.0,K114_001_BCI_TRN_test,5,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+6,0.0,1.0,0.10502603,0.05806069,1.0,K114_001_BCI_TRN_test,6,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+7,0.0,1.0,0.07156236,0.042728517,1.0,K114_001_BCI_TRN_test,7,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+8,0.0,1.0,0.046265047,0.017696591,1.0,K114_001_BCI_TRN_test,8,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+9,0.0,1.0,0.047326695,0.03038355,1.0,K114_001_BCI_TRN_test,9,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
+10,0.0,1.0,0.050906125,0.030405577,1.0,K114_001_BCI_TRN_test,10,analytical,arithmetic,sequence,5,LR-DCR,8,0.5
