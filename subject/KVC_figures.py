@@ -45,7 +45,7 @@ K_results = pd.concat(results)
 # =============================================================================
 # GATHER RESULTS (V)
 results = []
-for V in ["LR-DCR", "LR-DC", "LR-SC"]:
+for V in ["LR-DCR", "LR-DC", "LR-SC", "CS"]:
     file = f"K{subject}_allreps_{V}"
     icx = pd.read_csv(dir_results + file + ".icx", index_col=0).T
     icx["IC"] = "x|y"
@@ -117,7 +117,7 @@ values = V_results[which]["elpd_loo"]
 xs = V_results[which]["Model"]
 ses = V_results[which]["elpd_loo_se"]
 ax.errorbar(xs, values, yerr=ses, fmt='.')
-ax.set_title("K=8, Correlation = 0.8")
+ax.set_title("K=8, Correlation = 0.5")
 
 
 # IC y

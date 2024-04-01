@@ -38,22 +38,18 @@ experiment = list(it.product(seeds, train_reps))
 
 
 for seed, treps in experiment:
-    # for method in ["", "_swlda", "_eegnet", "_rf", "_gb",
-    #                "_svm", "_nbmn", "_lite", "_mapinit", "_map", "_cs"]:
-    # for method in ["_mapinit"]:
-    for method in ["", "_svm", "_nbmn", "_mapinit", "_lite", "_cs"]:
+    for method in ["_swlda", "_eegnet", "_rf", "_gb",
+                   "_svm", "_nbmn", "_lite_mapinit", "_mapinit", "_cs"]:
+    # for method in ["_svm", "_nbmn", "_mapinit", "_lite_mapinit", "_cs",]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
         try:
             df = pd.read_csv(dir_results + file, index_col=0)
             df["train_reps"] = treps
             df["seed"] = seed
-            # if method == "_swlda" or method == "_nbmn" or method == "_map":
-            #     df["bce"] = float("nan")
-            #     df["mean_entropy"] = float("nan")
-            if method == "_mapinit":
-                df["method"] += " (MAP init.)"
             if method == "_nbmn":
                 df["method"] = "MN-LDA"
+            if method == "_swlda":
+                df["bce"] = float("nan")
             results.append(df)
         except FileNotFoundError:
             pass
@@ -94,10 +90,10 @@ for row, (metric, metric_name) in enumerate(metrics.items()):
             hue="method",
             style="method",
             ax=ax,
-            errorbar=("pi", 80),
-            estimator="median",
-            # errorbar=("ci", 95),
-            # estimator="mean",
+            # errorbar=("pi", 80),
+            # estimator="median",
+            errorbar=("ci", 95),
+            estimator="mean",
             err_kws={"alpha": 0.1}
         )
         ax.set_title(f"{treps} Training repetitions" if row == 0 else "")
