@@ -33,12 +33,12 @@ results = []
 
 # experiment
 seeds = range(10)
-train_reps = [3, 5, 8]
+train_reps = [3, 5, 7]
 experiment = list(it.product(seeds, train_reps))
 
 
 for seed, treps in experiment:
-    for method in ["_swlda", "_eegnet", "_rf", "_gb",
+    for method in ["_swlda", "_eegnet", #"_rf", "_gb",
                    "_svm", "_nbmn", "_lite_mapinit", "_mapinit", "_cs"]:
     # for method in ["_svm", "_nbmn", "_mapinit", "_lite_mapinit", "_cs",]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
@@ -48,6 +48,8 @@ for seed, treps in experiment:
             df["seed"] = seed
             if method == "_nbmn":
                 df["method"] = "MN-LDA"
+            if method == "_cs":
+                df["method"] = "FR-CS"
             if method == "_swlda":
                 df["bce"] = float("nan")
             results.append(df)
@@ -64,7 +66,7 @@ df = pd.concat(results, ignore_index=True)
 # =============================================================================
 # PLOT RESULTS
 
-train_reps = [3, 5, 8]
+train_reps = [3, 5, 7]
 
 ncol = len(train_reps)
 metrics = {
@@ -99,12 +101,13 @@ for row, (metric, metric_name) in enumerate(metrics.items()):
         ax.set_title(f"{treps} Training repetitions" if row == 0 else "")
         ax.set_ylabel(metric_name)
         ax.set_xlabel("Testing repetitions")
+        ax.set_xlim(1,7)
         if row != nrow - 1:
         # if row != nrow - 1 or col != ncol - 1:
             ax.legend().remove()
         else:
             ax.legend(title="Method")
-        ax.set_xticks(range(2, 13, 2))
+        ax.set_xticks(range(2, 8, 2))
 
 plt.tight_layout()
 plt.savefig(dir_figures + f"{subject}_random_test.pdf")
