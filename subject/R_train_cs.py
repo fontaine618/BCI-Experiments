@@ -126,7 +126,7 @@ model.clear_history()
 
 # =============================================================================
 # RUN CHAIN
-torch.manual_seed(seed)
+torch.manual_seed(seed if isinstance(seed, int) else 0)
 t0 = time.time()
 t00 = t0
 for i in range(n_iter):
