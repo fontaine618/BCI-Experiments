@@ -117,7 +117,7 @@ model = Model(
 
 # =============================================================================
 # INITIALIZE CHAIN
-torch.manual_seed(seed)
+torch.manual_seed(seed if isinstance(seed, int) else 0)
 model.clear_history()
 # model.initialize_chain(weighted=True)
 # -----------------------------------------------------------------------------
