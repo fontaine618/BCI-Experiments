@@ -47,6 +47,7 @@ n_iter = 20_000
 seeds = range(10)
 train_reps = [3, 5, 7]
 experiment = list(it.product(train_reps, seeds))
+experiment.append((7, "even"))
 train_reps, seed = experiment[int(sys.argv[2])]
 
 # -----------------------------------------------------------------------------
@@ -65,10 +66,16 @@ eeg = KProtocol(
     downsample=downsample,
 )
 # subset training reps
-torch.manual_seed(seed)
-reps = torch.randperm(15) + 1
-training_reps = reps[:train_reps].cpu().tolist()
-testing_reps = reps[train_reps:].cpu().tolist()
+if isinstance(seed, int):
+    torch.manual_seed(seed)
+    reps = torch.randperm(15) + 1
+    training_reps = reps[:train_reps].cpu().tolist()
+    testing_reps = reps[train_reps:].cpu().tolist()
+elif seed == "even":
+    training_reps = list(range(1, 16, 2))
+    testing_reps = list(range(2, 17, 2))
+else:
+    raise ValueError("Seed not recognized")
 eeg = eeg.repetitions(training_reps)
 # -----------------------------------------------------------------------------
 

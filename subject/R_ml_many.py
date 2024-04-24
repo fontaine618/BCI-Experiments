@@ -38,13 +38,12 @@ downsample = 8
 
 
 # experiment
-seeds = range(10)
-train_reps = [3, 5, 7] #, 5, 8]
+seeds = range(100)
+train_reps = [7] #[3, 5, 7] #, 5, 8]
 experiment = list(it.product(seeds, train_reps))
-experiment.append(("even", 7))
 
-method, suffix = "LogReg", "lr"
-# method, suffix = "SVM", "svm"
+# method, suffix = "LogReg", "lr"
+method, suffix = "SVM", "svm"
 # method, suffix = "RF", "rf"
 # method, suffix = "GB", "gb"
 # -----------------------------------------------------------------------------
@@ -52,7 +51,6 @@ method, suffix = "LogReg", "lr"
 
 for seed, train_reps in experiment:
 
-    seed, train_reps = "even", 7
     # =============================================================================
     # LOAD DATA
     eeg = KProtocol(
@@ -66,16 +64,10 @@ for seed, train_reps in experiment:
         downsample=downsample,
     )
     # subset training reps
-    if isinstance(seed, int):
-        torch.manual_seed(seed)
-        reps = torch.randperm(15) + 1
-        training_reps = reps[:train_reps].cpu().tolist()
-        testing_reps = reps[train_reps:].cpu().tolist()
-    elif seed == "even":
-        training_reps = list(range(1, 16, 2))
-        testing_reps = list(range(2, 17, 2))
-    else:
-        raise ValueError("Seed not recognized")
+    torch.manual_seed(seed)
+    reps = torch.randperm(15) + 1
+    training_reps = reps[:train_reps].cpu().tolist()
+    testing_reps = reps[train_reps:].cpu().tolist()
     eeg = eeg.repetitions(training_reps)
     # -----------------------------------------------------------------------------
 
@@ -103,7 +95,6 @@ for seed, train_reps in experiment:
         Cs = np.logspace(-6, 0, 20)
         scores = np.zeros(len(Cs))
         for i, C in enumerate(Cs):
-            print(i, C)
             model.C = C
             scores[i] = cross_val_score(model, X.reshape(X.shape[0], -1), y, cv=kf, scoring="neg_log_loss").mean()
         model.C = Cs[np.argmax(scores)]

@@ -32,13 +32,15 @@ downsample = 8
 
 # experiment
 seeds = range(10)
-train_reps = [3, 5, 7]
+train_reps = [7] #[3, 5, 7]
 experiment = list(it.product(seeds, train_reps))
+experiment.append(("even", 7))
 # -----------------------------------------------------------------------------
 
 
 for seed, train_reps in experiment:
 
+    seed, train_reps = "even", 7
     # =============================================================================
     # LOAD DATA
     eeg = KProtocol(
@@ -52,11 +54,20 @@ for seed, train_reps in experiment:
         downsample=downsample,
     )
     # subset training reps
-    torch.manual_seed(seed)
-    reps = torch.randperm(15) + 1
-    training_reps = reps[:train_reps].cpu().tolist()
-    testing_reps = reps[train_reps:].cpu().tolist()
+    if isinstance(seed, int):
+        torch.manual_seed(seed)
+        reps = torch.randperm(15) + 1
+        training_reps = reps[:train_reps].cpu().tolist()
+        testing_reps = reps[train_reps:].cpu().tolist()
+    elif seed == "even":
+        training_reps = list(range(1, 16, 2))
+        testing_reps = list(range(2, 17, 2))
+    else:
+        raise ValueError("Seed not recognized")
     eeg = eeg.repetitions(training_reps)
+    print(seed)
+    print(sorted(training_reps))
+    print(sorted(testing_reps))
     # -----------------------------------------------------------------------------
 
 
@@ -109,6 +120,13 @@ for seed, train_reps in experiment:
     trnstim = eeg.stimulus_data
 
     ip = np.einsum("nte, et -> n", trnX, Bmat)
+
+    pred_df, agg_pred_df, cum_pred_df = swlda_predict(
+        Bmat,
+        response,
+        trnstim,
+        eeg.keyboard
+    )
 
 
     trnstim["log_proba"] = ip

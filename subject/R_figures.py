@@ -32,15 +32,26 @@ os.makedirs(dir_figures, exist_ok=True)
 results = []
 
 # experiment
-seeds = range(10)
+seeds = list(range(10))
 train_reps = [3, 5, 7]
 experiment = list(it.product(seeds, train_reps))
+experiment.append(("even", 7))
 
 
 for seed, treps in experiment:
-    for method in ["_swlda", "_eegnet", #"_rf", "_gb",
-                   "_svm", "_nbmn", "_lite_mapinit", "_mapinit", "_cs"]:
-    # for method in ["_svm", "_nbmn", "_mapinit", "_lite_mapinit", "_cs",]:
+    for method in [
+        "_mapinit",
+        "_lite_mapinit",
+        "_cs",
+        "_nbmn",
+        "_swlda",
+        "_eegnet",
+        # "_lr",
+        "_rf",
+        "_gb",
+        "_svm"
+    ]:
+    # for method in ["_svm", "_nbmn", "_mapinit", "_lite_mapinit", "_cs", "_lr"]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
         try:
             df = pd.read_csv(dir_results + file, index_col=0)
@@ -59,7 +70,72 @@ df = pd.concat(results, ignore_index=True)
 # -----------------------------------------------------------------------------
 
 
+# =============================================================================
+# TABLE
+dff = df.loc[df["repetition"] == df["train_reps"]]
+summary = dff.groupby(["train_reps", "method"]).agg(
+    acc_mean=("acc", "median"),
+    acc_std=("acc", "std"),
+    bce_mean=("bce", "median"),
+    bce_std=("bce", "std"),
+    n=("acc", "count")
+)
+summary["acc_std"] /= summary["n"].pow(0.5)
+summary["bce_std"] /= summary["n"].pow(0.5)
+summary["acc_mean"] *= 100
+summary["acc_std"] *= 100
+summary["Accuracy (%)"] = summary["acc_mean"].apply(lambda x: f"{x:.1f}") + " (" + summary["acc_std"].apply(lambda x: f"{x:.1f}") + ")"
+summary["BCE"] = summary["bce_mean"].apply(lambda x: f"{x:.3f}") + " (" + summary["bce_std"].apply(lambda x: f"{x:.3f}") + ")"
+summary = summary[["Accuracy (%)", "BCE"]].reset_index().set_index("method").pivot(columns="train_reps")
+summary.columns = summary.columns.reorder_levels([1, 0])
+summary = summary.sort_index(axis=1)
+print(summary.to_latex())
+# -----------------------------------------------------------------------------
 
+
+
+
+
+
+# =============================================================================
+# BOXPLOT RESULTS 7
+metrics = {
+    # "hamming": "Hamming distance",
+    "acc": "Accuracy",
+    "bce": "Binary cross-entropy",
+    # "mean_entropy": "Mean entropy",
+    # "auroc": "AuROC"
+}
+ncol = len(metrics)
+fig, axes = plt.subplots(1, ncol, figsize=(ncol*3, 3), sharey="row", sharex="none")
+for col, (metric, metric_name) in enumerate(metrics.items()):
+    ax = axes[col]
+    sns.boxplot(
+        data=df[(df["train_reps"] == 7) * (df["repetition"] == 7) * (df["seed"] != "even")],
+        y="method",
+        x=metric,
+        ax=ax,
+        flierprops={"marker": "o", "alpha": 0.5},
+        fliersize=3,
+    )
+    dfeven = df[(df["train_reps"] == 7) * (df["repetition"] == 7) * (df["seed"] == "even")]
+    sns.scatterplot(
+        data=dfeven,
+        y="method",
+        x=metric,
+        ax=ax,
+        color="black",
+        marker="s",
+        s=20
+    )
+    ax.set_xlabel(metric_name)
+    ax.set_ylabel("Method" if not col else "")
+    if metric == "bce":
+        # y log scale
+        ax.set_xscale("log")
+plt.tight_layout()
+plt.savefig(dir_figures + f"{subject}_random_test_7boxplot.pdf")
+# -----------------------------------------------------------------------------
 
 
 

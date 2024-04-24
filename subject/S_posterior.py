@@ -50,8 +50,8 @@ channel_positions = {
     'PO8': (3.1, 1.5),
 }
 
-xrange = (-1, 5)
-yrange = (0, 5)
+xrange = (-0.5, 4.5)
+yrange = (0.5, 4.5)
 # -----------------------------------------------------------------------------
 
 
@@ -86,9 +86,11 @@ beta_xi1 = results.chains["smgp_scaling.target_signal"]
 beta_xi0 = results.chains["smgp_scaling.nontarget_process"]
 diff = beta_z1 * beta_xi1.exp() - beta_z0 * beta_xi0.exp()
 diff_xi = results.chains["smgp_scaling.difference_process"]
+diff_xi_scaled = (beta_xi1.exp().pow(2.) - beta_xi0.exp().pow(2.)) * results.chains["loadings.norm"].movedim(2, 3).pow(2.)
 
 # fitted mean
 L = results.chains["loadings.norm_one"]  # nc x ns x E x K
+Lnorm = results.chains["loadings.norm"] # nc x ns x K
 channel_wise_mean_diff = torch.einsum(
     "cbek, cbkt -> cbket",
     L,
@@ -96,6 +98,7 @@ channel_wise_mean_diff = torch.einsum(
 )
 
 # fitted covariance
+L = results.chains["loadings"]
 cov1 = torch.einsum(
     "cbek, cbfk, cbkt -> cbeft",
     L,
@@ -117,6 +120,33 @@ sd0 = cov0.diagonal(dim1=-2, dim2=-3).pow(0.5).permute(0, 1, 3, 2)
 cor1 = cov1 / sd1.unsqueeze(-2) / sd1.unsqueeze(-3)
 cor0 = cov0 / sd0.unsqueeze(-2) / sd0.unsqueeze(-3)
 channel_wise_cor_diff = cor1 - cor0
+
+# fitted autocovariance
+cor, var, power = results.prior["kernel_gp_factor"]
+
+channel_wise_autocorr_diff = torch.zeros(1, 1000, 16, 16, 25, 3)
+for lag in range(0, 3):
+    kvalue = var * cor ** (lag * lag)
+    beta_xi1_shifted = beta_xi1.roll(shifts=lag, dims=-1)
+    beta_xi0_shifted = beta_xi0.roll(shifts=lag, dims=-1)
+    cov1_shifted = torch.einsum(
+        "cbek, cbfk, cbkt -> cbeft",
+        L,
+        L,
+        beta_xi1.exp() * beta_xi1_shifted.exp()
+    ) * kvalue
+    cov0_shifted = torch.einsum(
+        "cbek, cbfk, cbkt -> cbeft",
+        L,
+        L,
+        beta_xi0.exp() * beta_xi0_shifted.exp()
+    ) * kvalue
+    sd1_shifted = sd1.roll(shifts=lag, dims=-1)
+    sd0_shifted = sd0.roll(shifts=lag, dims=-1)
+    cor1_shifted = cov1_shifted / sd1.unsqueeze(-2) / sd1_shifted.unsqueeze(-3)
+    cor0_shifted = cov0_shifted / sd0.unsqueeze(-2) / sd0_shifted.unsqueeze(-3)
+    channel_wise_autocorr_diff[0, :, :, :, :, lag] = cor1_shifted - cor0_shifted
+
 # -----------------------------------------------------------------------------
 
 
@@ -124,6 +154,43 @@ channel_wise_cor_diff = cor1 - cor0
 
 # =============================================================================
 # PLOT COMPONENTS
+file = f"K{subject}_nodes"
+fig, ax = plt.subplots(
+    nrows=1,
+    ncols=1,
+    figsize=(5, 4),
+    sharex="all",
+    sharey="all"
+)
+
+
+for cname, (x, y) in channel_positions.items():
+    ax.text(x, y, cname, ha="center", va="center")
+    ax.plot(x, y, "o", markersize=25, color="black", fillstyle='none')
+
+ax.set_aspect('equal', 'box')
+ax.set_xlim(*xrange)
+ax.set_ylim(*yrange)
+# remove box around
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_visible(False)
+ax.spines['bottom'].set_visible(False)
+# remove grid
+ax.grid(False)
+ax.set_xticks([])
+ax.set_yticks([])
+plt.tight_layout()
+plt.savefig(dir_figures + file + ".pdf")
+# -----------------------------------------------------------------------------
+
+
+
+
+
+# =============================================================================
+# PLOT COMPONENTS
+L = results.chains["loadings.norm_one"]
 file = f"K{subject}_components"
 fig, axes = plt.subplots(
     nrows=6+1,
@@ -136,7 +203,6 @@ fig, axes = plt.subplots(
     sharex="row",
     sharey="row"
 )
-plt.tight_layout()
 for j in range(K):
     k = order[j]
     col = j % 4
@@ -156,6 +222,7 @@ for j in range(K):
     ax.set_aspect('equal', 'box')
     ax.set_xlim(*xrange)
     ax.set_ylim(*yrange)
+    # ax.text(0, 4, f"k={k+1}", ha="center", va="center", fontsize=14)
     # remove box around
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -166,17 +233,17 @@ for j in range(K):
     ax.set_xticks([])
     ax.set_yticks([])
 
-    # difference plot
+    # mean difference plot
     row += 1
     ax = axes[row, col]
     t = np.arange(25)
     diffkmean = diff[:, :, k, :].mean((0, 1)).cpu().numpy()
     diffkstd = diff[:, :, k, :].std((0, 1)).cpu().numpy()
     ax.axhline(0, color="k", linestyle="--")
+    Lnormk = Lnorm[:, :, 0, k].mean((0, 1)).item()
     ax.set_title(f"Component {k+1}\n"
-                 # f"Effect size: {importance['posterior'][k]:.1f}\n"
+                 f"Loading norm: {Lnormk:.2f}\n"
                  f"BCE Change: {importance['drop_bce'][k]:.2f}")
-                 # f"Accuracy Change: {importance['drop_acc'][k]*100:.1f}%")
     ax.fill_between(
         t,
         diffkmean - diffkstd,
@@ -185,17 +252,18 @@ for j in range(K):
     )
     ax.plot(t, diffkmean)
     ax.set_xlim(0, 24)
-    # ax.set_ylim(-20, 20)
-    # ax.set_ylim(-0.5, 0.5)
+    ax.set_ylim(-7, 7)
     ax.set_xticks([0, 6, 12, 18, 24])
     ax.set_xticklabels([])
 
-    # difference plot
+    # scaling difference plot
     row += 1
     ax = axes[row, col]
     t = np.arange(25)
-    diffkmean = diff_xi[:, :, k, :].exp().mean((0, 1)).cpu().numpy()
-    diffkstd = diff_xi[:, :, k, :].exp().std((0, 1)).cpu().numpy()
+    # diffkmean = diff_xi[:, :, k, :].exp().mean((0, 1)).cpu().numpy()
+    # diffkstd = diff_xi[:, :, k, :].exp().std((0, 1)).cpu().numpy()
+    diffkmean = diff_xi_scaled[:, :, k, :].mean((0, 1)).cpu().numpy()
+    diffkstd = diff_xi_scaled[:, :, k, :].std((0, 1)).cpu().numpy()
     ax.axhline(1, color="k", linestyle="--")
     ax.fill_between(
         t,
@@ -205,15 +273,14 @@ for j in range(K):
     )
     ax.plot(t, diffkmean)
     ax.set_xlim(0, 24)
-    # ax.set_ylim(0.8, 1.2)
-    # ax.set_ylim(0.5, 1.5)
+    ax.set_ylim(-90, 90)
     ax.set_xticks([0, 6, 12, 18, 24])
     ax.set_xticklabels([0, 200, 400, 600, 800])
     ax.set_xlabel("Time (ms)")
-axes[1, 0].set_ylabel("Difference in mean")
-axes[4, 0].set_ylabel("Difference in mean")
-axes[2, 0].set_ylabel("Scaling difference")
-axes[5, 0].set_ylabel("Scaling difference")
+axes[1, 0].set_ylabel("Diff. in mean")
+axes[4, 0].set_ylabel("Diff. in mean")
+axes[2, 0].set_ylabel("Diff. in covariance")
+axes[5, 0].set_ylabel("Diff. in covariance")
 
 # legend
 gs = axes[6, 0].get_gridspec()
@@ -231,6 +298,9 @@ y = [0 for c in values]
 axlegend.scatter(xs, y, c=colors, s=sizes)
 for i, v in enumerate(values):
     axlegend.text(xs[i], -0.8, f"{v:.1f}", ha="center", va="center")
+
+
+axlegend.text(-6., 0., "Std. loading", ha="right", va="center")
 # remove box around
 axlegend.spines['top'].set_visible(False)
 axlegend.spines['right'].set_visible(False)
@@ -245,6 +315,7 @@ axlegend.set_ylim(-1, 1)
 
 
 
+plt.tight_layout()
 plt.savefig(dir_figures + file + ".pdf")
 # -----------------------------------------------------------------------------
 
@@ -252,140 +323,146 @@ plt.savefig(dir_figures + file + ".pdf")
 
 
 
+
 # =============================================================================
-# PLOT MEAN DIFF OVER TIME
-file = f"K{subject}_mean_over_time"
+# PLOT AUTOCORR DIFF
+file = f"K{subject}_autocorr_diff"
+ts = range(2, 15)
+lags = [0, 1, 2]
+ncols = len(lags)
+nrows = len(ts)
 fig, axes = plt.subplots(
-    nrows=6,
-    ncols=4,
-    figsize=(12, 18),
+    nrows=nrows + 1,
+    ncols=ncols,
+    figsize=(ncols * 2.5, nrows * 2.5),
+    gridspec_kw={
+        "width_ratios": [1] * ncols,
+        "height_ratios": [1] * nrows + [0.5]
+    },
     sharex="all",
     sharey="all"
 )
+for row, t in enumerate(ts):
+    for col, lag in enumerate(lags):
+        i = t * 1
+        time = round(t * 33.33)
+        time_other = round((t - lag) * 33.33)
+
+        # network plot
+        ax = axes[row, col]
+        network = channel_wise_autocorr_diff[0, :, :, :, t, lag].mean(0)
+        network_sd = channel_wise_autocorr_diff[0, :, :, :, t, lag].std(0)
+        exclude = network.abs() / network_sd < 1.96
+        # set small entries to 0
+        network[exclude] = 0
+
+        component = channel_wise_autocorr_diff[0, :, :, :, t, lag].sum(1).mean(0).reshape(-1, 1)
+        colors = ["b" if c > 0 else "r" for c in component]
+        sizes = component.abs().pow(1.).cpu().numpy() * 25
+
+        edgelist = torch.tril_indices(16, 16, offset=-1)
+        weights = network[edgelist[0], edgelist[1]]
+        alphas = weights.abs().pow(1.).cpu().numpy().clip(0., 0.2)*5.
+        G = nx.from_edgelist(edgelist.T.cpu().numpy(), create_using=nx.DiGraph)
+        for i, (u, v) in enumerate(G.edges()):
+            G.edges[u, v]['weight'] = weights[i].item()
+        G = nx.relabel_nodes(G, {i: channels[i] for i in range(16)})
+        G.edges(data=True)
+        nx.draw_networkx_nodes(G, pos=channel_positions, node_size=sizes,
+                            node_color=colors, edgecolors='k', linewidths=0,
+                            ax=ax)
+        nx.draw_networkx_edges(G, pos=channel_positions, width=weights.abs().pow(1.).cpu().numpy()*50.,
+                            edge_color=["b" if w > 0 else "r" for w in weights],
+                            connectionstyle='arc3, rad=0.1', arrowsize=20, arrowstyle='-',
+                            alpha=alphas,
+                            ax=ax)
+        # nx.draw_networkx_labels(G, pos=channel_positions, font_size=12, font_color='w', font_weight='bold',
+        #                         ax=ax)
+
+        ax.set_aspect('equal', 'box')
+        ax.set_xlim(*xrange)
+        ax.set_ylim(*yrange)
+        # remove box around
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        # remove grid
+        ax.grid(False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        ax.set_title(f"{time_other} ms")
+        if col == 0:
+            ax.set_ylabel(f"{time} ms")
+
+# legend
+gs = axes[nrows, 0].get_gridspec()
+for ax in axes[nrows, :]:
+    ax.remove()
+axlegend = fig.add_subplot(gs[nrows, :], frameon=False)
+axlegend.axis("off")
+
+# values = torch.Tensor([-10., -5., -2., -1., -0.5, 0., 0.5, 1., 2., 5., 10.]).cpu()
+# xs = torch.arange(-5, 6, 1).cpu()
+# colors = ["b" if c > 0 else "r" for c in values]
+# # colors = [c if not e else "w" for c, e in zip(colors, excludes)]
+# sizes = values.abs().pow(1.).cpu().numpy() * 25
+# y = [0 for c in values]
+# axlegend.scatter(xs, y, c=colors, s=sizes)
+# for i, v in enumerate(values):
+#     axlegend.text(xs[i], -0.5, f"{v:.1f}", ha="center", va="center")
+
+values = torch.Tensor([-0.2, -0.1, -0.05, -0.02, -0.01, 0., 0.01, 0.02, 0.05, 0.1, 0.2]).cpu()
+xs = torch.arange(-5, 6, 1).cpu()
+y = [1. for c in values]
+colors = ["b" if c > 0 else "r" for c in values]
+width = values.abs().pow(1.).cpu().numpy() * 50.
+alphas = values.abs().pow(1.).cpu().numpy().clip(0., 0.2) * 5.
+for i, (x, y, c, w, a, v) in enumerate(zip(xs, y, colors, width, alphas, values)):
+    axlegend.plot([x - 0.2, x + 0.2], [y, y], c=c, lw=w, alpha=a)
+    axlegend.text(x, 0.5, f"{v:.2f}", ha="center", va="center")
+
+# axlegend.text(-6., 0., "Difference in mean", ha="right", va="center")
+axlegend.text(-6., 1., "Difference in correlation", ha="right", va="center")
+# remove box around
+axlegend.spines['top'].set_visible(False)
+axlegend.spines['right'].set_visible(False)
+axlegend.spines['left'].set_visible(False)
+axlegend.spines['bottom'].set_visible(False)
+# remove grid
+axlegend.grid(False)
+axlegend.set_xticks([])
+axlegend.set_yticks([])
+axlegend.set_xlim(-10, 10)
+axlegend.set_ylim(-1, 1.5)
+
 plt.tight_layout()
-for t in range(24):
-    col = t % 4
-    row = t // 4
-    i = t * 1
-    time = round(t * 33.33)
-
-    # network plot
-    ax = axes[row, col]
-    component = channel_wise_mean_diff[0, :, :, :, i].sum(1).mean(0).reshape(-1, 1)
-    component_sd = channel_wise_mean_diff[0, :, :, :, i].sum(1).std(0).reshape(-1, 1)
-    excludes = component.abs() / component_sd < 1.96
-    colors = ["b" if c > 0 else "r" for c in component]
-    # colors = [c if not e else "w" for c, e in zip(colors, excludes)]
-    sizes = component.abs().pow(1.).cpu().numpy() * 25
-    x = [channel_positions[c][0] for c in channels]
-    y = [channel_positions[c][1] for c in channels]
-    ax.scatter(x, y, c=colors, s=sizes)
-    ax.set_aspect('equal', 'box')
-    ax.set_xlim(*xrange)
-    ax.set_ylim(*yrange)
-    # remove box around
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    # remove grid
-    ax.grid(False)
-    ax.set_xticks([])
-    ax.set_yticks([])
-
-    ax.set_title(f"{time} ms")
 plt.savefig(dir_figures + file + ".pdf")
 # -----------------------------------------------------------------------------
 
 
 
-
-
 # =============================================================================
-# PLOT MEAN DIFF OVER TIME
-file = f"K{subject}_cov_over_time"
-fig, axes = plt.subplots(
-    nrows=6,
-    ncols=4,
-    figsize=(12, 18),
-    sharex="all",
-    sharey="all"
-)
-plt.tight_layout()
-for t in range(24):
-    col = t % 4
-    row = t // 4
-    i = t * 1
-    time = round(t * 33.33)
-
-    # network plot
-    ax = axes[row, col]
-    network = channel_wise_cor_diff[0, :, :, :, i].mean(0)
-    network_sd = channel_wise_cor_diff[0, :, :, :, i].std(0)
-    exclude = network.abs() / network_sd < 1.96
-    # set small entries to 0
-    network[exclude] = 0
-
-    edgelist = torch.tril_indices(16, 16, offset=-1)
-    weights = network[edgelist[0], edgelist[1]]
-    alphas = weights.abs().pow(1.).cpu().numpy().clip(0., 0.2)*5.
-    G = nx.from_edgelist(edgelist.T.cpu().numpy(), create_using=nx.DiGraph)
-    for i, (u, v) in enumerate(G.edges()):
-        G.edges[u, v]['weight'] = weights[i].item()
-    G = nx.relabel_nodes(G, {i: channels[i] for i in range(16)})
-    G.edges(data=True)
-    nx.draw_networkx_nodes(G, pos=channel_positions, node_size=100,
-                           node_color='w', edgecolors='k', linewidths=1,
-                           ax=ax)
-    nx.draw_networkx_edges(G, pos=channel_positions, width=weights.abs().pow(1.).cpu().numpy()*50.,
-                           edge_color=["b" if w > 0 else "r" for w in weights],
-                           connectionstyle='arc3, rad=0.1', arrowsize=20, arrowstyle='-',
-                           alpha=alphas,
-                           ax=ax)
-    # nx.draw_networkx_labels(G, pos=channel_positions, font_size=12, font_color='w', font_weight='bold',
-    #                         ax=ax)
-
-
-    ax.set_aspect('equal', 'box')
-    ax.set_xlim(*xrange)
-    ax.set_ylim(*yrange)
-    # remove box around
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    # remove grid
-    ax.grid(False)
-    ax.set_xticks([])
-    ax.set_yticks([])
-
-    ax.set_title(f"{time} ms")
-plt.savefig(dir_figures + file + ".pdf")
-# -----------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-# =============================================================================
-# PLOT MEAN DIFF OVER TIME
+# PLOT MEAN AND CORRELATION DIFF
 file = f"K{subject}_mean_and_cov_over_time"
-ts = [5, 6, 7, 8, 9, 10, 11, 12]
-
+ts = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+ncols = 5
+nrows = len(ts) // ncols
 fig, axes = plt.subplots(
-    nrows=len(ts) // 4,
-    ncols=4,
-    figsize=(12, 6),
+    nrows=nrows + 1,
+    ncols=ncols,
+    figsize=(12, nrows* 2.5 + 1),
+    gridspec_kw={
+        "width_ratios": [1] * ncols,
+        "height_ratios": [1] * nrows + [0.5]
+    },
     sharex="all",
     sharey="all"
 )
-plt.tight_layout()
 for i, t in enumerate(ts):
-    col = i % 4
-    row = i // 4
+    col = i % ncols
+    row = i // ncols
     i = t * 1
     time = round(t * 33.33)
 
@@ -436,6 +513,50 @@ for i, t in enumerate(ts):
     ax.set_yticks([])
 
     ax.set_title(f"{time} ms")
+
+
+# legend
+gs = axes[nrows, 0].get_gridspec()
+for ax in axes[nrows, :]:
+    ax.remove()
+axlegend = fig.add_subplot(gs[nrows, :], frameon=False)
+axlegend.axis("off")
+
+values = torch.Tensor([-10., -5., -2., -1., -0.5, 0., 0.5, 1., 2., 5., 10.]).cpu()
+xs = torch.arange(-5, 6, 1).cpu()
+colors = ["b" if c > 0 else "r" for c in values]
+# colors = [c if not e else "w" for c, e in zip(colors, excludes)]
+sizes = values.abs().pow(1.).cpu().numpy() * 25
+y = [0 for c in values]
+axlegend.scatter(xs, y, c=colors, s=sizes)
+for i, v in enumerate(values):
+    axlegend.text(xs[i], -0.5, f"{v:.1f}", ha="center", va="center")
+
+values = torch.Tensor([-0.2, -0.1, -0.05, -0.02, -0.01, 0., 0.01, 0.02, 0.05, 0.1, 0.2]).cpu()
+xs = torch.arange(-5, 6, 1).cpu()
+y = [1. for c in values]
+colors = ["b" if c > 0 else "r" for c in values]
+width = values.abs().pow(1.).cpu().numpy()*50.
+alphas = values.abs().pow(1.).cpu().numpy().clip(0., 0.2) * 5.
+for i, (x, y, c, w, a, v) in enumerate(zip(xs, y, colors, width, alphas, values)):
+    axlegend.plot([x-0.2, x+0.2], [y, y], c=c, lw=w, alpha=a)
+    axlegend.text(x, 0.5, f"{v:.2f}", ha="center", va="center")
+
+axlegend.text(-6., 0., "Difference in mean", ha="right", va="center")
+axlegend.text(-6., 1., "Difference in correlation", ha="right", va="center")
+# remove box around
+axlegend.spines['top'].set_visible(False)
+axlegend.spines['right'].set_visible(False)
+axlegend.spines['left'].set_visible(False)
+axlegend.spines['bottom'].set_visible(False)
+# remove grid
+axlegend.grid(False)
+axlegend.set_xticks([])
+axlegend.set_yticks([])
+axlegend.set_xlim(-10, 10)
+axlegend.set_ylim(-1, 1.5)
+
+plt.tight_layout()
 plt.savefig(dir_figures + file + ".pdf")
 # -----------------------------------------------------------------------------
 
