@@ -35,7 +35,7 @@ results = []
 seeds = list(range(10))
 train_reps = [3, 5, 7]
 experiment = list(it.product(seeds, train_reps))
-experiment.append(("even", 7))
+experiment.append(("odd", 7))
 
 
 for seed, treps in experiment:
@@ -51,7 +51,6 @@ for seed, treps in experiment:
         "_gb",
         "_svm"
     ]:
-    # for method in ["_svm", "_nbmn", "_mapinit", "_lite_mapinit", "_cs", "_lr"]:
         file = f"K{subject}_trn{treps}_seed{seed}{method}.test"
         try:
             df = pd.read_csv(dir_results + file, index_col=0)
@@ -60,7 +59,7 @@ for seed, treps in experiment:
             if method == "_nbmn":
                 df["method"] = "MN-LDA"
             if method == "_cs":
-                df["method"] = "FR-CS"
+                df["method"] = "SMGP(FR-CS)"
             if method == "_swlda":
                 df["bce"] = float("nan")
             results.append(df)
@@ -111,28 +110,32 @@ fig, axes = plt.subplots(1, ncol, figsize=(ncol*3, 3), sharey="row", sharex="non
 for col, (metric, metric_name) in enumerate(metrics.items()):
     ax = axes[col]
     sns.boxplot(
-        data=df[(df["train_reps"] == 7) * (df["repetition"] == 7) * (df["seed"] != "even")],
+        data=df[(df["train_reps"] == 7) * (df["repetition"] == 7) * (df["seed"] != "odd")],
         y="method",
         x=metric,
         ax=ax,
         flierprops={"marker": "o", "alpha": 0.5},
         fliersize=3,
     )
-    dfeven = df[(df["train_reps"] == 7) * (df["repetition"] == 7) * (df["seed"] == "even")]
+    dfeven = df[(df["train_reps"] == 7) * (df["repetition"] == 7) * (df["seed"] == "odd")]
     sns.scatterplot(
         data=dfeven,
         y="method",
         x=metric,
         ax=ax,
-        color="black",
+        color="red",
         marker="s",
-        s=20
+        s=20,
+        zorder=10
     )
     ax.set_xlabel(metric_name)
     ax.set_ylabel("Method" if not col else "")
     if metric == "bce":
         # y log scale
         ax.set_xscale("log")
+    # set yticklabels font to fixed width
+    for label in ax.get_yticklabels():
+        label.set_fontname("monospace")
 plt.tight_layout()
 plt.savefig(dir_figures + f"{subject}_random_test_7boxplot.pdf")
 # -----------------------------------------------------------------------------

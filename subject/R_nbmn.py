@@ -37,12 +37,13 @@ seeds = range(10)
 train_reps = [3,5,7] #, 5, 8]
 experiment = list(it.product(seeds, train_reps))
 experiment.append(("even", 7))
+experiment.append(("odd", 7))
 # -----------------------------------------------------------------------------
 
 
 for seed, train_reps in experiment:
 
-    seed, train_reps = "even", 7
+    seed, train_reps = "odd", 7
     # =============================================================================
     # LOAD DATA
     eeg = KProtocol(
@@ -64,6 +65,9 @@ for seed, train_reps in experiment:
     elif seed == "even":
         training_reps = list(range(1, 16, 2))
         testing_reps = list(range(2, 17, 2))
+    elif seed == "odd":
+        training_reps = list(range(2, 17, 2))
+        testing_reps = list(range(1, 16, 2))
     else:
         raise ValueError("Seed not recognized")
     eeg = eeg.repetitions(training_reps)

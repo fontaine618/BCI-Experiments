@@ -32,26 +32,148 @@ channels = ['F3', 'Fz', 'F4', 'T7', 'C3', 'Cz', 'C4', 'T8',
                        'CP3', 'CP4', 'P3', 'Pz', 'P4', 'PO7', 'PO8', 'Oz']
 
 channel_positions = {
-    'F3': (1.25, 4),
+    'F3': (1.25, 4.05),
     'Fz': (2, 4),
-    'F4': (2.75, 4),
-    'T7': (0, 3),
-    'C3': (1, 3),
+    'F4': (2.75, 4.05),
+    'T7': (0.1, 3),
+    'C3': (1.05, 3),
     'Cz': (2, 3),
-    'C4': (3, 3),
-    'T8': (4, 3),
-    'CP3': (1.1, 2.5),
-    'CP4': (2.9, 2.5),
-    'P3': (1.25, 2),
+    'C4': (2.95, 3),
+    'T8': (3.9, 3),
+    'CP3': (1.1, 2.45),
+    'CP4': (2.9, 2.45),
+    'P3': (1.25, 1.95),
     'Pz': (2, 2),
-    'P4': (2.75, 2),
-    'PO7': (0.9, 1.5),
-    'Oz': (2, 1),
-    'PO8': (3.1, 1.5),
+    'P4': (2.75, 1.95),
+    'PO7': (1., 1.3),
+    'Oz': (2, 0.95),
+    'PO8': (3., 1.3),
+}
+
+extra_channels = {
+    "F1": (1.625, 4),
+    "F2": (2.375, 4),
+    "F5": (0.875, 4.125),
+    "F6": (3.125, 4.125),
+    "F7": (0.5, 4.25),
+    "F8": (3.5, 4.25),
+    "F9": (0.125, 4.5),
+    "F10": (3.875, 4.5),
+
+    "FT9": (-0.25, 3.875),
+    "FT7": (0.2, 3.75),
+    "FC5": (0.65, 3.625),
+    "FC3": (1.1, 3.55),
+    "FC1": (1.5, 3.5),
+    "FCz": (2, 3.5),
+    "FC2": (2.5, 3.5),
+    "FC4": (2.9, 3.55),
+    "FC6": (3.35, 3.625),
+    "FT8": (3.8, 3.75),
+    "FT10": (4.25, 3.875),
+
+    "C5": (0.6, 3.),
+    "C1": (1.5, 3.),
+    "C2": (2.5, 3.),
+    "C6": (3.4, 3.),
+
+    "TP9": (-0.25, 2.125),
+    "TP7": (0.2, 2.25),
+    "CP5": (0.65, 2.375),
+    "CP1": (1.5, 2.5),
+    "CPz": (2, 2.5),
+    "CP2": (2.5, 2.5),
+    "CP6": (3.35, 2.375),
+    "TP8": (3.8, 2.25),
+    "TP10": (4.25, 2.125),
+
+    "P9": (0.125, 1.5),
+    "P7": (0.5, 1.75),
+    "P5": (0.875, 1.875),
+    "P1": (1.625, 2.),
+    "P2": (2.375, 2.),
+    "P6": (3.125, 1.875),
+    "P8": (3.5, 1.75),
+    "P10": (3.875, 1.5),
+
+    "PO9": (0.625, 1.),
+    "PO3": (1.5, 1.42),
+    "POz": (2., 1.45),
+    "PO4": (2.5, 1.42),
+    "PO10": (3.375, 1.),
+
+    "O1": (1.5, 1),
+    "O2": (2.5, 1),
+
+    "O9": (1.25, 0.7),
+    "O10": (2.75, 0.7),
+    "Iz": (2., 0.55),
+
+    "AF3": (1.5, 4.45),
+    'AFz': (2, 4.5),
+    "AF4": (2.5, 4.45),
+
+    "AF7": (0.9, 4.6),
+    "Fp1": (1.4, 4.9),
+    "Fpz": (2., 5.),
+    "Fp2": (2.6, 4.9),
+    "AF8": (3.1, 4.6),
 }
 
 xrange = (-0.5, 4.5)
 yrange = (0.5, 4.5)
+# -----------------------------------------------------------------------------
+
+
+# =============================================================================
+# PLOT NODES
+file = f"K{subject}_nodes"
+fig, ax = plt.subplots(
+    nrows=1,
+    ncols=1,
+    figsize=(5, 4.8),
+    sharex="all",
+    sharey="all"
+)
+
+
+
+# draw ears
+ear1 = plt.Circle((-0.2, 3.), 0.5, edgecolor='black', fill=True, facecolor="lightgrey")
+ear2 = plt.Circle((4.2, 3.), 0.5, edgecolor='black', fill=True, facecolor="lightgrey")
+ax.add_artist(ear1)
+ax.add_artist(ear2)
+
+# draw nose as triangle
+nose = plt.Polygon([[1.5, 5.], [2.5, 5.], [2., 5.75]], edgecolor='black', fill=True, facecolor="lightgrey")
+ax.add_artist(nose)
+
+# draw scalp
+circle = plt.Circle((2, 3), 2.5, edgecolor='black', fill=True, facecolor="lightgrey")
+ax.add_artist(circle)
+
+for cname, (x, y) in channel_positions.items():
+    ax.plot(x, y, "o", markersize=20, color="black", fillstyle='full', markerfacecolor="black")
+    ax.text(x, y, cname, ha="center", va="center", color="white", size=8, fontweight="bold")
+
+for cname, (x, y) in extra_channels.items():
+    ax.plot(x, y, "o", markersize=20, color="black", fillstyle='full', markerfacecolor="white")
+    ax.text(x, y, cname, ha="center", va="center", size=8, color="grey")
+
+ax.set_aspect('equal', 'box')
+ax.set_xlim(-0.75, 4.75)
+ax.set_ylim(0., 6.)
+# remove box around
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_visible(False)
+ax.spines['bottom'].set_visible(False)
+# remove grid
+ax.grid(False)
+ax.set_xticks([])
+ax.set_yticks([])
+plt.tight_layout()
+plt.savefig(dir_figures + file + ".pdf")
 # -----------------------------------------------------------------------------
 
 
@@ -150,39 +272,6 @@ for lag in range(0, 3):
 # -----------------------------------------------------------------------------
 
 
-
-
-# =============================================================================
-# PLOT COMPONENTS
-file = f"K{subject}_nodes"
-fig, ax = plt.subplots(
-    nrows=1,
-    ncols=1,
-    figsize=(5, 4),
-    sharex="all",
-    sharey="all"
-)
-
-
-for cname, (x, y) in channel_positions.items():
-    ax.text(x, y, cname, ha="center", va="center")
-    ax.plot(x, y, "o", markersize=25, color="black", fillstyle='none')
-
-ax.set_aspect('equal', 'box')
-ax.set_xlim(*xrange)
-ax.set_ylim(*yrange)
-# remove box around
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_visible(False)
-ax.spines['bottom'].set_visible(False)
-# remove grid
-ax.grid(False)
-ax.set_xticks([])
-ax.set_yticks([])
-plt.tight_layout()
-plt.savefig(dir_figures + file + ".pdf")
-# -----------------------------------------------------------------------------
 
 
 
