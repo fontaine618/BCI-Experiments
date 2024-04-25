@@ -48,6 +48,7 @@ seeds = range(10)
 train_reps = [3, 5, 7]
 experiment = list(it.product(train_reps, seeds))
 experiment.append((7, "even"))
+experiment.append((7, "odd"))
 train_reps, seed = experiment[int(sys.argv[2])]
 
 # -----------------------------------------------------------------------------
@@ -74,6 +75,9 @@ if isinstance(seed, int):
 elif seed == "even":
     training_reps = list(range(1, 16, 2))
     testing_reps = list(range(2, 17, 2))
+elif seed == "odd":
+    training_reps = list(range(2, 17, 2))
+    testing_reps = list(range(1, 16, 2))
 else:
     raise ValueError("Seed not recognized")
 eeg = eeg.repetitions(training_reps)
