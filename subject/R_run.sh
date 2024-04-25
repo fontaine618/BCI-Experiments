@@ -5,7 +5,7 @@
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
 #SBATCH --time=7:00:00
-#SBATCH --array=30
+#SBATCH --array=31
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
@@ -17,10 +17,10 @@
 # The application(s) to execute along with its input arguments and options:
 module load python/3.10.4
 source /home/simfont/venvs/bci/bin/activate
-python -O R_train_mapinit.py 114 $SLURM_ARRAY_TASK_ID
-python -O R_testmllk_mapinit.py 114 $SLURM_ARRAY_TASK_ID
-python -O R_test_mapinit.py 114 $SLURM_ARRAY_TASK_ID
-#python -O R_train_cs.py 114 $SLURM_ARRAY_TASK_ID
-#python -O R_testmllk_cs.py 114 $SLURM_ARRAY_TASK_ID
-#python -O R_test_cs.py 114 $SLURM_ARRAY_TASK_ID
+#python -O R_train_mapinit.py 114 $SLURM_ARRAY_TASK_ID
+#python -O R_testmllk_mapinit.py 114 $SLURM_ARRAY_TASK_ID
+#python -O R_test_mapinit.py 114 $SLURM_ARRAY_TASK_ID
+python -O R_train_cs.py 114 $SLURM_ARRAY_TASK_ID
+python -O R_testmllk_cs.py 114 $SLURM_ARRAY_TASK_ID
+python -O R_test_cs.py 114 $SLURM_ARRAY_TASK_ID
 
