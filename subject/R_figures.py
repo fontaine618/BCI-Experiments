@@ -60,8 +60,8 @@ for seed, treps in experiment:
                 df["method"] = "MN-LDA"
             if method == "_cs":
                 df["method"] = "SMGP(FR-CS)"
-            if method == "_swlda":
-                df["bce"] = float("nan")
+            # if method == "_swlda":
+            #     df["bce"] = float("nan")
             results.append(df)
         except FileNotFoundError:
             pass

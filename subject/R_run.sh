@@ -4,7 +4,7 @@
 #SBATCH --job-name=bci_subject_Rlite
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=simfont@umich.edu
-#SBATCH --time=7:00:00
+#SBATCH --time=2:00:00
 #SBATCH --array=31
 #SBATCH --account=stats_dept1
 #SBATCH --partition=gpu
@@ -20,7 +20,7 @@ source /home/simfont/venvs/bci/bin/activate
 #python -O R_train_mapinit.py 114 $SLURM_ARRAY_TASK_ID
 #python -O R_testmllk_mapinit.py 114 $SLURM_ARRAY_TASK_ID
 #python -O R_test_mapinit.py 114 $SLURM_ARRAY_TASK_ID
-python -O R_train_cs.py 114 $SLURM_ARRAY_TASK_ID
+#python -O R_train_cs.py 114 $SLURM_ARRAY_TASK_ID
 python -O R_testmllk_cs.py 114 $SLURM_ARRAY_TASK_ID
 python -O R_test_cs.py 114 $SLURM_ARRAY_TASK_ID
 

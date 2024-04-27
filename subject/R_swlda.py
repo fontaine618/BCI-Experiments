@@ -12,6 +12,9 @@ from source.data.k_protocol import KProtocol
 from source.swlda.swlda import swlda, swlda_predict
 from torch.distributions import Categorical
 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+
 # =============================================================================
 # SETUP
 type = "TRN"
@@ -97,6 +100,12 @@ for seed, train_reps in experiment:
     Bmat = torch.zeros((16, 25))
     Bmat[restored_weights[:, 0] - 1, restored_weights[:, 1] - 1] = torch.Tensor(restored_weights[:, 3])
     Bmat = Bmat.cpu()
+
+    # train calibration
+    ip = np.einsum("nte, et -> n", trnX, Bmat)
+    logreg = LogisticRegression(C=1e5)
+    logreg.fit(ip.reshape(-1, 1), trny)
+
     # -----------------------------------------------------------------------------
 
 
@@ -124,6 +133,9 @@ for seed, train_reps in experiment:
     trnstim = eeg.stimulus_data
 
     ip = np.einsum("nte, et -> n", trnX, Bmat)
+
+    # calibrate using platt scaling
+    ip = logreg.predict_log_proba(ip.reshape(-1, 1))[:, 1]
 
     pred_df, agg_pred_df, cum_pred_df = swlda_predict(
         Bmat,
