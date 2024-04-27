@@ -101,7 +101,7 @@ prior_parameters = {
     "shrinkage_factor": (2., 3.),
     "kernel_gp_factor_processes": (cor, 1., 2.),
     "kernel_tgp_factor_processes": (cor, 0.5, 2.),
-    "kernel_gp_loading_processes": (cor2, 0.1, 1.),
+    "kernel_gp_loading_processes": (cor2, 1., 1.),
     "kernel_tgp_loading_processes": (cor2, 0.5, 1.),
     "kernel_gp_factor": (cor, 1., 2.)
 }
