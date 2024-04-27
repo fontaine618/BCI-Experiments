@@ -101,7 +101,7 @@ prior_parameters = {
     "shrinkage_factor": (2., 3.),
     "kernel_gp_factor_processes": (cor, 1., 2.),
     "kernel_tgp_factor_processes": (cor, 0.5, 2.),
-    "kernel_gp_loading_processes": (cor2, 1., 1.),
+    "kernel_gp_loading_processes": (cor2, 1., 1.), # we need to capture all the dependency here
     "kernel_tgp_loading_processes": (cor2, 0.5, 1.),
     "kernel_gp_factor": (cor, 1., 2.)
 }
@@ -122,8 +122,18 @@ model = Model(
 # =============================================================================
 # INITIALIZE CHAIN
 torch.manual_seed(seed if isinstance(seed, int) else 0)
+
+model.variables["smgp_scaling"].nontarget_process.data.zero_()
+model.variables["smgp_scaling"].target_process.data.zero_()
+model.variables["smgp_scaling"].mixing_process.data.zero_()
+
+model.variables["smgp_factors"].nontarget_process.data.zero_()
+model.variables["smgp_factors"].target_process.data.zero_()
+model.variables["smgp_factors"].mixing_process.data.fill_(0.1)
+model.variables["smgp_factors"].mixing_process.data[-1, :].zero_()
+
+model.generate_local_variables()
 model.clear_history()
-# model.initialize_chain(weighted=True)
 # -----------------------------------------------------------------------------
 
 
