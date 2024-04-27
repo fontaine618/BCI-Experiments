@@ -48,7 +48,7 @@ train_reps, seed = experiment[int(sys.argv[2])]
 
 # prediction settings
 factor_processes_method = "analytical"
-n_samples = 5
+n_samples = 100
 sample_mean = "arithmetic"
 which_first = "sequence"
 
