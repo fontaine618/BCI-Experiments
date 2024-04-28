@@ -12,6 +12,11 @@ from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
 from source.bffmbci.bffm import StaticCovarianceRegressionMean
 
+from source.bffmbci.bffm_map import BFFModelMAP
+from source.bffmbci.bffm_map import DynamicRegressionCovarianceRegressionMeanMAP
+from source.bffmbci.bffm_map import DynamicCovarianceRegressionMeanMAP
+from source.bffmbci.bffm_map import StaticCovarianceRegressionMeanMAP
+
 # =============================================================================
 # SETUP
 type = "TRN"
@@ -107,11 +112,49 @@ model = Model(
 # -----------------------------------------------------------------------------
 
 
+# =============================================================================
+# MAP INITIALIZATION
+ModelMAP = StaticCovarianceRegressionMeanMAP
+
+modelMAP: BFFModelMAP = ModelMAP(
+    sequences=eeg.sequence,
+    stimulus_order=eeg.stimulus_order,
+    target_stimulus=eeg.target,
+    **settings,
+    **prior_parameters
+)
+
+modelMAP.initialize()
+modelMAP.fit(lr=0.1, max_iter=2000, tol=1e-8)
+variablesMAP = modelMAP.export_variables()
+# -----------------------------------------------------------------------------
+
+
+
 
 # =============================================================================
-# INITIALIZE CHAIN
-torch.manual_seed(seed)
-model.initialize_chain()
+# INITIALIZE MODEL
+Model = {
+    "LR-DCR": DynamicRegressionCovarianceRegressionMean,
+    "LR-DC": DynamicCovarianceRegressionMean,
+    "LR-SC": StaticCovarianceRegressionMean,
+}[V]
+
+model = Model(
+    sequences=eeg.sequence,
+    stimulus_order=eeg.stimulus_order,
+    target_stimulus=eeg.target,
+    **settings,
+    **prior_parameters
+)
+# -----------------------------------------------------------------------------
+
+
+
+# =============================================================================
+# INITIALIZE CHAIN TO MAP
+model.set(**variablesMAP)
+model.clear_history()
 # -----------------------------------------------------------------------------
 
 
