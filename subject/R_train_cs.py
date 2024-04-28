@@ -102,7 +102,7 @@ prior_parameters = {
     "kernel_tgp_factor_processes": (cor_s, 0.5, 1.),
     "kernel_gp_loading_processes": (cor_s, 1., 1.),
     "kernel_tgp_loading_processes": (cor_s, 0.5, 1.),
-    "kernel_gp_factor": (cor_t, 1., 1.5)
+    "kernel_gp_factor": (cor_t, 1., 1.)
 }
 
 Model = CompoundSymmetryCovarianceRegressionMean
