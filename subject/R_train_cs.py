@@ -32,7 +32,7 @@ lite = True
 seed = 0
 V = "CS"
 K = 17
-cor_t = 0.50
+cor_t = 0.32
 cor_s = 0.50
 n_iter = 20_000
 
@@ -102,7 +102,7 @@ prior_parameters = {
     "kernel_tgp_factor_processes": (cor_s, 0.5, 1.),
     "kernel_gp_loading_processes": (cor_s, 1., 1.),
     "kernel_tgp_loading_processes": (cor_s, 0.5, 1.),
-    "kernel_gp_factor": (cor_t, 1., 2.)
+    "kernel_gp_factor": (cor_t, 1., 1.5)
 }
 
 Model = CompoundSymmetryCovarianceRegressionMean
