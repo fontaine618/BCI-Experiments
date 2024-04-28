@@ -32,7 +32,8 @@ lite = True
 seed = 0
 V = "CS"
 K = 17
-cor = 0.50
+cor_t = 0.50
+cor_s = 0.50
 n_iter = 20_000
 
 
@@ -93,17 +94,15 @@ settings = {
     "shrinkage": "none"
 }
 
-cor = 0.5
-cor2 = 0.999
 prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
     "shrinkage_factor": (2., 3.),
-    "kernel_gp_factor_processes": (cor, 1., 2.),
-    "kernel_tgp_factor_processes": (cor, 0.5, 2.),
-    "kernel_gp_loading_processes": (cor2, 1., 1.), # we need to capture all the dependency here
-    "kernel_tgp_loading_processes": (cor2, 0.5, 1.),
-    "kernel_gp_factor": (cor, 1., 2.)
+    "kernel_gp_factor_processes": (cor_s, 1., 1.),
+    "kernel_tgp_factor_processes": (cor_s, 0.5, 1.),
+    "kernel_gp_loading_processes": (cor_s, 1., 1.),
+    "kernel_tgp_loading_processes": (cor_s, 0.5, 1.),
+    "kernel_gp_factor": (cor_t, 1., 2.)
 }
 
 Model = CompoundSymmetryCovarianceRegressionMean
