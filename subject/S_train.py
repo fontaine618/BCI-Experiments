@@ -95,20 +95,6 @@ prior_parameters = {
     "kernel_tgp_loading_processes": (cor, 0.5, 2.),
     "kernel_gp_factor": (cor, 1., 2.)
 }
-
-Model = {
-    "LR-DCR": DynamicRegressionCovarianceRegressionMean,
-    "LR-DC": DynamicCovarianceRegressionMean,
-    "LR-SC": StaticCovarianceRegressionMean,
-}[V]
-
-model = Model(
-    sequences=eeg.sequence,
-    stimulus_order=eeg.stimulus_order,
-    target_stimulus=eeg.target,
-    **settings,
-    **prior_parameters
-)
 # -----------------------------------------------------------------------------
 
 
@@ -127,6 +113,7 @@ modelMAP: BFFModelMAP = ModelMAP(
 modelMAP.initialize()
 modelMAP.fit(lr=0.1, max_iter=2000, tol=1e-8)
 variablesMAP = modelMAP.export_variables()
+variablesMAP["smgp_scaling.mixing_process"] += 0.1
 # -----------------------------------------------------------------------------
 
 
@@ -166,7 +153,7 @@ t0 = time.time()
 t00 = t0
 for i in range(n_iter):
     model.sample()
-    if i % 100 == 0:
+    if i % 1 == 0:
         print(f"{i:>10} "
               f"{model.variables['observations']._log_density_history[-1]:>20.4f}"
               f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")
