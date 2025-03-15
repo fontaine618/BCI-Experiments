@@ -1,0 +1,75 @@
+BCI Experiments Scripts
+========================
+
+Component importance (4.1)
+--------------------------
+
+This folder contain the code producing the results presented in Figure 1 of the main text.
+
+File description:
+- the "results" folder contain the posterior summaries and selection criterion for the five chains.
+    Naming convention: "Kx{x}_Ky{y}_seed{seed}_K{K}{quantity}" where x and y are the number of components
+    in the two models, seed is the random seed used to initialize the chains, and K is the number of
+    components fitted.
+ - "job.sh" is the script used to run the experiments on the SLURM cluster, which runs the following five scripts:
+    - "train.py": MCMC sampling of the model
+    - "posterior.py": Posterior summaries
+    - "importance.py": Component importance from porterior
+    - "drop_one.py": BCE change when dropping one component
+    - "just_one.py": BCE change when keeping only one component
+ - "generate_data.py" is the script used to generate the data used in the experiments.
+ - "analyze.py" is the script used to analyze the results and produce the plots.
+
+Latent dimension selection (4.2)
+--------------------------------
+
+This folder contain the code producing the results presented in Figure 2 of the main text.
+
+File description:
+- the "results" folder contain the posterior summaries and selection criterion for the five chains.
+    Naming convention: "Kx{x}_Ky{y}_seed{seed}_K{K}{quantity}" where x and y are the number of components
+    in the two models, seed is the random seed used to initialize the chains, and K is the number of
+    components fitted.
+ - "job.sh" is the script used to run the experiments on the SLURM cluster, which runs the following five scripts:
+    - "train.py": MCMC sampling of the model
+    - "mllk.py": Training predictive likelihood estimation
+    - "ic_x.py": Information criterion for X|Y
+    - "ic_y.py": Information criterion for Y|X
+    - "test.py": Testing metrics
+ - "oracle.py" is the script used to compute the oracle prediction metrics.
+ - "generate_data.py" is the script used to generate the data used in the experiments.
+ - "analyze.py" is the script used to analyze the results and produce the plots.
+
+Variants comparison (C.1)
+-------------------------
+
+This folder contain the code producing the results presented in Figures S4-7 of the supplementary material.
+
+File description:
+- the "results" folder contain the posterior summaries and selection criterion for the five chains.
+    Naming convention: "Kx{x}_Ky{y}_seed{seed}_model{truemodel}_model{fittedmodel}" where x and y are the number of components
+    in the two models, seed is the random seed used to initialize the chains, and truemodel and fittedmodel are the
+    models used to generate and fit the data, espectively.
+ - "job.sh" is the script used to run the experiments on the SLURM cluster, which runs the following five scripts:
+    - "train.py": MCMC sampling of the model
+    - "mllk.py": Training predictive likelihood estimation
+    - "ic_x.py": Information criterion for X|Y
+    - "ic_y.py": Information criterion for Y|X
+    - "predict.py": Testing metrics
+ - "generate_data.py" is the script used to generate the data used in the experiments.
+ - "analyze.py" is the script used to analyze the results and produce the S4, S5 and S6 figures.
+ - "estimation.py" is the script used to analyze the results and produce the S7 figure.
+
+Real data analyses (5, D)
+-------------------------
+
+This folder contain the code producing the results presented in Figures 3-6 of the main text
+and Figures S9-18 of the supplementary material.
+
+File description:
+- The various experiments are recognizable by the leading letter of the file name:
+    - C: correlation (Figure 4, third column)
+    - K: number of components (Figure 4, second column)
+    - R: comparison for prediction (Figure S9)
+    - S: estimation for various subjects (Figures 3, 5, 6, S10-18)
+    - V: variants comparison (Figure 4, first column)
