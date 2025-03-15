@@ -1,6 +1,9 @@
 BCI Experiments Scripts
 ========================
 
+pyproject.toml details all the dependencies required to run the experiments.
+The pypoetry package can also be used for management: the poetry.lock file is also included.
+
 Component importance (4.1)
 --------------------------
 
