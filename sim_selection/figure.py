@@ -12,8 +12,8 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-dir_results = "/experiments/sim_selection/results/"
-dir_figures = "/experiments/sim_selection/figures/"
+dir_results = "./experiments/sim_selection/results/"
+dir_figures = "./experiments/sim_selection/figures/"
 os.makedirs(dir_figures, exist_ok=True)
 
 # experiments
@@ -102,11 +102,11 @@ se_test = out_test.melt(
 value = pd.concat([value, value_test])
 se = pd.concat([se, se_test])
 
-# metrics = ["elpd_loo", ]
-# metrics_display = ["PSIS-LOO-CV", ]
+metrics = ["elpd_loo", ]
+metrics_display = ["PSIS-LOO-CV", ]
 
-metrics = ["elpd_waic", ]
-metrics_display = ["WAIC", ]
+# metrics = ["elpd_waic", ]
+# metrics_display = ["WAIC", ]
 
 value = value[value["metric"].isin(metrics)]
 value["metric"] = value["metric"].replace({k: v for k, v in zip(metrics, metrics_display)})
@@ -157,7 +157,7 @@ for i, metric in enumerate(metrics):
                     color="blue" if values["Target"].unique()[0] == "p(x|y)" else "red",
                 )
 plt.tight_layout()
-# plt.savefig(dir_figures + "psis-loo-cv.pdf")
-plt.savefig(dir_figures + "main.pdf")
+plt.savefig(dir_figures + "psis-loo-cv_defense.png")
+# plt.savefig(dir_figures + "main.pdf")
 
 # -----------------------------------------------------------------------------

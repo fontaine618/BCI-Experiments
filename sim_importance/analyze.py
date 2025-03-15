@@ -80,8 +80,9 @@ df = pd.concat(out)
 df["component"] += 1
 df["best_match"] += 1
 
-fig, axs = plt.subplots(4, 5, figsize=(12, 8), sharex="all", sharey="row",
-                        gridspec_kw={'height_ratios': [4, 4, 4, 6]})
+# fig, axs = plt.subplots(4, 5, figsize=(12, 8), sharex="all", sharey="row",
+fig, axs = plt.subplots(2, 5, figsize=(12, 5), sharex="all", sharey="row",
+                        gridspec_kw={'height_ratios': [4, 5]})
 for seed in seeds:
     df_seed = df[df["seed"] == seed]
     df_seed = df_seed.sort_values("best_match", ascending=True)
@@ -93,59 +94,73 @@ for seed in seeds:
     #     y="importance",
     #     ax=axs[0, seed]
     # )
-    axs[0, seed].bar(
-        x=df_seed["x"]-0.5,
-        height=df_seed["importance"],
-        color=[f"C{i}" for i in range(8)],
-        width=1.
-    )
+    # axs[0, seed].bar(
+    #     x=df_seed["x"]-0.5,
+    #     height=df_seed["importance"],
+    #     color=[f"C{i}" for i in range(8)],
+    #     width=1.
+    # )
     axs[0, seed].set_title(f"Chain {seed+1}")
-    axs[0, seed].set_xlabel("")
-    axs[0, seed].set_ylabel("Importance" if seed == 0 else "")
-    axs[0, seed].grid(axis="x")
-    axs[0, seed].autoscale(tight=True, axis="x")
+    # axs[0, seed].set_xlabel("")
+    # axs[0, seed].set_ylabel("Importance" if seed == 0 else "")
+    # axs[0, seed].grid(axis="x")
+    # axs[0, seed].autoscale(tight=True, axis="x")
     # bce diff
     ref = df_seed[df_seed["component"] == 1]["reference_drop"].values[0]
-    axs[1, seed].bar(
+    axs[0, seed].bar(
         x=df_seed["x"]-0.5,
         height=df_seed["diff_bce_drop"],
         bottom=df_seed["reference_drop"],
         color=[f"C{i}" for i in range(8)],
         width=1.
     )
-    axs[1, seed].set_xlabel("")
-    axs[1, seed].set_ylabel("BCE change (drop one)" if seed == 0 else "")
-    axs[1, seed].set_xticks(range(1, 9))
-    axs[1, seed].grid(axis="x")
-    axs[1, seed].axhline(ref, color="black", linestyle="--")
-    axs[1, seed].autoscale(tight=True, axis="x", enable=True, )
+    axs[0, seed].set_xlabel("")
+    axs[0, seed].set_ylabel("BCE change (drop one)" if seed == 0 else "")
+    axs[0, seed].set_xticks(range(1, 9))
+    axs[0, seed].grid(axis="x")
+    axs[0, seed].axhline(ref, color="black", linestyle="--")
+    axs[0, seed].autoscale(tight=True, axis="x", enable=True, )
+    # axs[1, seed].bar(
+    #     x=df_seed["x"]-0.5,
+    #     height=df_seed["diff_bce_drop"],
+    #     bottom=df_seed["reference_drop"],
+    #     color=[f"C{i}" for i in range(8)],
+    #     width=1.
+    # )
+    # axs[1, seed].set_xlabel("")
+    # axs[1, seed].set_ylabel("BCE change (drop one)" if seed == 0 else "")
+    # axs[1, seed].set_xticks(range(1, 9))
+    # axs[1, seed].grid(axis="x")
+    # axs[1, seed].axhline(ref, color="black", linestyle="--")
+    # axs[1, seed].autoscale(tight=True, axis="x", enable=True, )
     # axs[1, seed].set_ylim(
     #     axs[1, seed].get_ylim()[0],
     #     axs[1, seed].get_ylim()[1] + 0.5
     # )
     # bce diff
-    ref = df_seed[df_seed["component"] == 1]["reference_add"].values[0]
-    axs[2, seed].bar(
-        x=df_seed["x"]-0.5,
-        height=df_seed["diff_bce_add"],
-        bottom=df_seed["reference_add"],
-        color=[f"C{i}" for i in range(8)],
-        width=1.
-    )
-    axs[2, seed].set_xlabel("")
-    axs[2, seed].set_ylabel("BCE change (add one)" if seed == 0 else "")
-    axs[2, seed].set_xticks(range(1, 9))
-    axs[2, seed].grid(axis="x")
-    axs[2, seed].axhline(ref, color="black", linestyle="--")
-    axs[2, seed].set_ylim(
-        axs[2, seed].get_ylim()[0] - 0.5,
-        axs[2, seed].get_ylim()[1]
-    )
-    axs[2, seed].autoscale(tight=True, axis="x")
+    # ref = df_seed[df_seed["component"] == 1]["reference_add"].values[0]
+    # axs[2, seed].bar(
+    #     x=df_seed["x"]-0.5,
+    #     height=df_seed["diff_bce_add"],
+    #     bottom=df_seed["reference_add"],
+    #     color=[f"C{i}" for i in range(8)],
+    #     width=1.
+    # )
+    # axs[2, seed].set_xlabel("")
+    # axs[2, seed].set_ylabel("BCE change (add one)" if seed == 0 else "")
+    # axs[2, seed].set_xticks(range(1, 9))
+    # axs[2, seed].grid(axis="x")
+    # axs[2, seed].axhline(ref, color="black", linestyle="--")
+    # axs[2, seed].set_ylim(
+    #     axs[2, seed].get_ylim()[0] - 0.5,
+    #     axs[2, seed].get_ylim()[1]
+    # )
+    # axs[2, seed].autoscale(tight=True, axis="x")
     # corr mat
+    row = 1
     sns.heatmap(
         corr[seed].cpu()[:, df_seed["component"].values-1],
-        ax=axs[3, seed],
+        ax=axs[row, seed],
         xticklabels=range(1, 9),
         yticklabels=range(1, 9),
         vmin=0,
@@ -153,19 +168,19 @@ for seed in seeds:
         cmap="coolwarm",
         cbar=False
     )
-    axs[3, seed].set_xlabel("Estimated component")
-    axs[3, seed].set_ylabel("Cosine similarity with \nTrue Component" if seed == 0 else "")
+    axs[row, seed].set_xlabel("Estimated component")
+    axs[row, seed].set_ylabel("Cosine similarity with \nTrue Component" if seed == 0 else "")
     for x, y in zip(df_seed["x"], df_seed["best_match"]):
-        axs[3, seed].text(x - 0.5, y - 0.5, "O", ha="center", va="center", color="white")
+        axs[row, seed].text(x - 0.5, y - 0.5, "O", ha="center", va="center", color="white")
     for k in [1, 3, 5]:
-        axs[3, seed].axhline(k - 0.5, color="white", linestyle="--")
+        axs[row, seed].axhline(k - 0.5, color="white", linestyle="--")
     top3 = df_seed.sort_values("diff_bce_drop", ascending=True).head(3)["x"].values
     for k in top3:
         # top three components
-        axs[3, seed].axvline(k - 0.5, color="white", linestyle="--")
+        axs[row, seed].axvline(k - 0.5, color="white", linestyle="--")
 
 plt.tight_layout()
-plt.savefig(dir_figures + "importance.pdf")
+plt.savefig(dir_figures + "importance_defense.png")
 
 # =============================================================================
 # Ground truth importance

@@ -21,3 +21,6 @@ python -O S_train.py $SLURM_ARRAY_TASK_ID
 python -O S_mllk.py $SLURM_ARRAY_TASK_ID
 python -O S_importance.py $SLURM_ARRAY_TASK_ID
 # Subjects in Ma (2022): 114,117,121,146,151,158,171,172,177,183
+# From Thompson (2014):
+# - Controls: 114,117,121,171,172,177,183
+# - ALS: 146,151,158,
