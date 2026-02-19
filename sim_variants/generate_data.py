@@ -4,7 +4,7 @@ import torch
 import pickle
 import itertools as it
 import numpy as np
-sys.path.insert(1, '/storage/work/spf5519/BCI/source/')
+sys.path.insert(1, '/storage/work/spf5519/BCI')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import BFFModel
 

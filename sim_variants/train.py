@@ -4,7 +4,7 @@ import torch
 import time
 import pickle
 import itertools as it
-sys.path.insert(1, '/storage/work/spf5519/BCI/source/')
+sys.path.insert(1, '/storage/work/spf5519/BCI')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
