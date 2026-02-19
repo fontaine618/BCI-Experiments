@@ -35,7 +35,7 @@ file = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}"
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
 
 # model
-n_iter = 10_000
+n_iter = 50_000
 cor = 0.95
 shrinkage = 3.
 heterogeneity = 3.
@@ -136,7 +136,7 @@ for i in range(n_iter):
 # =============================================================================
 # SAVE CHAIN
 out = model.results(
-    start=5_000,
+    start=10_000,
     thin=10
 )
 with open(dir_chains + file_chain + f".chain", "wb") as f:
