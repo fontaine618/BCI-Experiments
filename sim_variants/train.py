@@ -4,7 +4,7 @@ import torch
 import time
 import pickle
 import itertools as it
-sys.path.insert(1, '/storage/work/spf5519/BCI/source')
+sys.path.insert(1, '/storage/work/spf5519/BCI/source/')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
@@ -124,11 +124,17 @@ t0 = time.time()
 t00 = t0
 for i in range(n_iter):
     model.sample()
-    if i % 100 == 0:
+    if i % 1000 == 0:
         print(f"{i:>10} "
               f"{model.variables['observations']._log_density_history[-1]:>20.4f}"
               f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")
         t00 = time.time()
+        print(model.variables["smgp_scaling"]["nontarget_process"]._mala)
+        print(model.variables["smgp_scaling"]["target_process"]._mala)
+        print(model.variables["smgp_scaling"]["mixing_process"]._mala)
+        print(model.variables["smgp_factors"]["nontarget_process"]._mala)
+        print(model.variables["smgp_factors"]["target_process"]._mala)
+        print(model.variables["smgp_factors"]["mixing_process"]._mala)
 # -----------------------------------------------------------------------------
 
 

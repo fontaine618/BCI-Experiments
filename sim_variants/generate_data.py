@@ -4,13 +4,13 @@ import torch
 import pickle
 import itertools as it
 import numpy as np
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
+sys.path.insert(1, '/storage/work/spf5519/BCI/source/')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import BFFModel
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simon/Documents/BCI/experiments/sim_variants/data/"
+dir_data = "/storage/work/spf5519/BCI/experiments/sim_variants/data/"
 os.makedirs(dir_data, exist_ok=True)
 
 # dimensions
