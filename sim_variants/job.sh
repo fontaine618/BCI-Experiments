@@ -13,7 +13,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --gpus-per-node=1
 #SBATCH --mem-per-gpu=16g
-#SBATCH --output=/home/%u/logs/%x-%j.log
+#SBATCH --output=/scratch/%u/logs/BCI/%x-%j.log
 # The application(s) to execute along with its input arguments and options:
 module load python/3.11.2
 source /storage/work/spf5519/BCI/bci/bin/activate
