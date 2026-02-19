@@ -7,7 +7,7 @@
 #SBATCH --time=10:00:00
 #SBATCH --array=0
 #SBATCH --account=statsresearch_cr_default
-#SBATCH --partition=gpu
+#SBATCH --partition=standard
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
