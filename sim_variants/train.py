@@ -4,7 +4,7 @@ import torch
 import time
 import pickle
 import itertools as it
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/storage/work/spf5519/BCI/source')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
@@ -13,8 +13,8 @@ from source.bffmbci.bffm import DynamicRegressionCovarianceStaticMean
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simfont/Documents/BCI/experiments/sim_variants/data/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/sim_variants/chains/"
+dir_data = "/storage/work/spf5519/BCI/experiments/sim_variants/data/"
+dir_chains = "/storage/work/spf5519/BCI/experiments/sim_variants/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # experiments
