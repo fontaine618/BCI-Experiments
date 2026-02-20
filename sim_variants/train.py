@@ -5,7 +5,7 @@ import time
 import pickle
 import itertools as it
 sys.path.insert(1, '/storage/work/spf5519/BCI')
-torch.set_default_device('cuda')
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
 from source.bffmbci.bffm import StaticCovarianceRegressionMean
@@ -59,9 +59,9 @@ stimulus_to_stimulus_interval = 5
 
 # =============================================================================
 # LOAD DATA
-observations = torch.load(dir_data + file + ".observations").to("cuda")
-order = torch.load(dir_data + file + ".order").to("cuda")
-target = torch.load(dir_data + file + ".target").to("cuda")
+observations = torch.load(dir_data + file + ".observations")
+order = torch.load(dir_data + file + ".order")
+target = torch.load(dir_data + file + ".target")
 variables = pickle.load(open(dir_data + file + ".variables", "rb"))
 # -----------------------------------------------------------------------------
 
