@@ -59,9 +59,9 @@ stimulus_to_stimulus_interval = 5
 
 # =============================================================================
 # LOAD DATA
-observations = torch.load(dir_data + file + ".observations")
-order = torch.load(dir_data + file + ".order")
-target = torch.load(dir_data + file + ".target")
+observations = torch.load(dir_data + file + ".observations").to("cuda")
+order = torch.load(dir_data + file + ".order").to("cuda")
+target = torch.load(dir_data + file + ".target").to("cuda")
 variables = pickle.load(open(dir_data + file + ".variables", "rb"))
 # -----------------------------------------------------------------------------
 
