@@ -10,13 +10,14 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 import matplotlib.pyplot as plt
 import seaborn as sns
 plt.style.use('seaborn-whitegrid')
-
+import scipy
 
 # =============================================================================
 # SETUP
 dir_data = "/home/simon/Documents/BCI/experiments/revision/uncertainty/data/"
 dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains/"
 dir_chains = "/home/simon/Documents/BCI/experiments/revision/uncertainty/chains2/"
+dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains2/"
 dir_figures = "/home/simon/Documents/BCI/experiments/revision/uncertainty/figures/"
 
 os.makedirs(dir_figures, exist_ok=True)
@@ -109,22 +110,22 @@ for seed, Kx, Ky, mtrue, mfitted in combinations:
     )
 
     # coverage
-    mu0_e_upper = torch.quantile(mu0_e, 0.975, dim=0, keepdim=True)
-    mu0_e_lower = torch.quantile(mu0_e, 0.025, dim=0, keepdim=True)
-    mu1_e_upper = torch.quantile(mu1_e, 0.975, dim=0, keepdim=True)
-    mu1_e_lower = torch.quantile(mu1_e, 0.025, dim=0, keepdim=True)
-    # mu0_e_upper = torch.max(mu0_e, dim=0, keepdim=True)[0]
-    # mu0_e_lower = torch.min(mu0_e, dim=0, keepdim=True)[0]
-    # mu1_e_upper = torch.max(mu1_e, dim=0, keepdim=True)[0]
-    # mu1_e_lower = torch.min(mu1_e, dim=0, keepdim=True)[0]
-    # mu0_e_mean = torch.mean(mu0_e, dim=0, keepdim=True)
-    # mu0_e_sd = torch.std(mu0_e, dim=0, keepdim=True)
-    # mu1_e_mean = torch.mean(mu1_e, dim=0, keepdim=True)
-    # mu1_e_sd = torch.std(mu1_e, dim=0, keepdim=True)
-    # mu0_e_lower = mu0_e_mean - 10* mu0_e_sd
-    # mu0_e_upper = mu0_e_mean + 10 * mu0_e_sd
-    # mu1_e_lower = mu1_e_mean - 10 * mu1_e_sd
-    # mu1_e_upper = mu1_e_mean + 10 * mu1_e_sd
+    dim = mu0_e.shape[2]
+    alpha = 0.025 / dim
+    mu0_e_upper = torch.quantile(mu0_e, 1. - alpha, dim=0, keepdim=True)
+    mu0_e_lower = torch.quantile(mu0_e, alpha, dim=0, keepdim=True)
+    mu1_e_upper = torch.quantile(mu1_e, 1-alpha, dim=0, keepdim=True)
+    mu1_e_lower = torch.quantile(mu1_e, alpha, dim=0, keepdim=True)
+    mu0_e_mean = torch.mean(mu0_e, dim=0, keepdim=True)
+    mu0_e_sd = torch.std(mu0_e, dim=0, keepdim=True)
+    mu1_e_mean = torch.mean(mu1_e, dim=0, keepdim=True)
+    mu1_e_sd = torch.std(mu1_e, dim=0, keepdim=True)
+    mult = scipy.stats.norm.ppf(1 - alpha)
+    print(mult)
+    mu0_e_lower = mu0_e_mean - mult * mu0_e_sd
+    mu0_e_upper = mu0_e_mean + mult * mu0_e_sd
+    mu1_e_lower = mu1_e_mean - mult * mu1_e_sd
+    mu1_e_upper = mu1_e_mean + mult * mu1_e_sd
     coverage0 = torch.mean((mu0_t > mu0_e_lower) * (mu0_t < mu0_e_upper) + 0.0).item()
     coverage1 = torch.mean((mu1_t > mu1_e_lower) * (mu1_t < mu1_e_upper) + 0.0).item()
     width0 = torch.mean(mu0_e_upper - mu0_e_lower).item()
@@ -181,5 +182,17 @@ for seed, Kx, Ky, mtrue, mfitted in combinations:
 
     plt.tight_layout()
     plt.savefig(dir_figures + file_out + "_channels.pdf", bbox_inches='tight')
+    plt.close()
+
+    # Plot log-likelihood across iterations
+    log_likelihoods = results.chains["log_likelihood.sum"].squeeze(0).cpu().numpy()
+    plt.figure(figsize=(8, 4))
+    plt.plot(log_likelihoods, color='purple')
+    plt.xlabel('Iteration')
+    plt.ylabel('Log-Likelihood')
+    plt.title(f'Log-Likelihood across iterations\nTrue: {mtrue}, Fitted: {mfitted}')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(dir_figures + file_out + "_loglikelihood.pdf", bbox_inches='tight')
     plt.close()
     # --------------------------------------------------------------------------

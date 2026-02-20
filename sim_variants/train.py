@@ -5,11 +5,15 @@ import time
 import pickle
 import itertools as it
 sys.path.insert(1, '/storage/work/spf5519/BCI')
+# sys.path.insert(1, '/home/simon/Documents/BCI')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
 from source.bffmbci.bffm import StaticCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicRegressionCovarianceStaticMean
+from source.bffmbci.bffm_map import DynamicRegressionCovarianceRegressionMeanMAP
+from source.bffmbci.bffm_map import DynamicCovarianceRegressionMeanMAP
+from source.bffmbci.bffm_map import StaticCovarianceRegressionMeanMAP
 
 # CHeck if we are using the GPU
 if torch.cuda.is_available():
@@ -21,6 +25,8 @@ else:
 # SETUP
 dir_data = "/storage/work/spf5519/BCI/experiments/sim_variants/data/"
 dir_chains = "/storage/work/spf5519/BCI/experiments/sim_variants/chains/"
+# dir_data = "/home/simon/Documents/BCI/experiments/sim_variants/data/"
+# dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # experiments
@@ -41,7 +47,7 @@ file = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}"
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
 
 # model
-n_iter = 20_000
+n_iter = 10_000
 cor = 0.95
 shrinkage = 3.
 heterogeneity = 3.
@@ -115,7 +121,23 @@ torch.manual_seed(seed)
 status = False
 while not status:
     try:
-        model.initialize_chain()
+        # model.initialize_chain()
+        MAPModel = {
+            "LR-DCR": DynamicRegressionCovarianceRegressionMeanMAP,
+            "LR-DC": DynamicCovarianceRegressionMeanMAP,
+            "LR-SC": StaticCovarianceRegressionMeanMAP,
+        }[mfitted]
+        MAPmodel = MAPModel(
+            sequences=observations,
+            stimulus_order=order,
+            target_stimulus=target,
+            **settings,
+            **prior_parameters
+        )
+        MAPmodel.initialize()
+        MAPmodel.fit(lr=0.01, max_iter=1000, tol=1e-6)
+        map = MAPmodel.export_variables()
+        model.data = map
         status = True
     except Exception as e:
         print(e)
@@ -135,12 +157,6 @@ for i in range(n_iter):
               f"{model.variables['observations']._log_density_history[-1]:>20.4f}"
               f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")
         t00 = time.time()
-        print(model.variables["smgp_scaling"]["nontarget_process"]._mala)
-        print(model.variables["smgp_scaling"]["target_process"]._mala)
-        print(model.variables["smgp_scaling"]["mixing_process"]._mala)
-        print(model.variables["smgp_factors"]["nontarget_process"]._mala)
-        print(model.variables["smgp_factors"]["target_process"]._mala)
-        print(model.variables["smgp_factors"]["mixing_process"]._mala)
 # -----------------------------------------------------------------------------
 
 

@@ -6,7 +6,7 @@
 #SBATCH --mail-user=simfont@umich.edu
 #SBATCH --time=10:00:00
 #SBATCH --array=0
-#SBATCH --account=statsresearch_cr_default
+#SBATCH --account=statsresearch_sc_default
 #SBATCH --partition=standard
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1

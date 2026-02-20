@@ -12,7 +12,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 # =============================================================================
 # SETUP
 dir_results = "/home/simon/Documents/BCI/experiments/sim_variants/results/"
-dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains/"
+dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains2/"
 dir_data = "/home/simon/Documents/BCI/experiments/sim_variants/data/"
 dir_figures = "/home/simon/Documents/BCI/experiments/sim_variants/figures/"
 
