@@ -41,7 +41,7 @@ file = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}"
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
 
 # model
-n_iter = 500
+n_iter = 20_000
 cor = 0.95
 shrinkage = 3.
 heterogeneity = 3.
@@ -130,7 +130,7 @@ t0 = time.time()
 t00 = t0
 for i in range(n_iter):
     model.sample()
-    if i % 10 == 0:
+    if i % 1000 == 0:
         print(f"{i:>10} "
               f"{model.variables['observations']._log_density_history[-1]:>20.4f}"
               f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")
@@ -148,7 +148,7 @@ for i in range(n_iter):
 # =============================================================================
 # SAVE CHAIN
 out = model.results(
-    start=100,
+    start=5_000,
     thin=10
 )
 with open(dir_chains + file_chain + f".chain", "wb") as f:
