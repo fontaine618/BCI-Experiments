@@ -5,11 +5,17 @@ import time
 import pickle
 import itertools as it
 sys.path.insert(1, '/storage/work/spf5519/BCI')
-torch.set_default_tensor_type(torch.cuda.FloatTensor)
+torch.set_default_device('cuda')
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
 from source.bffmbci.bffm import StaticCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicRegressionCovarianceStaticMean
+
+# CHeck if we are using the GPU
+if torch.cuda.is_available():
+    print("Using GPU:", torch.cuda.get_device_name(0))
+else:
+    print("Using CPU")
 
 # =============================================================================
 # SETUP
@@ -35,7 +41,7 @@ file = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}"
 file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
 
 # model
-n_iter = 50_000
+n_iter = 500
 cor = 0.95
 shrinkage = 3.
 heterogeneity = 3.
@@ -124,7 +130,7 @@ t0 = time.time()
 t00 = t0
 for i in range(n_iter):
     model.sample()
-    if i % 1000 == 0:
+    if i % 10 == 0:
         print(f"{i:>10} "
               f"{model.variables['observations']._log_density_history[-1]:>20.4f}"
               f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")
@@ -142,7 +148,7 @@ for i in range(n_iter):
 # =============================================================================
 # SAVE CHAIN
 out = model.results(
-    start=10_000,
+    start=100,
     thin=10
 )
 with open(dir_chains + file_chain + f".chain", "wb") as f:
