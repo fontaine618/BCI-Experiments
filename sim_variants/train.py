@@ -4,47 +4,44 @@ import torch
 import time
 import pickle
 import itertools as it
-sys.path.insert(1, '/storage/work/spf5519/BCI')
-# sys.path.insert(1, '/home/simon/Documents/BCI')
+# sys.path.insert(1, '/storage/work/spf5519/BCI')
+sys.path.insert(1, '/home/simon/Documents/BCI')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
 from source.bffmbci.bffm import DynamicCovarianceRegressionMean
 from source.bffmbci.bffm import StaticCovarianceRegressionMean
-from source.bffmbci.bffm import DynamicRegressionCovarianceStaticMean
+from source.bffmbci.bffm import CompoundSymmetryCovarianceRegressionMean
 from source.bffmbci.bffm_map import DynamicRegressionCovarianceRegressionMeanMAP
 from source.bffmbci.bffm_map import DynamicCovarianceRegressionMeanMAP
 from source.bffmbci.bffm_map import StaticCovarianceRegressionMeanMAP
-
-# CHeck if we are using the GPU
-if torch.cuda.is_available():
-    print("Using GPU:", torch.cuda.get_device_name(0))
-else:
-    print("Using CPU")
+from source.bffmbci.bffm_map import CompoundSymmetryCovarianceRegressionMeanMAP
 
 # =============================================================================
 # SETUP
-dir_data = "/storage/work/spf5519/BCI/experiments/sim_variants/data/"
-dir_chains = "/storage/work/spf5519/BCI/experiments/sim_variants/chains/"
-# dir_data = "/home/simon/Documents/BCI/experiments/sim_variants/data/"
-# dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains/"
+# dir_data = "/storage/work/spf5519/BCI/experiments/sim_variants/data/"
+# dir_chains = "/storage/work/spf5519/BCI/experiments/sim_variants/chains/"
+dir_data = "/home/simon/Documents/BCI/experiments/sim_variants/data/"
+dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # experiments
 seeds = range(1)
 Kxs = [8]
 Kys = [5]
-models = ["LR-DCR", "LR-DC", "LR-SC"]
+models_true = ["LR-DCR", "LR-DC", "FR-CS"]
+models_fitted = ["LR-DCR", "LR-DC", "FR-CS"]
+noises = [2., 5.]
 
 # combinations
-combinations = it.product(seeds, Kxs, Kys, models, models)
+combinations = it.product(seeds, Kxs, Kys, noises, models_true, models_fitted)
 
 # current experiment from command line
 i = int(sys.argv[1])
-seed, Kx, Ky, mtrue, mfitted = list(combinations)[i]
+seed, Kx, Ky, noise, mtrue, mfitted = list(combinations)[i]
 
 # file
-file = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}"
-file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
+file = f"Kx{Kx}_Ky{Ky}_seed{seed}_gen{mtrue}_noise{noise}"
+file_chain = file + f"_fitted{mfitted}"
 
 # model
 n_iter = 10_000
@@ -102,6 +99,7 @@ Model = {
     "LR-DCR": DynamicRegressionCovarianceRegressionMean,
     "LR-DC": DynamicCovarianceRegressionMean,
     "LR-SC": StaticCovarianceRegressionMean,
+    "FR-CS": CompoundSymmetryCovarianceRegressionMean
 }[mfitted]
 
 model = Model(
@@ -118,29 +116,24 @@ model = Model(
 # =============================================================================
 # INITIALIZE CHAIN
 torch.manual_seed(seed)
-status = False
-while not status:
-    try:
-        # model.initialize_chain()
-        MAPModel = {
-            "LR-DCR": DynamicRegressionCovarianceRegressionMeanMAP,
-            "LR-DC": DynamicCovarianceRegressionMeanMAP,
-            "LR-SC": StaticCovarianceRegressionMeanMAP,
-        }[mfitted]
-        MAPmodel = MAPModel(
-            sequences=observations,
-            stimulus_order=order,
-            target_stimulus=target,
-            **settings,
-            **prior_parameters
-        )
-        MAPmodel.initialize()
-        MAPmodel.fit(lr=0.01, max_iter=1000, tol=1e-6)
-        map = MAPmodel.export_variables()
-        model.data = map
-        status = True
-    except Exception as e:
-        print(e)
+MAPModel = {
+    "LR-DCR": DynamicRegressionCovarianceRegressionMeanMAP,
+    "LR-DC": DynamicCovarianceRegressionMeanMAP,
+    "LR-SC": StaticCovarianceRegressionMeanMAP,
+    "FR-CS": CompoundSymmetryCovarianceRegressionMeanMAP
+}[mfitted]
+MAPmodel = MAPModel(
+    sequences=observations,
+    stimulus_order=order,
+    target_stimulus=target,
+    **settings,
+    **prior_parameters
+)
+if mfitted != "FR-CS":
+    MAPmodel.initialize()
+    MAPmodel.fit(lr=0.01, max_iter=10000, tol=1e-6)
+    map = MAPmodel.export_variables()
+    model.data = map
 # -----------------------------------------------------------------------------
 
 
@@ -152,7 +145,7 @@ t0 = time.time()
 t00 = t0
 for i in range(n_iter):
     model.sample()
-    if i % 1000 == 0:
+    if i % 10 == 0:
         print(f"{i:>10} "
               f"{model.variables['observations']._log_density_history[-1]:>20.4f}"
               f"  dt={time.time() - t00:>20.4f}   elapsed={time.time() - t0:20.4f}")

@@ -4,13 +4,15 @@ import torch
 import pickle
 import itertools as it
 import numpy as np
-sys.path.insert(1, '/storage/work/spf5519/BCI')
+# sys.path.insert(1, '/storage/work/spf5519/BCI')
+sys.path.insert(1, '/home/simon/Documents/BCI')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.bffmbci.bffm import BFFModel
 
 # =============================================================================
 # SETUP
-dir_data = "/storage/work/spf5519/BCI/experiments/sim_variants/data/"
+# dir_data = "/storage/work/spf5519/BCI/experiments/sim_variants/data/"
+dir_data = "/home/simon/Documents/BCI/experiments/sim_variants/data/"
 os.makedirs(dir_data, exist_ok=True)
 
 # dimensions
@@ -27,10 +29,11 @@ n_timepoints = 11 * stimulus_to_stimulus_interval + stimulus_window
 seeds = range(1)
 Kxs = [8]
 Kys = [5]
-models = ["LR-DCR", "LR-DC", "LR-SC"]
+models_true = ["LR-DCR", "LR-DC", "FR-CS"]
+noises = [2., 5.]
 
 # combinations
-combinations = it.product(seeds, Kxs, Kys, models)
+combinations = it.product(seeds, Kxs, Kys, noises, models_true)
 
 # model
 cor = 0.95
@@ -55,7 +58,7 @@ prior_parameters = {
 
 # =============================================================================
 # GENERATE DATA
-for seed, Kx, Ky, mname in combinations:
+for seed, Kx, Ky, noise, mname in combinations:
 
 
     # =============================================================================
@@ -87,7 +90,8 @@ for seed, Kx, Ky, mname in combinations:
     variables = dict()
     torch.manual_seed(7) # seed for true signal generation
 
-    variables["observation_variance"] = 5. + 5. * torch.rand(n_channels)
+    # set noise level between noise and 2xnoise across channels
+    variables["observation_variance"] = noise + noise * torch.rand(n_channels)
 
     L = torch.randint(-1, 2, (n_channels, Kx)) * 1.
     Lcolnorm = L.pow(2.).sum(0)
@@ -195,7 +199,7 @@ for seed, Kx, Ky, mname in combinations:
 
     # =============================================================================
     # SAVE
-    name = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mname}"
+    name = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mname}_noise{noise}"
     torch.save(model.variables["observations"].data, dir_data + name + ".observations")
     torch.save(model.variables["sequence_data"].order.data, dir_data + name + ".order")
     torch.save(model.variables["sequence_data"].target.data, dir_data + name + ".target")
@@ -215,7 +219,7 @@ for seed, Kx, Ky, mname in combinations:
 
     # =============================================================================
     # SAVE
-    name = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mname}"
+    name = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mname}_noise{noise}"
     torch.save(model.variables["observations"].data, dir_data + name + ".observations")
     torch.save(model.variables["sequence_data"].order.data, dir_data + name + ".order")
     torch.save(model.variables["sequence_data"].target.data, dir_data + name + ".target")
