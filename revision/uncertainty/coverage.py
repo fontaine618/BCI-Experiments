@@ -17,7 +17,7 @@ import scipy
 dir_data = "/home/simon/Documents/BCI/experiments/revision/uncertainty/data/"
 dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains/"
 dir_chains = "/home/simon/Documents/BCI/experiments/revision/uncertainty/chains2/"
-dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains2/"
+dir_chains = "/home/simon/Documents/BCI/experiments/sim_variants/chains3/"
 dir_figures = "/home/simon/Documents/BCI/experiments/revision/uncertainty/figures/"
 
 os.makedirs(dir_figures, exist_ok=True)
