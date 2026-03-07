@@ -3,7 +3,7 @@ import os
 import torch
 import time
 import pickle
-sys.path.insert(1, '/storage/work/spf5519/BCI/src')
+sys.path.insert(1, '/storage/work/spf5519/BCI')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean

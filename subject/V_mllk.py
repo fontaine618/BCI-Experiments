@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import sys
-sys.path.insert(1, '/storage/work/spf5519/BCI/src')
+sys.path.insert(1, '/storage/work/spf5519/BCI')
 import torch
 import itertools as it
 from source.bffmbci import BFFMResults
