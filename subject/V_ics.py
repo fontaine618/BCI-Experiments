@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import sys
-sys.path.insert(1, '/home/simon/Documents/BCI/src')
+sys.path.insert(1, '/storage/work/spf5519/BCI/src')
 import torch
 import itertools as it
 import arviz as az
@@ -13,15 +13,15 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
-dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
-dir_data = "/home/simon/Documents/BCI/K_Protocol/"
+dir_results = "/storage/work/spf5519/BCI/experiments/subject/results/"
+dir_chains = "/storage/work/spf5519/BCI/experiments/subject/chains/"
+dir_data = "/storage/work/spf5519/BCI/K_Protocol/"
 os.makedirs(dir_results, exist_ok=True)
 
 
 # file
 type = "TRN"
-subject = "114"#str(sys.argv[1])
+subject = str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 
@@ -33,7 +33,7 @@ downsample = 8
 
 # model
 seed = 0
-V = "CS"#["LR-DCR", "LR-DC", "LR-SC", "CS"][int(sys.argv[2])]
+V = ["LR-DCR", "LR-DC", "LR-SC", "CS"][int(sys.argv[2])]
 K = 17 if V == "CS" else 8
 n_iter = 20_000
 sparse = False

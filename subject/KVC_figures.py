@@ -12,12 +12,18 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-subject = "114"
+subject = "117"
+ic_method = "loo"  # Choose "loo" or "waic"
 dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
 dir_chains = f"/home/simfont/Documents/BCI/experiments/subject/chains/"
 dir_figures = f"/home/simon/Documents/BCI/experiments/subject/figures/K{subject}/"
 dir_results = f"/home/simon/Documents/BCI/experiments/subject/results/"
 os.makedirs(dir_figures, exist_ok=True)
+
+# Determine column names based on ic_method
+ic_col = f"elpd_{ic_method}"
+ic_se_col = f"elpd_{ic_method}_se"
+ic_label = "PSIS-LOO-CV" if ic_method == "loo" else "WAIC"
 
 # -----------------------------------------------------------------------------
 
@@ -27,7 +33,7 @@ os.makedirs(dir_figures, exist_ok=True)
 # =============================================================================
 # GATHER RESULTS (K)
 results = []
-for K in range(1, 13):
+for K in range(2, 13):
     file = f"K{subject}_allreps_K{K}"
     icx = pd.read_csv(dir_results + file + ".icx", index_col=0).T
     icx["IC"] = "x|y"
@@ -44,7 +50,7 @@ K_results = pd.concat(results)
 # =============================================================================
 # GATHER RESULTS (V)
 results = []
-for V in ["LR-DCR", "LR-DC", "LR-SC", ]:
+for V in ["LR-DCR", "LR-DC", "LR-SC", "CS"]:
     file = f"K{subject}_allreps_{V}"
     icx = pd.read_csv(dir_results + file + ".icx", index_col=0).T
     icx["IC"] = "x|y"
@@ -88,9 +94,9 @@ fig, axes = plt.subplots(2, 3, figsize=(10, 5), sharey="none", sharex="col")
 # IC x
 ax = axes[0, 1]
 which = K_results["IC"] == "x|y"
-values = K_results[which]["elpd_loo"]
+values = K_results[which][ic_col]
 xs = K_results[which]["K"]
-ses = K_results[which]["elpd_loo_se"]
+ses = K_results[which][ic_se_col]
 ax.errorbar(xs, values, yerr=ses, fmt='.')
 ax.set_title("LR-DCR, Correlation = 0.5")
 ax.set_xticks([0, 2, 4, 6, 8, 10, 12])
@@ -98,9 +104,9 @@ ax.set_xticks([0, 2, 4, 6, 8, 10, 12])
 # IC y
 ax = axes[1, 1]
 which = K_results["IC"] == "y|x"
-values = K_results[which]["elpd_loo"]
+values = K_results[which][ic_col]
 xs = K_results[which]["K"]
-ses = K_results[which]["elpd_loo_se"]
+ses = K_results[which][ic_se_col]
 ax.errorbar(xs, values, yerr=ses, fmt='.')
 ax.set_xlabel("Number of components")
 ax.set_xticks([0, 2, 4, 6, 8, 10, 12])
@@ -110,21 +116,21 @@ ax.set_xticks([0, 2, 4, 6, 8, 10, 12])
 # IC x
 ax = axes[0, 0]
 which = V_results["IC"] == "x|y"
-values = V_results[which]["elpd_loo"]
+values = V_results[which][ic_col]
 xs = V_results[which]["Model"]
-ses = V_results[which]["elpd_loo_se"]
+ses = V_results[which][ic_se_col]
 ax.errorbar(xs, values, yerr=ses, fmt='.')
-ax.set_ylabel("PSIS-LOO-CV (x|y)")
+ax.set_ylabel(f"{ic_label} (x|y)")
 ax.set_title("K=8, Correlation = 0.5")
 
 
 # IC y
 ax = axes[1, 0]
 which = V_results["IC"] == "y|x"
-values = V_results[which]["elpd_loo"]
+values = V_results[which][ic_col]
 xs = V_results[which]["Model"]
-ses = V_results[which]["elpd_loo_se"]
-ax.set_ylabel("PSIS-LOO-CV (y|x)")
+ses = V_results[which][ic_se_col]
+ax.set_ylabel(f"{ic_label} (y|x)")
 ax.errorbar(xs, values, yerr=ses, fmt='.')
 ax.set_xlabel("Model")
 
@@ -133,18 +139,18 @@ ax.set_xlabel("Model")
 # IC x
 ax = axes[0, 2]
 which = C_results["IC"] == "x|y"
-values = C_results[which]["elpd_loo"]
+values = C_results[which][ic_col]
 xs = C_results[which]["Cor"]
-ses = C_results[which]["elpd_loo_se"]
+ses = C_results[which][ic_se_col]
 ax.errorbar(xs, values, yerr=ses, fmt='.')
 ax.set_title("LR-DCR, K=8")
 
 # IC y
 ax = axes[1, 2]
 which = C_results["IC"] == "y|x"
-values = C_results[which]["elpd_loo"]
+values = C_results[which][ic_col]
 xs = C_results[which]["Cor"]
-ses = C_results[which]["elpd_loo_se"]
+ses = C_results[which][ic_se_col]
 ax.errorbar(xs, values, yerr=ses, fmt='.')
 ax.set_xlabel("One-step correlation")
 ax.set_xticks([0.4, 0.5, 0.6, 0.7])

@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import sys
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/home/simon/Documents/BCI/src')
 import torch
 import itertools as it
 import arviz as az
@@ -13,15 +13,15 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
 # SETUP
-dir_results = "/home/simfont/Documents/BCI/experiments/subject/results/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
+dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
+dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
+dir_data = "/home/simon/Documents/BCI/K_Protocol/"
 os.makedirs(dir_results, exist_ok=True)
 
 
 # file
 type = "TRN"
-subject = str(sys.argv[1])
+subject = "146" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 
@@ -33,7 +33,7 @@ downsample = 8
 
 # model
 seed = 0
-K = int(sys.argv[2])
+K = 8#int(sys.argv[2])
 n_iter = 20_000
 sparse = False
 
@@ -109,6 +109,8 @@ target36 = torch.nn.functional.one_hot(self.one_hot_to_combination_id(target_), 
 target36 = target36.permute(0, 2, 1)
 mllk_long = (target36 * llk_long2).sum(1)
 # -----------------------------------------------------------------------------
+
+
 
 # =============================================================================
 # COMPUTE ICs
@@ -198,6 +200,7 @@ waic_se = (n_samples * waic_i.var()).pow(0.5).item()
 waic_sum = waic_i.sum().item()
 waic_p = vars_lpd.sum().item()
 
+
 # PSIS-LOO
 llk = mllk_long.unsqueeze(0).cpu().numpy()
 log_weights, kss = az.psislw(-llk, reff=1.)
@@ -216,6 +219,7 @@ out = {
     "elpd_loo": [loo_lppd], "elpd_loo_se": [loo_lppd_se], "p_loo": [loo_p],
     "elpd_waic": [waic_sum], "elpd_waic_se": [waic_se], "p_waic": [waic_p],
 }
+print(out)
 
 pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_allreps_K{K}.icy")
 # -----------------------------------------------------------------------------

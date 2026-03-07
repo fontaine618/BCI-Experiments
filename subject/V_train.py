@@ -3,7 +3,7 @@ import os
 import torch
 import time
 import pickle
-sys.path.insert(1, '/home/simfont/Documents/BCI/src')
+sys.path.insert(1, '/storage/work/spf5519/BCI/src')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 from source.data.k_protocol import KProtocol
 from source.bffmbci.bffm import DynamicRegressionCovarianceRegressionMean
@@ -13,8 +13,8 @@ from source.bffmbci.bffm import CompoundSymmetryCovarianceRegressionMean
 
 # =============================================================================
 # SETUP
-dir_data = "/home/simfont/Documents/BCI/K_Protocol/"
-dir_chains = "/home/simfont/Documents/BCI/experiments/subject/chains/"
+dir_data = "/storage/work/spf5519/BCI/K_Protocol/"
+dir_chains = "/storage/work/spf5519/BCI/experiments/subject/chains/"
 os.makedirs(dir_chains, exist_ok=True)
 
 # file
@@ -70,15 +70,14 @@ settings = {
 }
 
 cor = 0.5
-cor2 = 0.999
 prior_parameters = {
     "observation_variance": (1., 10.),
     "heterogeneities": 3.,
     "shrinkage_factor": (2., 3.),
     "kernel_gp_factor_processes": (cor, 1., 2.),
     "kernel_tgp_factor_processes": (cor, 0.5, 2.),
-    "kernel_gp_loading_processes": (cor2, 0.1, 1. if V == "CS" else 2.),
-    "kernel_tgp_loading_processes": (cor2, 0.5, 1. if V == "CS" else 2.),
+    "kernel_gp_loading_processes": (cor, 0.1, 1. if V == "CS" else 2.),
+    "kernel_tgp_loading_processes": (cor, 0.5, 1. if V == "CS" else 2.),
     "kernel_gp_factor": (cor, 1., 2.)
 }
 
