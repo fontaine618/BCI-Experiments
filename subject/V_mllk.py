@@ -38,7 +38,7 @@ sparse = False
 
 # prediction settings
 factor_processes_method = "analytical"
-n_samples = 100
+n_samples = 1000
 
 # dimensions
 n_characters = 19
