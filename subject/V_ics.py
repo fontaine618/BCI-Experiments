@@ -42,7 +42,7 @@ sparse = False
 factor_processes_method = "analytical"
 sample_mean = "harmonic"
 which_first = "sample"
-n_samples = 100
+n_samples = 1000
 
 # dimensions
 n_characters = 19
