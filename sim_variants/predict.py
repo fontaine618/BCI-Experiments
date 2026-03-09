@@ -22,19 +22,23 @@ os.makedirs(dir_results, exist_ok=True)
 seeds = range(1)
 Kxs = [8]
 Kys = [5]
-models = ["LR-DCR", "LR-DC", "LR-SC"]
+models_true = ["LR-DCR", "LR-DC", "FR-CS"]
+models_fitted = ["LR-DCR", "LR-DC", "FR-CS"]
+noises = [2., 5.]
 K = 8
 
 # combinations
-combinations = it.product(seeds, Kxs, Kys, models, models)
+combinations = it.product(seeds, Kxs, Kys, noises, models_true, models_fitted)
 
 # current experiment from command line
 i = int(sys.argv[1])
-seed, Kx, Ky, mtrue, mfitted = list(combinations)[i]
+seed, Kx, Ky, noise, mtrue, mfitted = list(combinations)[i]
 
 # file
 file_data = f"Kx{Kx}_Ky{Ky}_seed{1000+seed}_model{mtrue}"
-file_chain = f"Kx{Kx}_Ky{Ky}_seed{seed}_model{mtrue}_model{mfitted}"
+file = f"Kx{Kx}_Ky{Ky}_seed{seed}_gen{mtrue}_noise{noise}"
+file_chain = file + f"_fitted{mfitted}"
+file_mllk = file_chain + "_mllk"
 file_out = f"Kx{Kx}_Ky{Ky}_seed{1000+seed}_model{mtrue}_model{mfitted}"
 
 # prediction settings
