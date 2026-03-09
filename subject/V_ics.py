@@ -16,12 +16,15 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 dir_results = "/storage/work/spf5519/BCI/experiments/subject/results/"
 dir_chains = "/storage/work/spf5519/BCI/experiments/subject/chains/"
 dir_data = "/storage/work/spf5519/BCI/K_Protocol/"
+dir_results = "/home/simon/Documents/BCI/experiments/subject/results/"
+dir_chains = "/home/simon/Documents/BCI/experiments/subject/chains/"
+dir_data = "/home/simon/Documents/BCI/K_Protocol/"
 os.makedirs(dir_results, exist_ok=True)
 
 
 # file
 type = "TRN"
-subject = str(sys.argv[1])
+subject = "117"#str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 
@@ -33,7 +36,7 @@ downsample = 8
 
 # model
 seed = 0
-V = ["LR-DCR", "LR-DC", "LR-SC", "CS"][int(sys.argv[2])]
+V = "LR-DCR"# ["LR-DCR", "LR-DC", "LR-SC", "CS"][int(sys.argv[2])]
 K = 17 if V == "CS" else 8
 n_iter = 20_000
 sparse = False
@@ -137,12 +140,17 @@ waic_p = vars_lpd.sum().item()
 # PSIS-LOO
 llk = mllk_long.unsqueeze(0).cpu().numpy()
 log_weights, kss = az.psislw(-llk, reff=1.)
-log_weights += llk
+# Impute the nans
 log_weights = torch.Tensor(log_weights)
+lw_mean = log_weights.nanmean(1, keepdim=True)
+for i in log_weights.isnan().any(-1).flatten().nonzero():
+    log_weights[0, i, :] = lw_mean
+log_weights += torch.Tensor(llk)
 loo_lppi_i = torch.logsumexp(log_weights, dim=-1)
 loo_lppd = loo_lppi_i.sum().item()
 loo_lppd_se = (n_samples * torch.var(loo_lppi_i)).pow(0.5).item()
 loo_p = lppd - loo_lppd
+
 
 # store
 out = {
@@ -217,6 +225,7 @@ out = {
     "elpd_loo": [loo_lppd], "elpd_loo_se": [loo_lppd_se], "p_loo": [loo_p],
     "elpd_waic": [waic_sum], "elpd_waic_se": [waic_se], "p_waic": [waic_p],
 }
+print(out)
 
 pd.DataFrame(out).T.to_csv(dir_results + f"K{subject}_allreps_{V}.icy")
 # -----------------------------------------------------------------------------

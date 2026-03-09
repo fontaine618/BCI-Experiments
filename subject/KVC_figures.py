@@ -7,7 +7,7 @@ import torch
 import pickle
 import itertools as it
 from source.bffmbci import add_transformed_variables
-plt.style.use('seaborn-whitegrid')
+# plt.style.use('seaborn-whitegrid')
 torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
 # =============================================================================
