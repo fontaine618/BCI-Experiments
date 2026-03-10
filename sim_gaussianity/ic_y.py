@@ -37,7 +37,8 @@ noise_settings = [
 combinations = it.product(seeds, Kxs, Kys, noise_settings)
 
 i = int(sys.argv[1])
-seed, kx, ky, (noise_distribution, df), k = list(combinations)[i]
+seed, kx, ky, (noise_distribution, df) = list(combinations)[i]
+k = 8
 
 
 def _df_tag(df):
