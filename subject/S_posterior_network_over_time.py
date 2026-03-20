@@ -62,138 +62,9 @@ channel_positions = {
     'PO8': (3., 1.3),
 }
 
-extra_channels = {
-    "F1": (1.625, 4),
-    "F2": (2.375, 4),
-    "F5": (0.875, 4.125),
-    "F6": (3.125, 4.125),
-    "F7": (0.5, 4.25),
-    "F8": (3.5, 4.25),
-    "F9": (0.125, 4.5),
-    "F10": (3.875, 4.5),
-
-    "FT9": (-0.25, 3.875),
-    "FT7": (0.2, 3.75),
-    "FC5": (0.65, 3.625),
-    "FC3": (1.1, 3.55),
-    "FC1": (1.5, 3.5),
-    "FCz": (2, 3.5),
-    "FC2": (2.5, 3.5),
-    "FC4": (2.9, 3.55),
-    "FC6": (3.35, 3.625),
-    "FT8": (3.8, 3.75),
-    "FT10": (4.25, 3.875),
-
-    "C5": (0.6, 3.),
-    "C1": (1.5, 3.),
-    "C2": (2.5, 3.),
-    "C6": (3.4, 3.),
-
-    "TP9": (-0.25, 2.125),
-    "TP7": (0.2, 2.25),
-    "CP5": (0.65, 2.375),
-    "CP1": (1.5, 2.5),
-    "CPz": (2, 2.5),
-    "CP2": (2.5, 2.5),
-    "CP6": (3.35, 2.375),
-    "TP8": (3.8, 2.25),
-    "TP10": (4.25, 2.125),
-
-    "P9": (0.125, 1.5),
-    "P7": (0.5, 1.75),
-    "P5": (0.875, 1.875),
-    "P1": (1.625, 2.),
-    "P2": (2.375, 2.),
-    "P6": (3.125, 1.875),
-    "P8": (3.5, 1.75),
-    "P10": (3.875, 1.5),
-
-    "PO9": (0.625, 1.),
-    "PO3": (1.5, 1.42),
-    "POz": (2., 1.45),
-    "PO4": (2.5, 1.42),
-    "PO10": (3.375, 1.),
-
-    "O1": (1.5, 1),
-    "O2": (2.5, 1),
-
-    "O9": (1.25, 0.7),
-    "O10": (2.75, 0.7),
-    "Iz": (2., 0.55),
-
-    "AF3": (1.5, 4.45),
-    'AFz': (2, 4.5),
-    "AF4": (2.5, 4.45),
-
-    "AF7": (0.9, 4.6),
-    "Fp1": (1.4, 4.9),
-    "Fpz": (2., 5.),
-    "Fp2": (2.6, 4.9),
-    "AF8": (3.1, 4.6),
-}
-
 xrange = (-0.5, 4.5)
 yrange = (0.5, 4.5)
 # -----------------------------------------------------------------------------
-
-
-# =============================================================================
-# PLOT NODES
-file = f"K{subject}_nodes"
-fig, ax = plt.subplots(
-    nrows=1,
-    ncols=1,
-    figsize=(5, 4.8),
-    sharex="all",
-    sharey="all"
-)
-
-
-def draw_head(ax, facecolor="lightgrey"):
-    # draw ears
-    ear1 = plt.Circle((-0.2, 3.), 0.5, edgecolor='black', fill=True, facecolor=facecolor)
-    ear2 = plt.Circle((4.2, 3.), 0.5, edgecolor='black', fill=True, facecolor=facecolor)
-    ax.add_artist(ear1)
-    ax.add_artist(ear2)
-    # draw nose as triangle
-    nose = plt.Polygon([[1.5, 5.], [2.5, 5.], [2., 5.75]], edgecolor='black', fill=True, facecolor=facecolor)
-    ax.add_artist(nose)
-    # draw scalp
-    circle = plt.Circle((2, 3), 2.5, edgecolor='black', fill=True, facecolor=facecolor)
-    ax.add_artist(circle)
-
-
-draw_head(ax)
-
-for cname, (x, y) in channel_positions.items():
-    ax.plot(x, y, "o", markersize=20, color="black", fillstyle='full', markerfacecolor="black")
-    ax.text(x, y, cname, ha="center", va="center", color="white", size=8, fontweight="bold")
-
-for cname, (x, y) in extra_channels.items():
-    ax.plot(x, y, "o", markersize=20, color="black", fillstyle='full', markerfacecolor="white")
-    ax.text(x, y, cname, ha="center", va="center", size=8, color="grey")
-
-
-def blank_canvas(ax):
-    ax.set_aspect('equal', 'box')
-    ax.set_xlim(-0.75, 4.75)
-    ax.set_ylim(0., 6.)
-    # remove box around
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    # remove grid
-    ax.grid(False)
-    ax.set_xticks([])
-    ax.set_yticks([])
-
-
-blank_canvas(ax)
-plt.tight_layout()
-plt.savefig(dir_figures + file + ".pdf")
-# -----------------------------------------------------------------------------
-
 
 
 # =============================================================================
@@ -299,24 +170,33 @@ ymax = max(mean0.max(), mean1.max()).item()
 # -----------------------------------------------------------------------------
 
 
-def confidance_band(
-        samples: torch.Tensor,
-        level: float = 0.95,
-):
-    X = samples.reshape(-1, samples.shape[-1])
-    m = X.mean(0)
-    alpha = 1. - level
-    dim = X.shape[-1]
-    Xmin = X.quantile(alpha / 2, 0)
-    Xmax = X.quantile(1. - alpha / 2, 0)
-    qs = reversed(torch.linspace(alpha/(2*dim), alpha/2, 500))
-    for q in qs:
-        Xmin = X.quantile(q, 0)
-        Xmax = X.quantile(1. - q, 0)
-        prop = ((Xmin.reshape(1, -1) <= X) & (X <= Xmax.reshape(1, -1))).all(1).float().mean()
-        if prop >= level:
-            break
-    return m, Xmin, Xmax
+def draw_head(ax, facecolor="lightgrey"):
+    # draw ears
+    ear1 = plt.Circle((-0.2, 3.), 0.5, edgecolor='black', fill=True, facecolor=facecolor)
+    ear2 = plt.Circle((4.2, 3.), 0.5, edgecolor='black', fill=True, facecolor=facecolor)
+    ax.add_artist(ear1)
+    ax.add_artist(ear2)
+    # draw nose as triangle
+    nose = plt.Polygon([[1.5, 5.], [2.5, 5.], [2., 5.75]], edgecolor='black', fill=True, facecolor=facecolor)
+    ax.add_artist(nose)
+    # draw scalp
+    circle = plt.Circle((2, 3), 2.5, edgecolor='black', fill=True, facecolor=facecolor)
+    ax.add_artist(circle)
+
+
+def blank_canvas(ax):
+    ax.set_aspect('equal', 'box')
+    ax.set_xlim(-0.75, 4.75)
+    ax.set_ylim(0., 6.)
+    # remove box around
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    # remove grid
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
 
 
 def plot_mean_and_correlation_over_time(
@@ -440,134 +320,6 @@ def plot_mean_and_correlation_over_time(
     plt.tight_layout()
     plt.savefig(dir_figures + file + ".pdf")
     plt.close(fig)
-# =============================================================================
-# PLOT COMPONENTS (MEAN ONLY)
-L = results.chains["loadings.norm_one"]
-file = f"K{subject}_components_mean"
-fig, axes = plt.subplots(
-    nrows=4+1,
-    ncols=4,
-    figsize=(10, 9),
-    gridspec_kw={
-        "width_ratios": [1, 1, 1, 1],
-        "height_ratios": [1.5, 1, 1.5, 1, 0.5]
-    },
-    sharex="row",
-    sharey="row"
-)
-TOP = 8
-for j in range(TOP):
-    k = order[j]
-    col = j % 4
-    row = 2 * (j // 4)
-    Lnormk = Lnorm[:, :, 0, k].mean((0, 1)).item()
-
-    # network plot
-    ax = axes[row, col]
-    draw_head(ax, "white")
-    component = L[0, :, :, k].mean(0).reshape(-1, 1)
-    component_sd = L[0, :, :, k].std(0).reshape(-1, 1)
-    excludes = component.abs() / component_sd < 1.96
-    colors = [POSITIVE if c > 0 else NEGATIVE for c in component]
-    sizes = component.abs().pow(1.).cpu().numpy() * 250
-    x = [channel_positions[c][0] for c in channels]
-    y = [channel_positions[c][1] for c in channels]
-    ax.scatter(x, y, c=colors, s=sizes)
-    blank_canvas(ax)
-
-
-    # scaling difference plot
-    row += 1
-    ax = axes[row, col]
-    ax.set_title(f"Component {k+1}\n"
-                 f"Loading norm: {Lnormk:.2f}\n"
-                 f"BCE Change: {importance['drop_bce'][k]:.2f}")
-    t = np.arange(25) * 31.25
-    nontarget_mean, nontarget_min, nontarget_max = confidance_band(mean0[:, :, k, :])
-    target_mean, target_min, target_max = confidance_band(mean1[:, :, k, :])
-
-    # highlet where differential
-    _, diff_min, diff_max = confidance_band(mean_diff[:, :, k, :], 0.95)
-    differential = diff_min.gt(0.) | diff_max.lt(0.)
-    for x, d in zip(t, differential):
-        if d:
-            ax.axvline(x, color="black", linestyle="-", alpha=0.1, linewidth=6.25)
-
-    ax.axhline(0, color="k", linestyle="--")
-    ax.fill_between(
-        t,
-        nontarget_min.cpu().numpy(),
-        nontarget_max.cpu().numpy(),
-        alpha=0.5,
-        color=NONTARGET
-    )
-    ax.plot(t, nontarget_mean.cpu().numpy(), color=NONTARGET)
-    ax.fill_between(
-        t,
-        target_min.cpu().numpy(),
-        target_max.cpu().numpy(),
-        alpha=0.5,
-        color=TARGET
-    )
-    ax.plot(t, target_mean.cpu().numpy(), color=TARGET)
-    ax.set_xlim(0, 24*31.25)
-    ax.set_ylim(ymin, ymax)
-    ax.set_xticks([0, 150, 300, 450, 600, 750])
-
-    ax.set_xlabel("Time (ms)")
-# ADD LEGEND
-axes[1, 0].set_ylabel("Mean process")
-axes[3, 0].set_ylabel("Mean process")
-gs = axes[4, 0].get_gridspec()
-for ax in axes[4, :]:
-    ax.remove()
-axlegend = fig.add_subplot(gs[4, :], frameon=False)
-axlegend.axis("off")
-
-# loadings legend
-values = torch.Tensor([-1., -0.5, -0.25, -0.1, -0.05, 0.0, 0.05, 0.1, 0.25, 0.5, 1.]).cpu()
-xs = torch.arange(-5, 6, 1).cpu()
-colors = [POSITIVE if c > 0 else NEGATIVE for c in values]
-sizes = values.abs().pow(1.).cpu().numpy() * 250
-y = [0 for c in values]
-axlegend.scatter(xs, y, c=colors, s=sizes)
-for i, v in enumerate(values):
-    axlegend.text(xs[i].item(), -0.8, f"{v.item():.2f}", ha="center", va="center")
-axlegend.text(-6., 0., "Std. loading", ha="right", va="center")
-
-# curve legends
-xs = torch.Tensor([7, 8]).cpu()
-for y, which, color, draw_line, alpha in zip(
-        [0.8, -0.8, 0.],
-        ["Nontarget", "Differential", "Target"],
-        [NONTARGET, "black", TARGET],
-        [True, False, True],
-        [0.5, 0.1, 0.5]
-):
-    if draw_line:
-        axlegend.plot(xs, [y, y], color=color)
-    axlegend.fill_between(xs, [y - 0.2, y - 0.2], [y + 0.2, y + 0.2], color=color, alpha=alpha)
-    axlegend.text(8.5, y, which, va="center")
-
-# remove box around
-axlegend.spines['top'].set_visible(False)
-axlegend.spines['right'].set_visible(False)
-axlegend.spines['left'].set_visible(False)
-axlegend.spines['bottom'].set_visible(False)
-# remove grid
-axlegend.grid(False)
-axlegend.set_xticks([])
-axlegend.set_yticks([])
-
-axlegend.set_xlim(-10, 13)
-axlegend.set_ylim(-1, 1)
-
-plt.tight_layout()
-plt.savefig(dir_figures + file + ".pdf")
-# -----------------------------------------------------------------------------
-
-
-
 
 
 # =============================================================================
@@ -587,42 +339,6 @@ plot_mean_and_correlation_over_time(
 )
 
 
-
-# =============================================================================
-# PLOT NONTARGET MEAN AND CORRELATION
-nontarget_node_scale = 25.
-nontarget_edge_scale = 10.
-plot_mean_and_correlation_over_time(
-     file=f"K{subject}_nontarget_mean_and_cov_over_time",
-     node_values=channel_wise_mean0,
-     edge_values=cor0,
-     node_label="Nontarget mean",
-     edge_label="Nontarget correlation",
-     node_legend_values=torch.Tensor([-10., -5., -2., -1., -0.5, 0., 0.5, 1., 2., 5., 10.]).cpu(),
-     edge_legend_values=torch.Tensor([-1., -0.5, -0.2, -0.1, -0.05, 0., 0.05, 0.1, 0.2, 0.5, 1.]).cpu(),
-    node_scale=nontarget_node_scale,
-    edge_scale=nontarget_edge_scale,
- )
-# -----------------------------------------------------------------------------
-
-# =============================================================================
-# PLOT NONTARGET MEAN AND CORRELATION
-nontarget_node_scale = 25.
-nontarget_edge_scale = 10.
-plot_mean_and_correlation_over_time(
-     file=f"K{subject}_target_mean_and_cov_over_time",
-     node_values=channel_wise_mean1,
-     edge_values=cor1,
-     node_label="Target mean",
-     edge_label="Target correlation",
-     node_legend_values=torch.Tensor([-10., -5., -2., -1., -0.5, 0., 0.5, 1., 2., 5., 10.]).cpu(),
-     edge_legend_values=torch.Tensor([-1., -0.5, -0.2, -0.1, -0.05, 0., 0.05, 0.1, 0.2, 0.5, 1.]).cpu(),
-    node_scale=nontarget_node_scale,
-    edge_scale=nontarget_edge_scale,
- )
-# -----------------------------------------------------------------------------
-
-
 # =============================================================================
 # PLOT NONTARGET DIFFERENCE TO PREVIOUS TIMEPOINT
 nontarget_prev_diff_node_scale = 25.
@@ -639,8 +355,6 @@ plot_mean_and_correlation_over_time(
     edge_scale=nontarget_prev_diff_edge_scale,
     difference_titles=True,
  )
-# -----------------------------------------------------------------------------
-
 
 # =============================================================================
 # PLOT TARGET DIFFERENCE TO PREVIOUS TIMEPOINT
@@ -658,24 +372,4 @@ plot_mean_and_correlation_over_time(
     edge_scale=target_prev_diff_edge_scale,
     difference_titles=True,
  )
-# -----------------------------------------------------------------------------
-
-
-# =============================================================================
-# PLOT DIFFERENCE BETWEEN TARGET AND NONTARGET LAG-1 DIFFERENCES
-lag1_diff_node_scale = 25.
-lag1_diff_edge_scale = 50.
-plot_mean_and_correlation_over_time(
-     file=f"K{subject}_lag1_target_minus_nontarget_mean_and_cov_over_time",
-     node_values=lag1_diff_mean,
-     edge_values=lag1_diff_cor,
-     node_label="Lag-1 (target - nontarget) mean",
-     edge_label="Lag-1 (target - nontarget) corr.",
-     node_legend_values=torch.Tensor([-10., -5., -2., -1., -0.5, 0., 0.5, 1., 2., 5., 10.]).cpu(),
-     edge_legend_values=torch.Tensor([-0.2, -0.1, -0.05, -0.02, -0.01, 0., 0.01, 0.02, 0.05, 0.1, 0.2]).cpu(),
-    node_scale=lag1_diff_node_scale,
-    edge_scale=lag1_diff_edge_scale,
-    difference_titles=True,
- )
-# -----------------------------------------------------------------------------
 

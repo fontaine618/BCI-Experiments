@@ -21,7 +21,7 @@ os.makedirs(dir_results, exist_ok=True)
 
 # file
 type = "TRN"
-subject = "146" #str(sys.argv[1])
+subject = "117" #str(sys.argv[1])
 session = "001"
 name = f"K{subject}_{session}_BCI_{type}"
 
@@ -110,7 +110,10 @@ target36 = target36.permute(0, 2, 1)
 mllk_long = (target36 * llk_long2).sum(1)
 # -----------------------------------------------------------------------------
 
-
+def nanmax(x, dim=None, keepdim=False):
+    x = x.clone()
+    x[torch.isnan(x)] = -torch.inf
+    return torch.max(x, dim=dim, keepdim=keepdim)[0]
 
 # =============================================================================
 # COMPUTE ICs
@@ -138,8 +141,11 @@ waic_p = vars_lpd.sum().item()
 # PSIS-LOO
 llk = mllk_long.unsqueeze(0).cpu().numpy()
 log_weights, kss = az.psislw(-llk, reff=1.)
-log_weights += llk
 log_weights = torch.Tensor(log_weights)
+lw_max = nanmax(log_weights, 1, True)
+lw_nan = torch.isnan(log_weights).any(-1).flatten()
+log_weights[:, lw_nan, :] = lw_max
+log_weights += torch.Tensor(llk)
 loo_lppi_i = torch.logsumexp(log_weights, dim=-1)
 loo_lppd = loo_lppi_i.sum().item()
 loo_lppd_se = (n_samples * torch.var(loo_lppi_i)).pow(0.5).item()
